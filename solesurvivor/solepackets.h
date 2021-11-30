@@ -31,8 +31,8 @@ enum PacketType
     PACKET_HOUSE_TEAM,
     PACKET_NEW_DELETE_OBJ,
     PACKET_HEALTH,
-    PACKET_TEAM,
-    PACKET_E,
+    PACKET_DAMAGE,
+    PACKET_CRUSH,
     PACKET_CAPTURE,
     PACKET_CARGO,
     PACKET_FLAG,
@@ -54,16 +54,15 @@ enum PacketType
 };
 
 #pragma pack(push, 1)
-struct GenericPacket
+struct PacketHeader
 {
     uint16_t PacketLength;
-    uint8_t SomeID;
+    uint8_t PacketType;
 };
 
 struct ConnectionPacket
 {
-    uint16_t PacketLength;
-    uint8_t PacketType;
+    PacketHeader Header;
     char PlayerName[12];
     uint8_t Side;
     uint8_t ChosenRTTI;
@@ -75,13 +74,12 @@ struct ConnectionPacket
 
 struct GameOptionsPacket
 {
-    uint16_t PacketLength;
-    uint8_t PacketType;
+    PacketHeader Header;
+    uint8_t PlayerID;
     uint8_t PlayerHouse;
-    uint8_t Side;
-    int32_t dword5;
+    int32_t PlayerColorIdx;
     uint8_t Scenario;
-    int32_t dwordA;
+    int32_t Credits;
     uint32_t Bitfield1;
     uint8_t BuildLevel;
     uint8_t MPlayerUnitCount;
@@ -95,11 +93,11 @@ struct GameOptionsPacket
     int32_t Ranges[25];
 };
 
-struct NewDeletePacket
+struct NewDeleteData
 {
     bool ToDelete;
-    int32_t Target;
-    uint32_t Coord;
+    TARGET Target;
+    COORDINATE Coord;
     uint8_t Owner;
     uint8_t Mission;
     uint8_t Type;
@@ -108,6 +106,206 @@ struct NewDeletePacket
     uint8_t Damage;
     uint8_t RateOfFire;
     uint8_t Range;
+};
+
+struct NewDeletePacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    NewDeleteData Data[11];
+};
+
+struct HealthData
+{
+    TARGET Target;
+    int16_t Strength;
+};
+
+struct HealthPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    HealthData Data[33];
+};
+
+struct DamageData
+{
+    TARGET Target;
+    TARGET Source;
+    WarheadType Warhead;
+};
+
+struct DamagePacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    DamageData Data[22];
+};
+
+struct CrushData
+{
+    TARGET Target;
+    TARGET Source;
+};
+
+struct CrushPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    CrushData Data[25];
+};
+
+struct CaptureData
+{
+    TARGET Target;
+    HousesType House;
+};
+
+struct CapturePacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    CaptureData Data[40];
+};
+
+struct CargoData
+{
+    TARGET Cargo;
+    TARGET Transport;
+    bool Embarking;
+};
+
+struct CargoPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    CargoData Data[22];
+};
+
+struct FlagData
+{
+    uint8_t House;
+    TARGET Location;
+    bool Attaching;
+};
+
+struct FlagPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    FlagData Data[33];
+};
+
+struct CTFData
+{
+    uint8_t Type;
+    CELL Cell;
+    uint8_t Unk;
+};
+
+struct CTFPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    CTFData Data[50];
+};
+
+struct MovementData
+{
+    TARGET Target;
+    CELL Destination;
+    FacingType Facing;
+};
+
+struct MovementPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    MovementData Data[28];
+};
+
+struct TargetData
+{
+    TARGET Object;
+    TARGET TarCom;
+};
+
+struct TargetPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    TargetData Data[25];
+};
+
+struct FireAtData
+{
+    TARGET Whom;
+    TARGET Target;
+    uint8_t Which;
+};
+
+struct FireAtPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    FireAtData Data[22];
+};
+
+struct DoTurnData
+{
+    TARGET Whom;
+    DirType Dir;
+};
+
+struct DoTurnPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    DoTurnData Data[40];
+};
+
+struct CrateData
+{
+    CELL Cell;
+    OverlayType Overlay;
+    uint8_t Frame;
+};
+
+struct CratePacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    CrateData Data[50];
+};
+
+struct PerCellData
+{
+    TARGET Target;
+    HousesType Owner;
+    CELL Cell;
+    int8_t Number;
+    uint32_t IntNumber;
+};
+
+struct PerCellPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    PerCellData Data[16];
+};
+
+struct TechnoData
+{
+    TARGET Whom;
+    uint8_t Type;
+    uint8_t Value;
+};
+
+struct TechnoPacket
+{
+    PacketHeader Header;
+    uint8_t DataCount;
+    TechnoData Data[33];
 };
 
 #pragma pack(pop)

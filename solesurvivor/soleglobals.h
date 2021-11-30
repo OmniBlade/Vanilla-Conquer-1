@@ -77,9 +77,36 @@ extern DynamicVectorClass<ReliableCommClass*> AdminComms;
 class SolePlayerClass;
 extern DynamicVectorClass<SolePlayerClass*> SolePlayers;
 
-struct NewDeletePacket;
-extern DynamicVectorClass<NewDeletePacket*> NewDeletePackets;
-
+struct NewDeleteData;
+struct HealthData;
+struct DamageData;
+struct CrushData;
+struct CaptureData;
+struct CargoData;
+struct FlagData;
+struct CTFData;
+struct MovementData;
+struct TargetData;
+struct FireAtData;
+struct DoTurnData;
+struct CrateData;
+struct PerCellData;
+struct TechnoData;
+extern DynamicVectorClass<NewDeleteData*> NewDeletePackets;
+extern DynamicVectorClass<HealthData*> HealthPackets;
+extern DynamicVectorClass<DamageData*> DamagePackets;
+extern DynamicVectorClass<CrushData*> CrushPackets;
+extern DynamicVectorClass<CaptureData*> CapturePackets;
+extern DynamicVectorClass<CargoData*> CargoPackets;
+extern DynamicVectorClass<FlagData*> FlagPackets;
+extern DynamicVectorClass<CTFData*> CTFPackets;
+extern DynamicVectorClass<MovementData*> MovementPackets;
+extern DynamicVectorClass<TargetData*> TargetPackets;
+extern DynamicVectorClass<FireAtData*> FireAtPackets;
+extern DynamicVectorClass<DoTurnData*> DoTurnPackets;
+extern DynamicVectorClass<CrateData*> CratePackets;
+extern DynamicVectorClass<PerCellData*> PerCellPackets;
+extern DynamicVectorClass<TechnoData*> TechnoPackets;
 
 #ifdef _WIN32
 extern HINSTANCE hWSockInstance;
