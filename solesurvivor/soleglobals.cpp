@@ -67,7 +67,21 @@ DynamicVectorClass<ReliableCommClass*> AdminComms;
 
 DynamicVectorClass<SolePlayerClass*> SolePlayers;
 
-DynamicVectorClass<NewDeletePacket*> NewDeletePackets;
+DynamicVectorClass<NewDeleteData*> NewDeletePackets;
+DynamicVectorClass<HealthData*> HealthPackets;
+DynamicVectorClass<DamageData*> DamagePackets;
+DynamicVectorClass<CrushData*> CrushPackets;
+DynamicVectorClass<CaptureData*> CapturePackets;
+DynamicVectorClass<CargoData*> CargoPackets;
+DynamicVectorClass<FlagData*> FlagPackets;
+DynamicVectorClass<CTFData*> CTFPackets;
+DynamicVectorClass<MovementData*> MovementPackets;
+DynamicVectorClass<TargetData*> TargetPackets;
+DynamicVectorClass<FireAtData*> FireAtPackets;
+DynamicVectorClass<DoTurnData*> DoTurnPackets;
+DynamicVectorClass<CrateData*> CratePackets;
+DynamicVectorClass<PerCellData*> PerCellPackets;
+DynamicVectorClass<TechnoData*> TechnoPackets;
 
 #ifdef _WIN32
 HINSTANCE hWSockInstance = GetModuleHandleA(nullptr);

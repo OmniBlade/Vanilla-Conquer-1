@@ -219,7 +219,7 @@ bool Wait_For_WDT_Connection()
                 char dest[30];
                 strcpy(dest, comm->Host.DotAddr);
                 conn_sent = true;
-                packet.PacketType = 101;
+                packet.Header.PacketType = 101;
                 strcpy(packet.PlayerName, MPlayerName);
                 packet.Side = Side;
                 packet.ChosenRTTI = ChosenRTTI;
@@ -239,15 +239,15 @@ bool Wait_For_WDT_Connection()
                 GameOptionsPacket* packet = (GameOptionsPacket*)ReliableProtocols[0]->Queue->Get_Receive(0)->Buffer;
 
                 // Make sure it actually is a Game Options Packet.
-                if (packet->PacketType == PACKET_GAME_OPTIONS) {
+                if (packet->Header.PacketType == PACKET_GAME_OPTIONS) {
                     ScenPlayer = SCEN_PLAYER_MPLAYER;
                     ScenDir = SCEN_DIR_EAST;
-                    Side = (HousesType)packet->Side;
-                    SolePlayerHouse = (HousesType)packet->PlayerHouse;
-                    GameOption_577AEC = packet->dword5;
-                    GameOption_577AF0 = packet->dword5;
+                    Side = (HousesType)packet->PlayerHouse;
+                    SolePlayerHouse = (HousesType)packet->PlayerID;
+                    GameOption_577AEC = packet->PlayerColorIdx;
+                    GameOption_577AF0 = packet->PlayerColorIdx;
                     Scenario = packet->Scenario;
-                    GameOption_577B00 = packet->dwordA;
+                    GameOption_577B00 = packet->Credits;
                     MPlayerBases = packet->Bitfield1 & 1;
                     SoleEnhancedDefense = packet->Bitfield1 << 30 >> 31;
                     GameOption_577B08 = packet->Bitfield1 << 29 >> 31;
