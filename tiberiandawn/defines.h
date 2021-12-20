@@ -89,7 +89,9 @@
 **	are enabled. This allows the "cheat" parameter and then only
 **	allows the ALT-W to win the mission.
 */
-//#define VIRGIN_CHEAT_KEYS
+#ifdef PLAYTEST_VERSION
+#define VIRGIN_CHEAT_KEYS
+#endif
 
 /**********************************************************************
 **	Optional parameter control for special options.
