@@ -176,7 +176,7 @@ int ReliableCommClass::Connect(ListenerClass *listener)
         Disconnect();
     }
 
-    int addrlen = 16;
+    socklen_t addrlen = 16;
     sockaddr_in addr;
     Socket = accept(listener->Socket, (sockaddr *)&addr, &addrlen);
 
