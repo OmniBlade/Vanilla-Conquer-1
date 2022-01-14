@@ -415,8 +415,8 @@ bool Read_Scenario_Ini(char* root, bool fresh)
             PlayerPtr->IsHuman = true;
             PlayerPtr->ActLike = Side;
 
-            if (Side == HOUSE_SOLE_TEAM1 || Side == HOUSE_SOLE_TEAM2 || Side == HOUSE_SOLE_TEAM3
-                || Side == HOUSE_SOLE_TEAM4) {
+            if (Side == HOUSE_TEAM1 || Side == HOUSE_TEAM2 || Side == HOUSE_TEAM3
+                || Side == HOUSE_TEAM4) {
                 PlayerPtr->TeamNumber = Side - 5;
             } else {
                 PlayerPtr->TeamNumber = -1;
@@ -432,7 +432,7 @@ bool Read_Scenario_Ini(char* root, bool fresh)
             HouseClass::As_Pointer(HOUSE_GOOD)->Init_Data(REMAP_LTBLUE, HOUSE_GOOD, 10000);
             HouseClass::As_Pointer(HOUSE_BAD)->Init_Data(REMAP_LTBLUE, HOUSE_BAD, 10000);
         } else if (GameToPlay == GAME_SERVER) {
-            PlayerPtr = HouseClass::As_Pointer(HOUSE_SOLE_ADMIN);
+            PlayerPtr = HouseClass::As_Pointer(HOUSE_ADMIN);
             PlayerPtr->IsHuman = true;
             strcpy(PlayerPtr->Name, "Server");
             HouseClass::As_Pointer(HOUSE_GOOD)->Init_Data(REMAP_LTBLUE, HOUSE_GOOD, 10000);

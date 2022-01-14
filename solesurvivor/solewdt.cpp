@@ -209,7 +209,7 @@ int Unit_Choice_Dialog(bool names)
     if (OfflineMode) {
         choice_count = ARRAY_SIZE(all_units);
         units = all_units;
-        Side = HOUSE_SOLE_TEAM1;
+        Side = HOUSE_TEAM1;
         ai_slider.Set_Maximum(11);
         ai_slider.Set_Thumb_Size(1);
         ai_slider.Set_Value(Options.AISlider);
@@ -318,19 +318,19 @@ int Unit_Choice_Dialog(bool names)
     case HOUSE_BAD:
         nodbtn.Turn_On();
         break;
-    case HOUSE_SOLE_OBSERVER:
+    case HOUSE_SPECTATOR:
         obsbtn.Turn_On();
         break;
-    case HOUSE_SOLE_TEAM1:
+    case HOUSE_TEAM1:
         team1btn.Turn_On();
         break;
-    case HOUSE_SOLE_TEAM2:
+    case HOUSE_TEAM2:
         team2btn.Turn_On();
         break;
-    case HOUSE_SOLE_TEAM3:
+    case HOUSE_TEAM3:
         team3btn.Turn_On();
         break;
-    case HOUSE_SOLE_TEAM4:
+    case HOUSE_TEAM4:
         team4btn.Turn_On();
         break;
     }
@@ -455,14 +455,14 @@ int Unit_Choice_Dialog(bool names)
                     choice_count = ARRAY_SIZE(nod_units);
                     units = nod_units;
                     break;
-                case HOUSE_SOLE_OBSERVER:
+                case HOUSE_SPECTATOR:
                     choice_count = 0;
                     units = nullptr;
                     break;
-                case HOUSE_SOLE_TEAM1:
-                case HOUSE_SOLE_TEAM2:
-                case HOUSE_SOLE_TEAM3:
-                case HOUSE_SOLE_TEAM4: // Fallthrough for teams
+                case HOUSE_TEAM1:
+                case HOUSE_TEAM2:
+                case HOUSE_TEAM3:
+                case HOUSE_TEAM4: // Fallthrough for teams
                     choice_count = ARRAY_SIZE(all_units);
                     units = all_units;
                     break;
@@ -608,7 +608,7 @@ int Unit_Choice_Dialog(bool names)
             display = REDRAW_CHOICES;
             break;
         case (BUTTON_OBSERVER | KN_BUTTON):
-            Side = HOUSE_SOLE_OBSERVER;
+            Side = HOUSE_SPECTATOR;
             gdibtn.Turn_Off();
             nodbtn.Turn_Off();
             obsbtn.Turn_On();
@@ -620,7 +620,7 @@ int Unit_Choice_Dialog(bool names)
             display = REDRAW_CHOICES;
             break;
         case (BUTTON_TEAM1 | KN_BUTTON):
-            Side = HOUSE_SOLE_TEAM1;
+            Side = HOUSE_TEAM1;
             gdibtn.Turn_Off();
             nodbtn.Turn_Off();
             obsbtn.Turn_Off();
@@ -632,7 +632,7 @@ int Unit_Choice_Dialog(bool names)
             display = REDRAW_CHOICES;
             break;
         case (BUTTON_TEAM2 | KN_BUTTON):
-            Side = HOUSE_SOLE_TEAM2;
+            Side = HOUSE_TEAM2;
             gdibtn.Turn_Off();
             nodbtn.Turn_Off();
             obsbtn.Turn_Off();
@@ -644,7 +644,7 @@ int Unit_Choice_Dialog(bool names)
             display = REDRAW_CHOICES;
             break;
         case (BUTTON_TEAM3 | KN_BUTTON):
-            Side = HOUSE_SOLE_TEAM3;
+            Side = HOUSE_TEAM3;
             gdibtn.Turn_Off();
             nodbtn.Turn_Off();
             obsbtn.Turn_Off();
@@ -656,7 +656,7 @@ int Unit_Choice_Dialog(bool names)
             display = REDRAW_CHOICES;
             break;
         case (BUTTON_TEAM4 | KN_BUTTON):
-            Side = HOUSE_SOLE_TEAM4;
+            Side = HOUSE_TEAM4;
             gdibtn.Turn_Off();
             nodbtn.Turn_Off();
             obsbtn.Turn_Off();

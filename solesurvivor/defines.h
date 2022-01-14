@@ -641,19 +641,112 @@ typedef enum HousesType : signed char
     HOUSE_BAD,     // Brotherhood of Nod
     HOUSE_NEUTRAL, // Civilians
     HOUSE_JP,      // Disaster Containment Team
+    HOUSE_ADMIN,   // Multiplayer Admin
+    HOUSE_SPECTATOR, // Multiplayer Spectator
+    HOUSE_TEAM1,   // Team house #1
+    HOUSE_TEAM2,   // Team house #2
+    HOUSE_TEAM3,   // Team house #3
+    HOUSE_TEAM4,   // Team house #4
     HOUSE_MULTI1,  // Multi-Player house #1
     HOUSE_MULTI2,  // Multi-Player house #2
     HOUSE_MULTI3,  // Multi-Player house #3
     HOUSE_MULTI4,  // Multi-Player house #4
     HOUSE_MULTI5,  // Multi-Player house #5
     HOUSE_MULTI6,  // Multi-Player house #6
-
-    HOUSE_SOLE_ADMIN = 4,
-    HOUSE_SOLE_OBSERVER,
-    HOUSE_SOLE_TEAM1,
-    HOUSE_SOLE_TEAM2,
-    HOUSE_SOLE_TEAM3,
-    HOUSE_SOLE_TEAM4,
+    HOUSE_MULTI7,  // Multi-Player house #7
+    HOUSE_MULTI8,  // Multi-Player house #8
+    HOUSE_MULTI9,  // Multi-Player house #9
+    HOUSE_MULTI10,  // Multi-Player house #10
+    HOUSE_MULTI11,  // Multi-Player house #11
+    HOUSE_MULTI12,  // Multi-Player house #12
+    HOUSE_MULTI13,  // Multi-Player house #13
+    HOUSE_MULTI14,  // Multi-Player house #14
+    HOUSE_MULTI15,  // Multi-Player house #15
+    HOUSE_MULTI16,  // Multi-Player house #16
+    HOUSE_MULTI17,  // Multi-Player house #17
+    HOUSE_MULTI18,  // Multi-Player house #18
+    HOUSE_MULTI19,  // Multi-Player house #19
+    HOUSE_MULTI20,  // Multi-Player house #20
+    HOUSE_MULTI21,  // Multi-Player house #21
+    HOUSE_MULTI22,  // Multi-Player house #22
+    HOUSE_MULTI23,  // Multi-Player house #23
+    HOUSE_MULTI24,  // Multi-Player house #24
+    HOUSE_MULTI25,  // Multi-Player house #25
+    HOUSE_MULTI26,  // Multi-Player house #26
+    HOUSE_MULTI27,  // Multi-Player house #27
+    HOUSE_MULTI28,  // Multi-Player house #28
+    HOUSE_MULTI29,  // Multi-Player house #29
+    HOUSE_MULTI30,  // Multi-Player house #30
+    HOUSE_MULTI31,  // Multi-Player house #31
+    HOUSE_MULTI32,  // Multi-Player house #32
+    HOUSE_MULTI33,  // Multi-Player house #33
+    HOUSE_MULTI34,  // Multi-Player house #34
+    HOUSE_MULTI35,  // Multi-Player house #35
+    HOUSE_MULTI36,  // Multi-Player house #36
+    HOUSE_MULTI37,  // Multi-Player house #37
+    HOUSE_MULTI38,  // Multi-Player house #38
+    HOUSE_MULTI39,  // Multi-Player house #39
+    HOUSE_MULTI40,  // Multi-Player house #40
+    HOUSE_MULTI41,  // Multi-Player house #41
+    HOUSE_MULTI42,  // Multi-Player house #42
+    HOUSE_MULTI43,  // Multi-Player house #43
+    HOUSE_MULTI44,  // Multi-Player house #44
+    HOUSE_MULTI45,  // Multi-Player house #45
+    HOUSE_MULTI46,  // Multi-Player house #46
+    HOUSE_MULTI47,  // Multi-Player house #47
+    HOUSE_MULTI48,  // Multi-Player house #48
+    HOUSE_MULTI49,  // Multi-Player house #49
+    HOUSE_MULTI50,  // Multi-Player house #50
+    HOUSE_MULTI51,  // Multi-Player house #51
+    HOUSE_MULTI52,  // Multi-Player house #52
+    HOUSE_MULTI53,  // Multi-Player house #53
+    HOUSE_MULTI54,  // Multi-Player house #54
+    HOUSE_MULTI55,  // Multi-Player house #55
+    HOUSE_MULTI56,  // Multi-Player house #56
+    HOUSE_MULTI57,  // Multi-Player house #57
+    HOUSE_MULTI58,  // Multi-Player house #58
+    HOUSE_MULTI59,  // Multi-Player house #59
+    HOUSE_MULTI60,  // Multi-Player house #60
+    HOUSE_MULTI61,  // Multi-Player house #61
+    HOUSE_MULTI62,  // Multi-Player house #62
+    HOUSE_MULTI63,  // Multi-Player house #63
+    HOUSE_MULTI64,  // Multi-Player house #64
+    HOUSE_MULTI65,  // Multi-Player house #65
+    HOUSE_MULTI66,  // Multi-Player house #66
+    HOUSE_MULTI67,  // Multi-Player house #67
+    HOUSE_MULTI68,  // Multi-Player house #68
+    HOUSE_MULTI69,  // Multi-Player house #69
+    HOUSE_MULTI70,  // Multi-Player house #70
+    HOUSE_MULTI71,  // Multi-Player house #71
+    HOUSE_MULTI72,  // Multi-Player house #72
+    HOUSE_MULTI73,  // Multi-Player house #73
+    HOUSE_MULTI74,  // Multi-Player house #74
+    HOUSE_MULTI75,  // Multi-Player house #75
+    HOUSE_MULTI76,  // Multi-Player house #76
+    HOUSE_MULTI77,  // Multi-Player house #77
+    HOUSE_MULTI78,  // Multi-Player house #78
+    HOUSE_MULTI79,  // Multi-Player house #79
+    HOUSE_MULTI80,  // Multi-Player house #80
+    HOUSE_MULTI81,  // Multi-Player house #81
+    HOUSE_MULTI82,  // Multi-Player house #82
+    HOUSE_MULTI83,  // Multi-Player house #83
+    HOUSE_MULTI84,  // Multi-Player house #84
+    HOUSE_MULTI85,  // Multi-Player house #85
+    HOUSE_MULTI86,  // Multi-Player house #86
+    HOUSE_MULTI87,  // Multi-Player house #87
+    HOUSE_MULTI88,  // Multi-Player house #88
+    HOUSE_MULTI89,  // Multi-Player house #89
+    HOUSE_MULTI90,  // Multi-Player house #90
+    HOUSE_MULTI91,  // Multi-Player house #91
+    HOUSE_MULTI92,  // Multi-Player house #92
+    HOUSE_MULTI93,  // Multi-Player house #93
+    HOUSE_MULTI94,  // Multi-Player house #94
+    HOUSE_MULTI95,  // Multi-Player house #95
+    HOUSE_MULTI96,  // Multi-Player house #96
+    HOUSE_MULTI97,  // Multi-Player house #97
+    HOUSE_MULTI98,  // Multi-Player house #98
+    HOUSE_MULTI99,  // Multi-Player house #99
+    HOUSE_MULTI100,  // Multi-Player house #100
 
     HOUSE_COUNT,
     HOUSE_FIRST = HOUSE_GOOD
