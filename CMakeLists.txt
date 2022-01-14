@@ -121,6 +121,11 @@ if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+if(MSVC)
+	# Build with multiple processes.
+	add_compile_options(/MP2)
+endif()
+
 add_subdirectory(common)
 add_subdirectory(tiberiandawn)
 add_subdirectory(redalert)
