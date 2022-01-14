@@ -789,7 +789,7 @@ int Com_Scenario_Dialog(void)
         in SpecialClass.
         ------------------------------------------------------------------*/
         case (BUTTON_OPTIONS | KN_BUTTON):
-            if (MPlayerBases != optionlist.Is_Checked(0)) {
+            if (bool(MPlayerBases) != optionlist.Is_Checked(0)) {
                 MPlayerBases = optionlist.Is_Checked(0);
                 if (MPlayerBases) {
                     MPlayerUnitCount = Fixed_To_Cardinal(MPlayerCountMax[1] - MPlayerCountMin[1],

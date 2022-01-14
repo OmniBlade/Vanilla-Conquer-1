@@ -44,7 +44,7 @@
 
 #if defined(_WIN32) && !defined(SDL2_BUILD)
 #include <mmsystem.h>
-void CALLBACK Process_Mouse(UINT event_id, UINT res1, DWORD user, DWORD res2, DWORD res3);
+void CALLBACK Process_Mouse(UINT event_id, UINT res1, DWORD_PTR user, DWORD_PTR res2, DWORD_PTR res3);
 #endif
 
 static WWMouseClass* _Mouse = nullptr;
@@ -859,7 +859,7 @@ void* WWMouseClass::Set_Mouse_Cursor(int hotspotx, int hotspoty, Cursor* cursor)
 }
 
 #ifdef _WIN32
-void CALLBACK Process_Mouse(UINT event_id, UINT res1, DWORD user, DWORD res2, DWORD res3)
+void CALLBACK Process_Mouse(UINT event_id, UINT res1, DWORD_PTR user, DWORD_PTR res2, DWORD_PTR res3)
 {
     static BOOL in_mouse_callback = false;
 

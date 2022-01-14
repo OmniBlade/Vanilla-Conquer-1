@@ -95,11 +95,11 @@ public:
         return (*this == rvalue || rvalue > *this);
     }
 
-    long Raw(void) const
+    int32_t Raw(void) const
     {
         return (ID);
     }
-    void Set_Raw(long value)
+    void Set_Raw(int32_t value)
     {
         ID = value;
     }
@@ -116,7 +116,7 @@ private:
     **	This is the ID number of the object it refers to. By using an ID number, this class can
     **	be saved and loaded without pointer fixups.
     */
-    int ID;
+    int32_t ID;
 };
 
 /*

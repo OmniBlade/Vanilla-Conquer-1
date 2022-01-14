@@ -1781,7 +1781,16 @@ bool Parse_Command_Line(int argc, char* argv[])
 #ifdef VIRGIN_CHEAT_KEYS
         case PARM_PLAYTEST:
             Debug_Playtest = true;
+            Debug_Flag = true;
             break;
+
+#else
+#ifdef CHEAT_KEYS
+        case PARM_PLAYTEST:
+            Debug_Playtest = true;
+            Debug_Flag = true;
+            break;
+#endif
 #endif
 
 #ifdef PARM_CHEATERIK

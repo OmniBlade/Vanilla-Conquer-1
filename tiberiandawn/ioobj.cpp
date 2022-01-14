@@ -150,6 +150,7 @@ bool TeamTypeClass::Load(FileClass& file)
         return false;
     }
     ::new (this) TeamTypeClass(NoInitClass());
+    return true;
 }
 
 /***********************************************************************************************

@@ -529,14 +529,14 @@ typedef union
     } Sub;
 } CELL_COMPOSITE;
 
-typedef int WAYPOINT;
+typedef int32_t WAYPOINT;
 
 /**********************************************************************
 **	This is the target composit information. Notice that with an RTTI_NONE
 **	and an index value of 0, the target value returned is identical with
 **	TARGET_NONE. This is by design and is necessary.
 */
-typedef int TARGET;
+typedef int32_t TARGET;
 
 /* Safe cast to target type */
 #define TARGET_SAFE_CAST(x) (static_cast<TARGET>(reinterpret_cast<intptr_t>((void*)(x))))

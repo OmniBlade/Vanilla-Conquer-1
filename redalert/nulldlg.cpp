@@ -906,7 +906,7 @@ int Com_Scenario_Dialog(bool skirmish)
         // in SpecialClass.
         //------------------------------------------------------------------
         case (BUTTON_OPTIONS | KN_BUTTON):
-            if (Session.Options.Bases != optionlist.Is_Checked(0)) {
+            if (bool(Session.Options.Bases) != optionlist.Is_Checked(0)) {
                 Session.Options.Bases = optionlist.Is_Checked(0);
                 if (Session.Options.Bases) {
                     Session.Options.UnitCount =

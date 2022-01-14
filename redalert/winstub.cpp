@@ -168,7 +168,7 @@ void Check_For_Focus_Loss(void)
 
 extern bool InMovie;
 #if !defined(REMASTER_BUILD) && defined(_WIN32) && !defined(SDL2_BUILD)
-long FAR PASCAL Windows_Procedure(HWND hwnd, UINT message, UINT wParam, LONG lParam)
+LRESULT CALLBACK Windows_Procedure(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 
     int low_param = LOWORD(wParam);

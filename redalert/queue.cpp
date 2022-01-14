@@ -2572,12 +2572,12 @@ static int Add_Compressed_Events(void* buf, int bufsize, int frame_delay, int si
                     if (Debug_Print_Events) {
                         printf("      adding Whom:%x (%x) Mission:%s Target:%x (%x) Dest:%x (%x)\n",
                                OutList.First().Data.MegaMission.Whom.As_TARGET(),
-                               OutList.First().Data.MegaMission.Whom,
+                               OutList.First().Data.MegaMission.Whom.Value(),
                                MissionClass::Mission_Name(OutList.First().Data.MegaMission.Mission),
                                OutList.First().Data.MegaMission.Target.As_TARGET(),
-                               OutList.First().Data.MegaMission.Target,
+                               OutList.First().Data.MegaMission.Target.Value(),
                                OutList.First().Data.MegaMission.Destination.As_TARGET(),
-                               OutList.First().Data.MegaMission.Destination);
+                               OutList.First().Data.MegaMission.Destination.Value());
                     }
 #endif
                     datasize = sizeof(prevevent.Data.MegaMission.Whom);
