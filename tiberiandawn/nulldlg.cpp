@@ -391,11 +391,11 @@ int Com_Scenario_Dialog(void)
     creditsgauge.Set_Maximum(10000 /* TODO: Rule.MPMaxMoney*/);
     creditsgauge.Set_Value(MPlayerCredits);
 
-    int maxp = 4 /*Rule.MaxPlayers - 2*/;
+    int maxp = (MAX_PLAYERS-1) /*Rule.MaxPlayers - 2*/;
     aiplayersgauge.Set_Maximum(maxp);
 
-    if (MPlayerGhosts > 5) {
-        MPlayerGhosts = 5;
+    if (MPlayerGhosts > (MAX_PLAYERS-1)) {
+        MPlayerGhosts = (MAX_PLAYERS-1);
     }
     MPlayerGhosts = max(MPlayerGhosts, 1);
 
@@ -764,8 +764,8 @@ int Com_Scenario_Dialog(void)
                 MPlayerGhosts = aiplayersgauge.Get_Value();
                 int humans = 1; // One humans.
                 MPlayerGhosts += 1;
-                if (MPlayerGhosts + humans >= 6 /*Rule.MaxPlayers*/) { // if it's pegged, max it out
-                    MPlayerGhosts = 6 /*Rule.MaxPlayers*/ - humans;
+                if (MPlayerGhosts + humans >= MAX_PLAYERS /*Rule.MaxPlayers*/) { // if it's pegged, max it out
+                    MPlayerGhosts = MAX_PLAYERS /*Rule.MaxPlayers*/ - humans;
                     aiplayersgauge.Set_Value(MPlayerGhosts - 1);
                 }
                 transmit = true;

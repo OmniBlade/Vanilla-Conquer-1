@@ -82,7 +82,7 @@ static AircraftTypeClass const AttackPlane(AIRCRAFT_A10, // What kind of aircraf
                                            10,
                                            1, // Risk, reward when calculating AI.
                                            HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                               | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                               | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD
                                                | HOUSEF_BAD, // Who can own this aircraft type.
                                            WEAPON_NAPALM,
                                            WEAPON_NONE,
@@ -123,8 +123,8 @@ static AircraftTypeClass const TransportHeli(AIRCRAFT_TRANSPORT, // What kind of
                                              10,
                                              80, // Risk, reward when calculating AI.
                                              HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4
-                                                 | HOUSEF_MULTI5 | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD
-                                                 | HOUSEF_GOOD, // Who can own this aircraft type.
+                                                 | HOUSEF_MULTI5 | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8
+                                                 | HOUSEF_JP | HOUSEF_BAD | HOUSEF_GOOD, // Who can own this aircraft type.
                                              WEAPON_NONE,
                                              WEAPON_NONE,
                                              ARMOR_ALUMINUM,  // Armor type of this aircraft.
@@ -164,8 +164,7 @@ static AircraftTypeClass const AttackHeli(AIRCRAFT_HELICOPTER, // What kind of a
                                           10,
                                           80, // Risk, reward when calculating AI.
                                           HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                              | HOUSEF_MULTI6 | HOUSEF_JP
-                                              | HOUSEF_BAD, // Who can own this aircraft type.
+                                              | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD, // Who can own this aircraft type.
                                           WEAPON_CHAIN_GUN,
                                           WEAPON_NONE,
                                           ARMOR_STEEL, // Armor type of this aircraft.
@@ -205,8 +204,7 @@ static AircraftTypeClass const OrcaHeli(AIRCRAFT_ORCA,   // What kind of aircraf
                                         10,
                                         80, // Risk, reward when calculating AI.
                                         HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                            | HOUSEF_MULTI6 | HOUSEF_JP
-                                            | HOUSEF_GOOD, // Who can own this aircraft type.
+                                            | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD, // Who can own this aircraft type.
                                         WEAPON_DRAGON,
                                         WEAPON_NONE,
                                         ARMOR_STEEL, // Armor type of this aircraft.
@@ -246,7 +244,7 @@ static AircraftTypeClass const CargoPlane(AIRCRAFT_CARGO, // What kind of aircra
                                           10,
                                           1, // Risk, reward when calculating AI.
                                           HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                              | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                              | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
                                               | HOUSEF_BAD, // Who can own this aircraft type.
                                           WEAPON_NONE,
                                           WEAPON_NONE,

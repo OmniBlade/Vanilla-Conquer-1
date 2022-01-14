@@ -513,7 +513,7 @@ DynamicVectorClass<int> MPlayerFilenum;
 /***************************************************************************
 **	This value determines the max allowable # of players.
 */
-int MPlayerMax = 6;
+int MPlayerMax = MAX_PLAYERS; // was 6
 
 /***************************************************************************
 **	Multiplayer game options

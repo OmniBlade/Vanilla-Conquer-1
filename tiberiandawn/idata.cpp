@@ -121,7 +121,7 @@ static InfantryTypeClass const E1(INFANTRY_E1,          // Infantry type number.
                                   80,
                                   10, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD
                                       | HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_M16,
                                   WEAPON_NONE,
@@ -191,7 +191,7 @@ static InfantryTypeClass const E2(INFANTRY_E2,         // Infantry type number.
                                   80,
                                   10, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD, // Who can own this infantry unit.
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD, // Who can own this infantry unit.
                                   WEAPON_GRENADE,
                                   WEAPON_NONE,
                                   MPH_SLOW_ISH // Maximum speed of infantry.
@@ -260,7 +260,7 @@ static InfantryTypeClass const E3(INFANTRY_E3,       // Infantry type number.
                                   80,
                                   10, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD
                                       | HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_DRAGON,
                                   WEAPON_NONE,
@@ -330,7 +330,7 @@ static InfantryTypeClass const E4(INFANTRY_E4,            // Infantry type numbe
                                   80,
                                   10, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD, // Who can own this infantry unit.
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_FLAMETHROWER,
                                   WEAPON_NONE,
                                   MPH_SLOW_ISH);
@@ -398,7 +398,7 @@ static InfantryTypeClass const E5(INFANTRY_E5,           // Infantry type number
                                   80,
                                   10, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP |
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP |
                                       //	HOUSEF_GOOD|
                                       HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_CHEMSPRAY,
@@ -468,7 +468,7 @@ static InfantryTypeClass const E7(INFANTRY_E7,        // Infantry type number.
                                   80,
                                   75, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_BAD
                                       | HOUSEF_GOOD, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -538,7 +538,7 @@ static InfantryTypeClass const Commando(INFANTRY_RAMBO,     // Infantry type num
                                         80,
                                         75, // Risk/Reward of this infantry unit.
                                         HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                            | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                            | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD
                                             | HOUSEF_BAD, // Who can own this infantry unit.
                                         WEAPON_RIFLE,
                                         WEAPON_NONE,
@@ -608,7 +608,7 @@ static InfantryTypeClass const C1(INFANTRY_C1,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_PISTOL,
                                   WEAPON_NONE,
@@ -675,7 +675,7 @@ static InfantryTypeClass const C2(INFANTRY_C2,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -743,7 +743,7 @@ static InfantryTypeClass const C3(INFANTRY_C3,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -810,7 +810,7 @@ static InfantryTypeClass const C4(INFANTRY_C4,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -877,7 +877,7 @@ static InfantryTypeClass const C5(INFANTRY_C5,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -944,7 +944,7 @@ static InfantryTypeClass const C6(INFANTRY_C6,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -1011,7 +1011,7 @@ static InfantryTypeClass const C7(INFANTRY_C7,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_PISTOL,
                                   WEAPON_NONE,
@@ -1078,7 +1078,7 @@ static InfantryTypeClass const C8(INFANTRY_C8,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -1145,7 +1145,7 @@ static InfantryTypeClass const C9(INFANTRY_C9,         // Infantry type number.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -1214,7 +1214,7 @@ static InfantryTypeClass const C10(INFANTRY_C10,       // Infantry type number.
                                    0,
                                    1, // Risk/Reward of this infantry unit.
                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                       | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                        | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                    WEAPON_NONE,
                                    WEAPON_NONE,
@@ -1281,7 +1281,7 @@ static InfantryTypeClass const Moebius(INFANTRY_MOEBIUS,  // Infantry type numbe
                                        0,
                                        10, // Risk/Reward of this infantry unit.
                                        HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                           | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                           | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                            | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                        WEAPON_NONE,
                                        WEAPON_NONE,
@@ -1348,7 +1348,7 @@ static InfantryTypeClass const Delphi(INFANTRY_DELPHI,  // Infantry type number.
                                       0,
                                       0, // Risk/Reward of this infantry unit.
                                       HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                          | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                          | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD
                                           | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                       WEAPON_PISTOL,
                                       WEAPON_NONE,
@@ -1415,7 +1415,7 @@ static InfantryTypeClass const DrChan(INFANTRY_CHAN,    // Infantry type number.
                                       0,
                                       1, // Risk/Reward of this infantry unit.
                                       HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                          | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                          | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD
                                           | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                       WEAPON_NONE,
                                       WEAPON_NONE,

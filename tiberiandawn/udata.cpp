@@ -89,7 +89,7 @@ static UnitTypeClass const UnitVisceroid(UNIT_VICE,
                                          80,
                                          20, // RISK/RWRD:	Risk/reward rating values.
                                          HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                             | HOUSEF_MULTI6 | HOUSEF_GOOD | HOUSEF_BAD | HOUSEF_NEUTRAL
+                                             | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_GOOD | HOUSEF_BAD | HOUSEF_NEUTRAL
                                              | HOUSEF_JP, // OWNABLE:		Ownable by house (bit field).
                                          WEAPON_CHEMSPRAY,
                                          WEAPON_NONE,
@@ -142,7 +142,7 @@ static UnitTypeClass const UnitFTank(UNIT_FTANK,
                                      80,
                                      66, // RISK/RWRD:	Risk/reward rating values.
                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
+                                         | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                          | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_FLAME_TONGUE,
                                      WEAPON_NONE,
@@ -195,7 +195,7 @@ static UnitTypeClass const UnitSTank(UNIT_STANK,
                                      80,
                                      81, // RISK/RWRD:	Risk/reward rating values.
                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
+                                         | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                          | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_DRAGON,
                                      WEAPON_NONE,
@@ -248,7 +248,7 @@ static UnitTypeClass const UnitLTank(UNIT_LTANK,
                                      80,
                                      56, // RISK/RWRD:	Risk/reward rating values.
                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
+                                         | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                          | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_75MM,
                                      WEAPON_NONE,
@@ -301,7 +301,7 @@ static UnitTypeClass const UnitMTank(UNIT_MTANK,
                                      80,
                                      62, // RISK/RWRD:	Risk/reward rating values.
                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
+                                         | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                          | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_105MM,
                                      WEAPON_NONE,
@@ -354,7 +354,7 @@ static UnitTypeClass const UnitHTank(UNIT_HTANK,
                                      80,
                                      80, // RISK/RWRD:	Risk/reward rating values.
                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
+                                         | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                          | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_120MM,
                                      WEAPON_MAMMOTH_TUSK,
@@ -407,7 +407,7 @@ static UnitTypeClass const UnitMHQ(UNIT_MHQ,
                                    80,
                                    100, // RISK/RWRD:	Risk/reward rating values.
                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                       | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP | HOUSEF_GOOD
                                        | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_NONE,
                                    WEAPON_NONE,
@@ -461,7 +461,7 @@ static UnitTypeClass const UnitHover(UNIT_HOVER,
                                      80,
                                      40, // RISK/RWRD:	Risk/reward rating values.
                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                         | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP | HOUSEF_GOOD
                                          | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_NONE,
                                      WEAPON_NONE,
@@ -514,7 +514,7 @@ static UnitTypeClass const UnitSAM(UNIT_MSAM,
                                    80,
                                    30, // RISK/RWRD:	Risk/reward rating values.
                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP |
+                                       | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP |
                                        //	HOUSEF_GOOD|
                                        HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_HONEST_JOHN,
@@ -568,7 +568,7 @@ static UnitTypeClass const UnitArty(UNIT_ARTY,
                                     80,
                                     73, // RISK/RWRD:	Risk/reward rating values.
                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP
+                                        | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                         | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_155MM,
                                     WEAPON_NONE,
@@ -623,7 +623,7 @@ static UnitTypeClass const
                   80,
                   85, // RISK/RWRD:	Risk/reward rating values.
                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5 | HOUSEF_MULTI6
-                      | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                      | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                   WEAPON_NONE,
                   WEAPON_NONE,
                   ARMOR_ALUMINUM,  // ARMOR:		Armor type
@@ -675,7 +675,7 @@ static UnitTypeClass const UnitMCV(UNIT_MCV,
                                    80,
                                    86, // RISK/RWRD:	Risk/reward rating values.
                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                       | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP | HOUSEF_GOOD
                                        | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_NONE,
                                    WEAPON_NONE,
@@ -728,7 +728,7 @@ static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     80,
                                     41, // RISK/RWRD:	Risk/reward rating values.
                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP
+                                        | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                         | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_M60MG,
                                     WEAPON_NONE,
@@ -781,7 +781,7 @@ static UnitTypeClass const UnitBuggy(UNIT_BUGGY,
                                      80,
                                      42, // RISK/RWRD:	Risk/reward rating values.
                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
+                                         | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                          | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_M60MG,
                                      WEAPON_NONE,
@@ -838,7 +838,7 @@ static UnitTypeClass const UnitBike(UNIT_BIKE,
                                     80,
                                     45, // RISK/RWRD:	Risk/reward rating values.
                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP
+                                        | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                         | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_DRAGON,
                                     WEAPON_NONE,
@@ -891,7 +891,7 @@ static UnitTypeClass const UnitMLRS(UNIT_MLRS,
                                     80,
                                     72, // RISK/RWRD:	Risk/reward rating values.
                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD
+                                        | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP | HOUSEF_BAD
                                         | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_MLRS,
                                     WEAPON_NONE,
@@ -944,7 +944,7 @@ static UnitTypeClass const UnitAPC(UNIT_APC,
                                    80,
                                    15, // RISK/RWRD:	Risk/reward rating values.
                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_BAD | HOUSEF_JP
+                                       | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8 | HOUSEF_BAD | HOUSEF_JP
                                        | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_M60MG,
                                    WEAPON_NONE,
@@ -997,7 +997,7 @@ static UnitTypeClass const UnitGunBoat(UNIT_GUNBOAT,
                                        80,
                                        40, // RISK/RWRD:	Risk/reward rating values.
                                        HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                           | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                           | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP | HOUSEF_GOOD
                                            | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                        WEAPON_TOMAHAWK,
                                        WEAPON_NONE,
@@ -1256,7 +1256,7 @@ static UnitTypeClass const UnitNukeTank(UNIT_NUKE_TANK,
                                         80,
                                         80, // RISK/RWRD:	Risk/reward rating values.
                                         HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                            | HOUSEF_MULTI6 | HOUSEF_JP
+                                            | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8  | HOUSEF_JP
                                             | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                         WEAPON_NUKE_LOB,
                                         WEAPON_NONE,

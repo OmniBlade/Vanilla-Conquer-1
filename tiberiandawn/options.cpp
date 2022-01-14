@@ -688,7 +688,11 @@ void OptionsClass::Load_Settings(void)
     if (Obfuscate(workbuf) == PARM_TRUENAME) {
         Special.IsNamed = true;
     }
-
+    
+    /*
+    **	Useless as new player max is 8.
+    */
+#if 0
     /*
     **	Enable 6 player games if special flag is detected.
     */
@@ -696,6 +700,7 @@ void OptionsClass::Load_Settings(void)
     if (Obfuscate(workbuf) == PARM_6PLAYER) {
         MPlayerMax = 6;
     }
+#endif
 
     /*
     **	Enable three point turning logic as indicated.
