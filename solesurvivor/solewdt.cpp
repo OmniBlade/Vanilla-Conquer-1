@@ -755,5 +755,93 @@ void Remove_WDT_Radar()
 
 void Clear_Packet_Vectors()
 {
-    DBG_WARN("Destroy_Server_Vector not implemented yet.\n");
+    for (int i = 0; i < NewDeletePackets.Count(); ++i) {
+        delete NewDeletePackets[i];
+    }
+
+    NewDeletePackets.Delete_All();
+
+    for (int i = 0; i < HealthPackets.Count(); ++i) {
+        delete HealthPackets[i];
+    }
+
+    HealthPackets.Delete_All();
+
+    for (int i = 0; i < DamagePackets.Count(); ++i) {
+        delete DamagePackets[i];
+    }
+
+    DamagePackets.Delete_All();
+
+    for (int i = 0; i < CrushPackets.Count(); ++i) {
+        delete CrushPackets[i];
+    }
+
+    CrushPackets.Delete_All();
+
+    for (int i = 0; i < CapturePackets.Count(); ++i) {
+        delete CapturePackets[i];
+    }
+
+    CapturePackets.Delete_All();
+
+    for (int i = 0; i < CargoPackets.Count(); ++i) {
+        delete CargoPackets[i];
+    }
+
+    CargoPackets.Delete_All();
+
+    for (int i = 0; i < FlagPackets.Count(); ++i) {
+        delete FlagPackets[i];
+    }
+
+    FlagPackets.Delete_All();
+
+    for (int i = 0; i < CTFPackets.Count(); ++i) {
+        delete CTFPackets[i];
+    }
+
+    CTFPackets.Delete_All();
+
+    for (int i = 0; i < MovementPackets.Count(); ++i) {
+        delete MovementPackets[i];
+    }
+
+    MovementPackets.Delete_All();
+
+    for (int i = 0; i < TargetPackets.Count(); ++i) {
+        delete TargetPackets[i];
+    }
+
+    TargetPackets.Delete_All();
+
+    for (int i = 0; i < FireAtPackets.Count(); ++i) {
+        delete FireAtPackets[i];
+    }
+
+    FireAtPackets.Delete_All();
+
+    for (int i = 0; i < DoTurnPackets.Count(); ++i) {
+        delete DoTurnPackets[i];
+    }
+
+    DoTurnPackets.Delete_All();
+
+    for (int i = 0; i < CratePackets.Count(); ++i) {
+        delete CratePackets[i];
+    }
+
+    CratePackets.Delete_All();
+
+    for (int i = 0; i < PerCellPackets.Count(); ++i) {
+        delete PerCellPackets[i];
+    }
+
+    PerCellPackets.Delete_All();
+
+    for (int i = 0; i < TechnoPackets.Count(); ++i) {
+        delete TechnoPackets[i];
+    }
+
+    TechnoPackets.Delete_All();
 }
