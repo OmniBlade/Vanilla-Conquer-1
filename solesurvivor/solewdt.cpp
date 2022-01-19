@@ -753,7 +753,7 @@ void Remove_WDT_Radar()
     }
 }
 
-void Destroy_Server_Vector()
+void Clear_Packet_Vectors()
 {
     DBG_WARN("Destroy_Server_Vector not implemented yet.\n");
 }

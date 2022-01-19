@@ -20,9 +20,9 @@
 extern bool LogTeams;
 extern bool OfflineMode;
 extern bool WDTRadarAdded;
-extern bool ClientAICalled;
+extern bool ServerConnectionLost;
 extern bool server_534780; // Possibly indicates server is remote?
-extern bool somestate_591BCC;
+extern bool IsServerAdmin;
 extern bool UseAltArt;
 extern CELL FlagHomes[4];
 
@@ -54,9 +54,9 @@ extern int SentTCP;
 extern int SentUDP;
 extern int RecievedTCP;
 extern int RecievedUDP;
-extern CountDownTimerClass CountDownTimerClass_590454;
+extern CountDownTimerClass FramerateUpdateTimer;
 extern CountDownTimerClass TransmisionStatsTimer;
-extern CountDownTimerClass ServerCountDownTimerClass_5721D4;
+extern CountDownTimerClass RegisterCratesTimer;
 extern char SoleHost[40];
 
 extern int Density;

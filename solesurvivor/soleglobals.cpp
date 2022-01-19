@@ -15,9 +15,9 @@
 bool LogTeams;
 bool OfflineMode;
 bool WDTRadarAdded;
-bool ClientAICalled;
+bool ServerConnectionLost;
 bool server_534780 = true; // Seems to be related to if some server logic is processed.
-bool somestate_591BCC;
+bool IsServerAdmin;
 bool UseAltArt;
 CELL FlagHomes[4];
 
@@ -49,9 +49,9 @@ int SentTCP;
 int SentUDP;
 int RecievedTCP;
 int RecievedUDP;
-CountDownTimerClass CountDownTimerClass_590454;
+CountDownTimerClass FramerateUpdateTimer;
 CountDownTimerClass TransmisionStatsTimer;
-CountDownTimerClass ServerCountDownTimerClass_5721D4;
+CountDownTimerClass RegisterCratesTimer;
 char SoleHost[40];
 
 int Density = 200;

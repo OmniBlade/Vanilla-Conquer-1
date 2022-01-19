@@ -882,7 +882,7 @@ bool Select_Game(bool fade)
                     display = true;
                     selection = SEL_NONE;
                     GameToPlay = GAME_NORMAL;
-                    somestate_591BCC = false;
+                    IsServerAdmin = false;
                 }
                 break;
             }
@@ -1078,10 +1078,10 @@ bool Select_Game(bool fade)
 
     constexpr int SpeedScale = 256;
 
-    Destroy_Server_Vector();
+    Clear_Packet_Vectors();
     ClientFPS = 30;
     LastServerAIFrame = 0;
-    CountDownTimerClass_590454.Set(120, 1);
+    FramerateUpdateTimer.Set(120, 1);
     CommStatsSpeedScale = SpeedScale;
     RecievedBytesSec = 0;
     SentBytesSec = 0;
@@ -1092,7 +1092,7 @@ bool Select_Game(bool fade)
     TransmisionStatsTimer.Set(120, 1);
     CrateMaker = true;
     int crate_density = 1;
-    ServerCountDownTimerClass_5721D4.Set(36000, 1);
+    RegisterCratesTimer.Set(36000, 1);
 
     if (GameParams.CrateDensityOverride <= 0) {
         if (Density <= 0) {
@@ -1112,7 +1112,7 @@ bool Select_Game(bool fade)
 
     Map.Activate(1);
 
-    if (!OfflineMode && (somestate_591BCC || PlayerPtr->Class->House == HOUSE_MULTI2)) {
+    if (!OfflineMode && (IsServerAdmin || PlayerPtr->Class->House == HOUSE_SOLE_OBSERVER)) {
         Debug_Unshroud = true;
         Map.Activate(1);
         Add_WDT_Radar();
@@ -1137,7 +1137,7 @@ bool Select_Game(bool fade)
         Init_Flag_Homes();
     }
 
-    ClientAICalled = false;
+    ServerConnectionLost = false;
 
     return (true);
 }

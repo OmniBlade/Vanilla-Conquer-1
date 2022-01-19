@@ -15,6 +15,6 @@
 int Unit_Choice_Dialog(bool names = false);
 void Add_WDT_Radar();
 void Remove_WDT_Radar();
-void Destroy_Server_Vector();
+void Clear_Packet_Vectors();
 
 #endif
