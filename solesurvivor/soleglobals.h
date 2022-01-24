@@ -21,7 +21,7 @@ extern bool LogTeams;
 extern bool OfflineMode;
 extern bool WDTRadarAdded;
 extern bool ServerConnectionLost;
-extern bool server_534780; // Possibly indicates server is remote?
+extern bool CratesDisabled;
 extern bool IsServerAdmin;
 extern bool UseAltArt;
 extern CELL FlagHomes[4];

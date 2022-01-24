@@ -16,7 +16,7 @@ bool LogTeams;
 bool OfflineMode;
 bool WDTRadarAdded;
 bool ServerConnectionLost;
-bool server_534780 = true; // Seems to be related to if some server logic is processed.
+bool CratesDisabled = true;
 bool IsServerAdmin;
 bool UseAltArt;
 CELL FlagHomes[4];

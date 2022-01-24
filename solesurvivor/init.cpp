@@ -743,7 +743,7 @@ bool Select_Game(bool fade)
     **	Some new Sole Globals
     */
     WDTRadarAdded = false;
-    server_534780 = true;
+    CratesDisabled = true;
 
     /*
     **	Set default mouse shape
@@ -858,7 +858,7 @@ bool Select_Game(bool fade)
                 GameParams.SuperInvuln = 1;
                 GameParams.NumTeams = 0;
                 GameTimer.Set(0, 1);
-                server_534780 = 0;
+                CratesDisabled = 0;
                 Fade_Palette_To(BlackPalette, 15, Call_Back);
                 bool choice_made = Unit_Choice_Dialog();
                 if (choice_made) {
