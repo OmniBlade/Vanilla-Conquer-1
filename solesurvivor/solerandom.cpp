@@ -14,8 +14,7 @@
 
 int Choose_Random_Val(int min, int max)
 {
-    // TODO Original Sole Survivor uses a more complex prng here
-    static RandomClass _rng;
+    static Random3Class _rng;
 
     return _rng(min, max);
 }
