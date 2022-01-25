@@ -20,6 +20,7 @@ bool CratesDisabled = true;
 bool IsServerAdmin;
 bool UseAltArt;
 CELL FlagHomes[4];
+time_t IdleTime;
 
 HousesType Side;
 HousesType SolePlayerHouse;
@@ -34,11 +35,16 @@ int GameOption_577AEC;
 int GameOption_577AF0;
 int GameOption_577B00;
 int CurrentVoiceTheme = 1;
+int GameEvent;
+int ClientEvent1;
+int ColorListTimer_5586C0;
 unsigned GameOptionsBitfield;
 bool GameOption_577B08;
 bool GameOption_577B0C;
 bool SoleEnhancedDefense;
 bool DebugLogTeams;
+bool CountingDown;
+bool ClientEvent2;
 
 int ClientFPS;
 int LastServerAIFrame;
@@ -49,9 +55,13 @@ int SentTCP;
 int SentUDP;
 int RecievedTCP;
 int RecievedUDP;
+int StatTiming1;
+int StatTiming2;
 CountDownTimerClass FramerateUpdateTimer;
 CountDownTimerClass TransmisionStatsTimer;
 CountDownTimerClass RegisterCratesTimer;
+CountDownTimerClass SquadGameStartTimer;
+TimerClass GameTimer;
 char SoleHost[40];
 
 int Density = 200;

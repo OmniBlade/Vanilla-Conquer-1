@@ -25,6 +25,7 @@ extern bool CratesDisabled;
 extern bool IsServerAdmin;
 extern bool UseAltArt;
 extern CELL FlagHomes[4];
+extern time_t IdleTime;
 
 extern HousesType Side;
 extern HousesType SolePlayerHouse;
@@ -39,11 +40,16 @@ extern int GameOption_577AEC;
 extern int GameOption_577AF0;
 extern int GameOption_577B00;
 extern int CurrentVoiceTheme;
+extern int GameEvent;
+extern int ClientEvent1;
+extern int ColorListTimer_5586C0;
 extern unsigned GameOptionsBitfield;
 extern bool GameOption_577B08;
 extern bool GameOption_577B0C;
 extern bool SoleEnhancedDefense;
 extern bool DebugLogTeams;
+extern bool CountingDown;
+extern bool ClientEvent2;
 
 extern int ClientFPS;
 extern int LastServerAIFrame;
@@ -54,9 +60,13 @@ extern int SentTCP;
 extern int SentUDP;
 extern int RecievedTCP;
 extern int RecievedUDP;
+extern int StatTiming1;
+extern int StatTiming2;
 extern CountDownTimerClass FramerateUpdateTimer;
 extern CountDownTimerClass TransmisionStatsTimer;
 extern CountDownTimerClass RegisterCratesTimer;
+extern CountDownTimerClass SquadGameStartTimer;
+extern TimerClass GameTimer;
 extern char SoleHost[40];
 
 extern int Density;
