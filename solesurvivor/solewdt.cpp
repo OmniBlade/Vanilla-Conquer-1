@@ -11,6 +11,8 @@
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
 #include "solewdt.h"
 #include "function.h"
+#include "listener.h"
+#include "reliable.h"
 #include "soleglobals.h"
 #include "soleparams.h"
 #include "common/framelimit.h"
@@ -844,4 +846,34 @@ void Clear_Packet_Vectors()
     }
 
     TechnoPackets.Delete_All();
+}
+
+void Host_Disconnect()
+{
+    if (Listener != nullptr) {
+        Listener->Stop_Listening();
+        delete Listener;
+        Listener = nullptr;
+        delete ListenerProtocol;
+        ListenerProtocol = nullptr;
+    }
+
+    for (int i = 0; i < Players.Count(); ++i) {
+        ReliableComms[i]->Disconnect();
+        delete Players[i];
+        delete ReliableComms[i];
+        delete ReliableProtocols[i];
+    }
+
+    for (int i = 0; i < AdminComms.Count(); ++i) {
+        AdminComms[i]->Disconnect();
+        delete AdminComms[i];
+        delete AdminProtocols[i];
+    }
+
+    Players.Clear();
+    ReliableComms.Clear();
+    ReliableProtocols.Clear();
+    AdminComms.Clear();
+    AdminProtocols.Clear();
 }

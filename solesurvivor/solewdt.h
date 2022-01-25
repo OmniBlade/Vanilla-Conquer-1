@@ -16,5 +16,6 @@ int Unit_Choice_Dialog(bool names = false);
 void Add_WDT_Radar();
 void Remove_WDT_Radar();
 void Clear_Packet_Vectors();
+void Host_Disconnect();
 
 #endif
