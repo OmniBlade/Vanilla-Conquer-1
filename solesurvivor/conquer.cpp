@@ -64,10 +64,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "common/framelimit.h"
 #include "common/vqatask.h"
 #include "common/vqaloader.h"
 #include "common/settings.h"
+#include "soleclient.h"
+#include "solewdt.h"
 
 #define SHAPE_TRANS 0x40
 
@@ -182,6 +185,7 @@ void Main_Game(int argc, char* argv[])
         }
 
         InMainLoop = true;
+        IdleTime = time(nullptr);
         Set_Video_Cursor_Clip(true);
 
 #ifdef SCENARIO_EDITOR
@@ -304,6 +308,11 @@ void Main_Game(int argc, char* argv[])
 #endif
         Set_Video_Cursor_Clip(false);
         InMainLoop = false;
+        ClientEvent1 = 0;
+        SquadGameStartTimer.Reset();
+        SquadGameStartTimer.Set(0);
+        GameEvent = 0;
+        CountingDown = false;
 
         if (!GameStatisticsPacketSent && PacketLater) {
             Send_Statistics_Packet();
@@ -345,6 +354,15 @@ void Main_Game(int argc, char* argv[])
 
             case GAME_INTERNET:
                 // Winsock.Close();
+                break;
+
+            case GAME_CLIENT:
+                Client_Remote_Disconnect();
+                // Original switches back out to WChat here.
+                break;
+
+            case GAME_SERVER:
+                Host_Disconnect();
                 break;
             }
         }
@@ -1433,6 +1451,8 @@ static void Sync_Delay(void)
  *=============================================================================================*/
 extern void Check_For_Focus_Loss(void);
 void Reallocate_Big_Shape_Buffer(void);
+void Process_Network();
+extern TimerClass GameTimer;
 
 bool Main_Loop()
 {
@@ -1441,7 +1461,12 @@ bool Main_Loop()
     int y;
     int framedelay;
 
-    //	InMainLoop = true;
+    if (GameToPlay == GAME_CLIENT) {
+        if (ClientEvent2) {
+            GameActive = false;
+            ClientEvent2 = false;
+        }
+    }
 
     /*
     ** I think I'm gonna cry if this makes it work
@@ -1466,26 +1491,6 @@ bool Main_Loop()
         Trap_Object();
     }
 
-    //
-    // Initialize our AI processing timer
-    //
-    ProcessTimer.Set(0, true);
-
-#if 1
-    if (TrapCheckHeap) {
-        Debug_Trap_Check_Heap = true;
-    }
-#endif
-
-#ifdef CHEAT_KEYS
-    Heap_Dump_Check("After Trap");
-
-    /*
-    **	Update the running status debug display.
-    */
-    Self_Regulate();
-#endif
-
     /*
     **	If there is no theme playing, but it looks like one is required, then start one
     **	playing. This is usually the symptom of there being no transition score.
@@ -1497,11 +1502,29 @@ bool Main_Loop()
     /*
     **	Setup the timer so that the Main_Loop function processes at the correct rate.
     */
-    if (GameToPlay != GAME_NORMAL && GameToPlay != GAME_SKIRMISH && CommProtocol == COMM_PROTOCOL_MULTI_E_COMP) {
-        framedelay = 60 / DesiredFrameRate;
-        FrameTimer.Set(framedelay);
-    } else {
-        FrameTimer.Set(Options.GameSpeed);
+    FrameTimer.Set(Options.GameSpeed);
+
+    if (++ColorListTimer_5586C0 == 2) {
+        Map.ColorListTimer.Set(0);
+    }
+
+    if (GameParams.TimeLimit > 0) {
+        int game_duration = TIMER_MINUTE * GameParams.TimeLimit;
+        int time_remaining = game_duration - GameTimer.Time();
+        int minutes_remaining = time_remaining / TIMER_MINUTE;
+
+        if (minutes_remaining <= 0) {
+            int seconds_remaining = time_remaining / TIMER_SECOND;
+            if (seconds_remaining != StatTiming2) {
+                StatTiming2 = seconds_remaining;
+                // StatPanel.Set_Show();
+                Map.Flag_To_Redraw();
+            }
+        } else if (minutes_remaining != StatTiming1) {
+            StatTiming1 = minutes_remaining;
+            // StatPanel.Set_Show();
+            Map.Flag_To_Redraw();
+        }
     }
 
     /*
