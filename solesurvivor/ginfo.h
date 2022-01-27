@@ -9,27 +9,39 @@
 // distributed with this program. You should have received a copy of the
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
-#ifndef SOLEWDT_H
-#define SOLEWDT_H
+#ifndef GINFO_H
+#define GINFO_H
 
-#include "function.h"
+#include <stdint.h>
 
-enum GetWhatEnum : int8_t
+class GameInfoClass
 {
-    GET_STRENGTH,
-    GET_DAMAGE,
-    GET_SPEED,
-    GET_ROF,
-    GET_RANGE,
+    enum
+    {
+        MAX_TEAMS = 4, /* This probably belongs somewhere more global, max SS teams. */
+    };
+
+public:
+    GameInfoClass()
+        : Show(false)
+    {
+    }
+
+    bool Get_Show()
+    {
+        return Show;
+    }
+
+    void Set_Show(bool show)
+    {
+        Show = show;
+    }
+
+    void Render(int w, int h);
+
+private:
+    bool Show;
+    static int16_t TeamCounters[MAX_TEAMS];
 };
 
-int Unit_Choice_Dialog(bool names = false);
-void Add_WDT_Radar();
-void Remove_WDT_Radar();
-void Clear_Packet_Vectors();
-void Host_Disconnect();
-int Process_Crate_Pickup(int8_t crate_type, CELL cell, UnitClass* unit);
-int Get_Stat(GetWhatEnum what, int initial_val, ObjectClass* obj);
-int Calc_Object_Stats(ObjectClass* obj);
-
-#endif
+#endif /* GINFO_H */

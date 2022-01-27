@@ -379,6 +379,8 @@ public:
     */
     unsigned IsToRedraw : 1;
 
+    CountDownTimerClass ColorListTimer;
+
     class SBGadgetClass : public GadgetClass
     {
     public:
@@ -406,6 +408,9 @@ public:
     */
     static void const* SidebarShape1;
     static void const* SidebarShape2;
+
+    static ColorListClass* ColorList1;
+    static ColorListClass* ColorList2;
 
 private:
     bool Activate_Repair(int control);

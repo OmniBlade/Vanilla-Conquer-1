@@ -44,6 +44,7 @@ set(SOLE_SRC
     fuse.cpp
     gamedlg.cpp
     gauge.cpp
+    ginfo.cpp
     globals.cpp
     goptions.cpp
     gscreen.cpp

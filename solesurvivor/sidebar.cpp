@@ -117,6 +117,12 @@ ShapeButtonClass SidebarClass::StripClass::DownButton[COLUMNS];
 SidebarClass::StripClass::SelectClass SidebarClass::StripClass::SelectButton[COLUMNS][MAX_VISIBLE];
 
 /*
+** Sole Color lists
+*/
+ColorListClass* SidebarClass::ColorList1;
+ColorListClass* SidebarClass::ColorList2;
+
+/*
 ** Shape data pointers
 */
 void const* SidebarClass::StripClass::LogoShapes = NULL;

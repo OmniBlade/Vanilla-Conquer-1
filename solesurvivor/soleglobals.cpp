@@ -21,6 +21,7 @@ bool IsServerAdmin;
 bool UseAltArt;
 CELL FlagHomes[4];
 time_t IdleTime;
+int IonFactor = 200;
 
 HousesType Side;
 HousesType SolePlayerHouse;
@@ -61,11 +62,17 @@ CountDownTimerClass FramerateUpdateTimer;
 CountDownTimerClass TransmisionStatsTimer;
 CountDownTimerClass RegisterCratesTimer;
 CountDownTimerClass SquadGameStartTimer;
-TimerClass GameTimer;
 char SoleHost[40];
 
 int Density = 200;
 int CrateDensity;
+
+// These arrays don't look correct, unclear what they should look like originally.
+int StrengthsArray[3] = {800, 30, 120};
+int DamagesArray[3] = {240, 20, 80};
+int SpeedsArray[3] = {160, 25, 100};
+int RateOfFiresArray[3] = {200, 384, 1536};
+int RangessArray[6] = {3072, 850, 155, 53, 25, 1920};
 
 ProtocolClass* ListenerProtocol;
 ListenerClass* Listener;

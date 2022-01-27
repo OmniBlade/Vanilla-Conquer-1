@@ -19,8 +19,8 @@
 struct GameParamStruct
 {
     uint32_t TimeLimit;
-    uint32_t ScoreLimit;
-    uint32_t LifeLimit;
+    int32_t ScoreLimit;
+    int32_t LifeLimit;
     uint32_t CaptureTheFlag;
     uint32_t Football;
     uint32_t FootballNumFlags;

@@ -16,6 +16,7 @@
 #include "soleglobals.h"
 #include "soleparams.h"
 #include "common/framelimit.h"
+#include <math.h>
 
 static void Draw_Choice_Entry(RTTIType rtti, int type, int x, int y, HousesType house, int unk, bool names)
 {
@@ -876,4 +877,59 @@ void Host_Disconnect()
     ReliableProtocols.Clear();
     AdminComms.Clear();
     AdminProtocols.Clear();
+}
+
+int Get_Stat(GetWhatEnum what, int initial_val, ObjectClass* obj)
+{
+    bool is_unit = false;
+    const UnitTypeClass* uptr = nullptr;
+    const InfantryTypeClass* iptr = nullptr;
+
+    if (obj->What_Am_I() == RTTI_UNIT) {
+        is_unit = true;
+        uptr = &UnitTypeClass::As_Reference(reinterpret_cast<UnitClass*>(obj)->Class->Type);
+    } else if (obj->What_Am_I() == RTTI_INFANTRY) {
+        iptr = &InfantryTypeClass::As_Reference(reinterpret_cast<InfantryClass*>(obj)->Class->Type);
+    } else {
+        return initial_val;
+    }
+
+    double max_val = 0;
+
+    switch (what) {
+    case GET_STRENGTH:
+        max_val = is_unit ? uptr->MaxStrength : iptr->MaxStrength;
+        break;
+    case GET_DAMAGE:
+        max_val = Weapons[is_unit ? uptr->Primary : iptr->Primary].Attack;
+        break;
+    case GET_SPEED:
+        max_val = is_unit ? uptr->MaxSpeed : iptr->MaxSpeed;
+        break;
+    case GET_RANGE:
+        max_val = Weapons[is_unit ? uptr->Primary : iptr->Primary].Range;
+        break;
+    case GET_ROF: /* fallthrough */
+    default:
+        return initial_val;
+    }
+
+    return trunc(initial_val + ((initial_val * max_val / RangessArray[what + 1]) * 0.5));
+}
+
+int Calc_Object_Stats(ObjectClass* obj)
+{
+    const TechnoTypeClass& type = (const TechnoTypeClass&)obj->Class_Of();
+    int base_strength = 100 * (type.MaxStrength + obj->WDTStrength - 170);
+    int strength = base_strength / Get_Stat(GET_STRENGTH, StrengthsArray[0], obj);
+    int base_speed = 100 * (type.MaxSpeed + obj->WDTSpeed - 35);
+    int speed = base_speed / Get_Stat(GET_SPEED, SpeedsArray[0], obj);
+    int base_damage = 100 * (Weapons[type.Primary].Attack + obj->WDTDamage - 60);
+    int damage = base_damage / Get_Stat(GET_DAMAGE, DamagesArray[0], obj);
+    int base_rof = 100 * (60 - Weapons[type.Primary].ROF - obj->WDTRateOfFire);
+    int rof = base_rof / Get_Stat(GET_ROF, RateOfFiresArray[0], obj);
+    int base_range = 100 * (Weapons[type.Primary].Range + obj->WDTRange - 1152);
+    int range = base_range / Get_Stat(GET_RANGE, RangessArray[0], obj) - 20;
+
+    return rof + damage + speed + strength + range;
 }

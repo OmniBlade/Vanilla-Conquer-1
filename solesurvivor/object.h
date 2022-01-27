@@ -122,10 +122,13 @@ public:
     short Strength;
 
     /*
-    ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
-    *save/load
+    **	Sole survivor specific stats.
     */
-    unsigned char SaveLoadPadding[16];
+    int WDTStrength;
+    int WDTSpeed;
+    int WDTDamage;
+    int WDTRateOfFire;
+    int WDTRange;
 
     /*-----------------------------------------------------------------------------------
     **	Constructor & destructors.

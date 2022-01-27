@@ -16,6 +16,7 @@
 #include "common/timer.h"
 #include "common/vector.h"
 #include "function.h"
+#include "ginfo.h"
 
 extern bool LogTeams;
 extern bool OfflineMode;
@@ -26,6 +27,7 @@ extern bool IsServerAdmin;
 extern bool UseAltArt;
 extern CELL FlagHomes[4];
 extern time_t IdleTime;
+extern int IonFactor;
 
 extern HousesType Side;
 extern HousesType SolePlayerHouse;
@@ -66,11 +68,16 @@ extern CountDownTimerClass FramerateUpdateTimer;
 extern CountDownTimerClass TransmisionStatsTimer;
 extern CountDownTimerClass RegisterCratesTimer;
 extern CountDownTimerClass SquadGameStartTimer;
-extern TimerClass GameTimer;
 extern char SoleHost[40];
 
 extern int Density;
 extern int CrateDensity;
+
+extern int StrengthsArray[3];
+extern int DamagesArray[3];
+extern int SpeedsArray[3];
+extern int RateOfFiresArray[3];
+extern int RangessArray[6];
 
 class ProtocolClass;
 class ListenerClass;
