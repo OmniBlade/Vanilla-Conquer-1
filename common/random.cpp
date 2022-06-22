@@ -127,52 +127,47 @@ int RandomClass::operator()(int minval, int maxval)
     printf("Frame %d: Random Count1:%d Count2:%d (%x)\n", Frame, Count1, Count2, Seed);
 #endif
 
-    /*
-    **	Test for shortcut case where the range is null and thus
-    **	the number to return is actually implicit from the
-    **	parameters.
-    */
-    if (minval == maxval)
-        return (minval);
+    return (Pick_Random_Number(*this, minval, maxval));
+}
 
-    /*
-    **	Ensure that the min and max range values are in proper order.
-    */
-    if (minval > maxval) {
-        int temp = minval;
-        minval = maxval;
-        maxval = temp;
+int Random3Class::Mix1[20] = {
+    int(0x0baa96887), int(0x01e17d32c), int(0x003bcdc3c), int(0x00f33d1b2), int(0x076a6491d),
+    int(0x0c570d85d), int(0x0e382b1e3), int(0x078db4362), int(0x07439a9d4), int(0x09cea8ac5),
+    int(0x089537c5c), int(0x02588f55d), int(0x0415b5e1d), int(0x0216e3d95), int(0x085c662e7),
+    int(0x05e8ab368), int(0x03ea5cc8c), int(0x0d26a0f74), int(0x0f3a9222b), int(0x048aad7e4),
+};
+
+int Random3Class::Mix2[20] = {
+    int(0x04b0f3b58), int(0x0e874f0c3), int(0x06955c5a6), int(0x055a7ca46), int(0x04d9a9d86),
+    int(0x0fe28a195), int(0x0b1ca7865), int(0x06b235751), int(0x09a997a61), int(0x0aa6e95c8),
+    int(0x0aaa98ee1), int(0x05af9154c), int(0x0fc8e2263), int(0x0390f5e8c), int(0x058ffd802),
+    int(0x0ac0a5eba), int(0x0ac4874f6), int(0x0a9df0913), int(0x086be4c74), int(0x0ed2c123b),
+};
+
+Random3Class::Random3Class(unsigned seed1, unsigned seed2)
+    : Seed(seed1)
+    , Index(seed2)
+{
+}
+
+int Random3Class::operator()(void)
+{
+    int loword = Seed;
+    int hiword = Index++;
+    for (int i = 0; i < 4; i++) {
+        int hihold = hiword;
+        int temp = hihold ^ Mix1[i];
+        int itmpl = temp & 0xffff;
+        int itmph = temp >> 16;
+        temp = itmpl * itmpl + ~(itmph * itmph);
+        temp = (temp >> 16) | (temp << 16);
+        hiword = loword ^ ((temp ^ Mix2[i]) + itmpl * itmph);
+        loword = hihold;
     }
+    return (hiword);
+}
 
-    /*
-    **	Find the highest bit that fits within the magnitude of the
-    **	range of random numbers desired. Notice that the scan is
-    **	limited to the range of significant bits returned by the
-    **	random number algorithm.
-    */
-    int magnitude = maxval - minval;
-    int highbit = SIGNIFICANT_BITS - 1;
-    while ((magnitude & (1 << highbit)) == 0 && highbit > 0) {
-        highbit--;
-    }
-
-    /*
-    **	Create a full bit mask pattern that has all bits set that just
-    **	barely covers the magnitude of the number range desired.
-    */
-    int mask = ~((~0L) << (highbit + 1));
-
-    /*
-    **	Keep picking random numbers until it fits within the magnitude desired.
-    */
-    int pick = magnitude + 1;
-    while (pick > magnitude) {
-        pick = operator()() & mask;
-    }
-
-    /*
-    **	Finally, bias the random number pick to the start of the range
-    **	requested.
-    */
-    return (pick + minval);
+int Random3Class::operator()(int minval, int maxval)
+{
+    return (Pick_Random_Number(*this, minval, maxval));
 }
