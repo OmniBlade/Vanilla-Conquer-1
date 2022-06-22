@@ -96,6 +96,9 @@
 #include "function.h"
 #include "ccini.h"
 
+bool UnitClass::IsNewAllowed;
+bool UnitClass::IsDeleteAllowed;
+
 /***********************************************************************************************
  * UnitClass::Validate -- validates unit pointer.															  *
  *                                                                                             *

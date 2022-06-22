@@ -132,6 +132,9 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x02800280L,
 };
 
+bool BuildingClass::IsNewAllowed;
+bool BuildingClass::IsDeleteAllowed;
+
 /***********************************************************************************************
  * BuildingClass::Validate -- validates building pointer													  *
  *                                                                                             *

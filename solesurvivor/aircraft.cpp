@@ -90,6 +90,9 @@
 #include "function.h"
 #include "ccini.h"
 
+bool AircraftClass::IsNewAllowed;
+bool AircraftClass::IsDeleteAllowed;
+
 /***********************************************************************************************
  * AircraftClass::Validate -- validates aircraft pointer													  *
  *                                                                                             *

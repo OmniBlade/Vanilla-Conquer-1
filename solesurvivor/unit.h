@@ -207,6 +207,26 @@ public:
     */
     int Validate(void) const;
 
+    virtual bool Delete_Allowed(void) const
+    {
+        return IsDeleteAllowed;
+    }
+
+    static void Set_Delete_Allowed(bool onoff)
+    {
+        IsDeleteAllowed = onoff;
+    }
+
+    static bool New_Allowed(void)
+    {
+        return IsNewAllowed;
+    }
+
+    static void Set_New_Allowed(bool onoff)
+    {
+        IsNewAllowed = onoff;
+    }
+
 private:
     /*
     ** Timer to prevent Harvesters from collecting too often
@@ -222,6 +242,9 @@ private:
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
+
+    static bool IsDeleteAllowed;
+    static bool IsNewAllowed;
 };
 
 #endif

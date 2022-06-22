@@ -151,6 +151,22 @@ public:
     virtual void AI(void){};
 
     /*
+    ** Are we allowed to delete this object right now?
+    */
+    virtual bool Delete_Allowed(void) const
+    {
+        return true;
+    }
+
+    /*
+    ** Destroys the object when delete isn't allowed to be called.
+    */
+    virtual void Destruct(void)
+    {
+        IsActive = false;
+    }
+
+    /*
     ** Workaround for difference between watcom and VC destructor behavior
     */
     void Delete_This(void);

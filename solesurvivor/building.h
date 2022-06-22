@@ -313,6 +313,26 @@ public:
     */
     int Validate(void) const;
 
+    virtual bool Delete_Allowed(void) const
+    {
+        return IsDeleteAllowed;
+    }
+
+    static void Set_Delete_Allowed(bool onoff)
+    {
+        IsDeleteAllowed = onoff;
+    }
+
+    static bool New_Allowed(void)
+    {
+        return IsNewAllowed;
+    }
+
+    static void Set_New_Allowed(bool onoff)
+    {
+        IsNewAllowed = onoff;
+    }
+
 private:
     void Drop_Debris(TARGET source = TARGET_NONE);
     virtual BulletClass* Fire_At(TARGET target, int which);
@@ -323,6 +343,9 @@ private:
     */
 
     static COORDINATE const CenterOffset[BSIZE_COUNT];
+
+    static bool IsDeleteAllowed;
+    static bool IsNewAllowed;
 };
 
 #endif
