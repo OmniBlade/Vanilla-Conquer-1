@@ -2782,6 +2782,330 @@ typedef struct
         } ResponseTime;
     };
 } GlobalPacketType;
+
+typedef struct BITFIELD_STRUCT
+{
+    unsigned TimeLimit;
+    int ScoreLimit;
+    int LifeLimit;
+    unsigned CaptureTheFlag;
+    unsigned Football;
+    unsigned FootballNumFlags;
+    unsigned NumCTFStructures;
+    unsigned UnkInt;
+    unsigned AIUnitsPer10min;
+    unsigned MaxAIUnits;
+    unsigned AIBuildingsPer10min;
+    unsigned MaxAIBuildings;
+    unsigned IsMaxNumAIsScaled;
+    unsigned ResetTeamsInCTF;
+    unsigned AllowFlagSitting;
+    unsigned HealthBars;
+    unsigned FreeRadarForAll;
+    unsigned LosePowerups;
+    unsigned MinPlayers;
+    unsigned IonCannon;
+    unsigned TeamCrates;
+    unsigned SuperSeconds;
+    unsigned ArmageddonTimer;
+    unsigned UnkBool : 1;
+    unsigned NoReshroud : 1;
+    unsigned IsLadder : 1;
+    unsigned IsCrates : 1;
+    unsigned Steel;
+    unsigned Green;
+    unsigned Orange;
+    unsigned IsSquadChannel;
+    unsigned PasswordCountdownSeconds;
+    unsigned NumTeams;
+    unsigned PlayersPerTeam;
+    unsigned AllowNoTeam;
+    unsigned AllowPickTeam;
+    char ChannelName[80];
+    unsigned CrateDensityOverride;
+    unsigned IsAutoTeaming;
+    unsigned SuperInvuln;
+} SoleGameParams;
+
+/****************************************************************************
+**	New data types for the Sole Survivor protocol.
+*/
+enum SolePacketType : int8_t
+{
+    PACKET_0,
+    PACKET_CONNECTION,
+    PACKET_SIDEBAR,
+    PACKET_EVENT,
+    PACKET_GAME_OPTIONS,
+    PACKET_PLAYER_ACTIONS,
+    PACKET_FRAMERATE,
+    PACKET_OBJECT,
+    PACKET_WAIT1,
+    PACKET_WAIT2,
+    PACKET_HOUSE_TEAM,
+    PACKET_NEW_DELETE_OBJ,
+    PACKET_HEALTH,
+    PACKET_DAMAGE,
+    PACKET_CRUSH,
+    PACKET_CAPTURE,
+    PACKET_CARGO,
+    PACKET_FLAG,
+    PACKET_CTF,
+    PACKET_MOVEMENT,
+    PACKET_TARGET,
+    PACKET_FIRE_AT,
+    PACKET_DO_TURN,
+    PACKET_CRATE,
+    PACKET_PCP,
+    PACKET_TECHNO,
+    PACKET_UI_EVENT,
+    PACKET_GAME_RESULTS,
+    PACKET_SCENARIO_CHANGE,
+    PACKET_MESSAGE,
+    PACKET_OBFUSCATED_MESSAGE,
+    PACKET_SERVER_PASSWORD,
+    PACKET_COUNT,
+};
+
+typedef struct
+{
+    unsigned char ToDelete;
+    TARGET Target;
+    COORDINATE Coord;
+    unsigned char Owner;
+    unsigned char Mission;
+    unsigned char Type;
+    unsigned char Strength;
+    unsigned char Speed;
+    unsigned char Damage;
+    unsigned char RateOfFire;
+    unsigned char Range;
+} NewDeleteData;
+
+typedef struct
+{
+    TARGET Target;
+    short Strength;
+} HealthData;
+
+typedef struct
+{
+    TARGET Target;
+    TARGET Source;
+    WarheadType Warhead;
+} DamageData;
+
+typedef struct
+{
+    TARGET Target;
+    TARGET Source;
+} CrushData;
+
+typedef struct
+{
+    TARGET Target;
+    HousesType House;
+} CaptureData;
+
+typedef struct
+{
+    TARGET Cargo;
+    TARGET Transport;
+    unsigned char Embarking;
+} CargoData;
+
+typedef struct
+{
+    HousesType House;
+    TARGET Location;
+    unsigned char Attaching;
+} FlagData;
+
+typedef struct
+{
+    unsigned char Type;
+    CELL Cell;
+    unsigned char Unk;
+} CTFData;
+
+typedef struct
+{
+    TARGET Target;
+    CELL Destination;
+    FacingType Facing;
+} MovementData;
+
+typedef struct
+{
+    TARGET Object;
+    TARGET TarCom;
+} TargetData;
+
+typedef struct
+{
+    TARGET Whom;
+    TARGET Target;
+    unsigned char Which;
+} FireAtData;
+
+typedef struct
+{
+    TARGET Whom;
+    DirType Dir;
+} DoTurnData;
+
+typedef struct
+{
+    CELL Cell;
+    OverlayType Overlay;
+    unsigned char Frame;
+} CrateData;
+
+typedef struct
+{
+    TARGET Target;
+    HousesType Owner;
+    CELL Cell;
+    signed char Number;
+    unsigned IntNumber;
+} PerCellData;
+
+typedef struct
+{
+    TARGET Whom;
+    uint8_t Type;
+    uint8_t Value;
+} TechnoData;
+
+typedef struct
+{
+    unsigned short PacketLength;
+    SolePacketType PacketType;
+
+    union
+    {
+        struct
+        {
+            char PlayerName[12];
+            unsigned char Side;
+            unsigned char ChosenRTTI;
+            int ChosenType;
+            int field_15;
+            int field_19;
+            int VersionNumber;
+        } Connection;
+
+        struct
+        {
+            unsigned char PlayerID;
+            unsigned char PlayerHouse;
+            int PlayerColorIdx;
+            unsigned char Scenario;
+            int Credits;
+            unsigned Bitfield1;
+            unsigned char BuildLevel;
+            unsigned char MPlayerUnitCount;
+            unsigned Special;
+            SoleGameParams GameParams;
+            int TimerVal;
+            unsigned Bitfield2;
+            int TeamScores[4];
+            unsigned char Damages[25];
+            unsigned char RateOfFires[25];
+            int Ranges[25];
+        } GameOptions;
+
+        struct
+        {
+            unsigned char Count;
+            NewDeleteData Data[11];
+        } NewDelete;
+
+        struct
+        {
+            unsigned char Count;
+            HealthData Data[33];
+        } Health;
+
+        struct
+        {
+            unsigned char Count;
+            DamageData Data[22];
+        } Damage;
+
+        struct
+        {
+            unsigned char Count;
+            CrushData Data[25];
+        } Crush;
+
+        struct
+        {
+            unsigned char Count;
+            CaptureData Data[40];
+        } Capture;
+
+        struct
+        {
+            unsigned char Count;
+            CargoData Data[22];
+        } Cargo;
+
+        struct
+        {
+            unsigned char Count;
+            FlagData Data[33];
+        } Flag;
+
+        struct
+        {
+            unsigned char Count;
+            CTFData Data[50];
+        } CTF;
+
+        struct
+        {
+            unsigned char Count;
+            MovementData Data[28];
+        } Movement;
+
+        struct
+        {
+            unsigned char Count;
+            TargetData Data[25];
+        } Target;
+
+        struct
+        {
+            unsigned char Count;
+            FireAtData Data[22];
+        } FireAt;
+
+        struct
+        {
+            unsigned char Count;
+            DoTurnData Data[40];
+        } DoTurn;
+
+        struct
+        {
+            unsigned char Count;
+            CrateData Data[50];
+        } Crate;
+
+        struct
+        {
+            unsigned char Count;
+            PerCellData Data[16];
+        } PerCell;
+
+        struct
+        {
+            unsigned char Count;
+            TechnoData Data[33];
+        } Techno;
+    };
+} SolePacket;
 #pragma pack(pop)
 /****************************************************************************
 **	This structure is for keeping score in multiplayer games.

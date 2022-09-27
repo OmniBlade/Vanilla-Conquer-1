@@ -941,3 +941,57 @@ char* TitlePicture = NULL;
 
 // OmniBlade - Moves from tcpip.cpp as part of networking cleanup.
 bool Server; // Is this player acting as client or server
+
+/*
+ * Sole Survivor Additions.
+ */
+unsigned SolePacketSizes[PACKET_COUNT] = {
+    size_of(SolePacket, PacketLength) + size_of(SolePacket, PacketType),
+    size_of(SolePacket, PacketLength) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    4,
+    207,
+    size_of(SolePacket, GameOptions) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    204,
+    7,
+    7,
+    207,
+    4,
+    174,
+    size_of(SolePacket, NewDelete) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Health) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Damage) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Crush) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Capture) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Cargo) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Flag) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, CTF) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Movement) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Target) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, FireAt) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, DoTurn) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Crate) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, PerCell) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    size_of(SolePacket, Techno) + size_of(SolePacket, PacketType) + size_of(SolePacket, Connection),
+    4,
+    4,
+    11,
+    89,
+    11,
+    7,
+};
+
+DynamicVectorClass<NewDeleteData*> NewDeletePackets;
+DynamicVectorClass<HealthData*> HealthPackets;
+DynamicVectorClass<DamageData*> DamagePackets;
+DynamicVectorClass<CrushData*> CrushPackets;
+DynamicVectorClass<CaptureData*> CapturePackets;
+DynamicVectorClass<CargoData*> CargoPackets;
+DynamicVectorClass<FlagData*> FlagPackets;
+DynamicVectorClass<CTFData*> CTFPackets;
+DynamicVectorClass<MovementData*> MovementPackets;
+DynamicVectorClass<TargetData*> TargetPackets;
+DynamicVectorClass<FireAtData*> FireAtPackets;
+DynamicVectorClass<DoTurnData*> DoTurnPackets;
+DynamicVectorClass<CrateData*> CratePackets;
+DynamicVectorClass<PerCellData*> PerCellPackets;
+DynamicVectorClass<TechnoData*> TechnoPackets;

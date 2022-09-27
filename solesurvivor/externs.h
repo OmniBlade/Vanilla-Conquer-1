@@ -427,4 +427,24 @@ extern bool ShareAllyVisibility;
 // OmniBlade - Moves from tcpip.cpp as part of networking cleanup.
 extern bool Server; // Is this player acting as client or server
 
+/*
+ * Sole Survivor Additions
+ */
+extern unsigned SolePacketSizes[];
+extern DynamicVectorClass<NewDeleteData*> NewDeletePackets;
+extern DynamicVectorClass<HealthData*> HealthPackets;
+extern DynamicVectorClass<DamageData*> DamagePackets;
+extern DynamicVectorClass<CrushData*> CrushPackets;
+extern DynamicVectorClass<CaptureData*> CapturePackets;
+extern DynamicVectorClass<CargoData*> CargoPackets;
+extern DynamicVectorClass<FlagData*> FlagPackets;
+extern DynamicVectorClass<CTFData*> CTFPackets;
+extern DynamicVectorClass<MovementData*> MovementPackets;
+extern DynamicVectorClass<TargetData*> TargetPackets;
+extern DynamicVectorClass<FireAtData*> FireAtPackets;
+extern DynamicVectorClass<DoTurnData*> DoTurnPackets;
+extern DynamicVectorClass<CrateData*> CratePackets;
+extern DynamicVectorClass<PerCellData*> PerCellPackets;
+extern DynamicVectorClass<TechnoData*> TechnoPackets;
+
 #endif
