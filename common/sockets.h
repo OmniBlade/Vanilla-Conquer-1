@@ -30,6 +30,10 @@ static inline int socket_cleanup(void)
     return WSACleanup();
 }
 
+typedef u_long ioctlopt_t;
+
+#define WSAEAGAIN EAGAIN
+
 #else /* Assume posix style sockets on non-windows */
 
 #include <arpa/inet.h>
@@ -40,6 +44,7 @@ static inline int socket_cleanup(void)
 #include <sys/types.h>
 #include <unistd.h> // for close()
 typedef int SOCKET;
+typedef int ioctlopt_t;
 #define INVALID_SOCKET       (-1)
 #define SOCKET_ERROR         (-1)
 #define closesocket(x)       close(x)
@@ -58,6 +63,7 @@ typedef int SOCKET;
 #define WSAEWOULDBLOCK   EWOULDBLOCK
 #define WSAEINVAL        EINVAL
 #define WSAETIMEDOUT     ETIMEDOUT
+#define WSAEAGAIN        EAGAIN
 
 static inline int socket_startup(void)
 {
