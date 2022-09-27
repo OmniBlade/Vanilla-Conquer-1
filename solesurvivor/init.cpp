@@ -1034,7 +1034,7 @@ bool Select_Game(bool fade)
             case SEL_LOAD_MISSION:
                 if (LoadOptionsClass(LoadOptionsClass::LOAD).Process()) {
                     // Theme.Fade_Out();
-                    Theme.Queue_Song(THEME_AOI);
+                    Theme.Queue_Song(THEME_WIN1);
                     process = false;
                     gameloaded = true;
                 } else {
