@@ -49,6 +49,7 @@ set(SOLE_SRC
     hdata.cpp
     heap.cpp
     help.cpp
+    helpscrn.cpp
     house.cpp
     iconset.cpp
     idata.cpp
@@ -104,6 +105,7 @@ set(SOLE_SRC
     smudge.cpp
     sounddlg.cpp
     special.cpp
+    sstats.cpp
     startup.cpp
     stats.cpp
     super.cpp

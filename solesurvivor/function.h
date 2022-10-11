@@ -246,6 +246,8 @@ inline CELL Coord_YCell(COORDINATE coord)
 #include "listener.h"
 #include "reliable.h"
 #include "voicethemes.h"
+#include "helpscrn.h"
+#include "sstats.h"
 /****************************************************************************
 **	This is a "node", used for the lists of available games & players.  The
 **	'Game' structure is used for games; the 'Player' structure for players.
