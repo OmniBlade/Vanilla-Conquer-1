@@ -431,6 +431,68 @@ extern bool Server; // Is this player acting as client or server
  * Sole Survivor Additions
  */
 extern unsigned SolePacketSizes[];
+
+extern bool LogTeams;
+extern bool OfflineMode;
+extern bool WDTRadarAdded;
+extern bool ServerConnectionLost;
+extern bool CratesDisabled;
+extern bool IsServerAdmin;
+extern bool UseAltArt;
+extern CELL FlagHomes[4];
+extern time_t IdleTime;
+extern int IonFactor;
+
+extern HousesType Side;
+extern HousesType SolePlayerHouse;
+extern RTTIType ChosenRTTI;
+extern int ChosenType;
+extern int Steel;
+extern int Green;
+extern int Orange;
+extern int TeamScores[4];
+extern char TeamMessages[10][80];
+extern int GameOption_577AEC;
+extern int GameOption_577AF0;
+extern int GameOption_577B00;
+extern int CurrentVoiceTheme;
+extern int GameEvent;
+extern int ClientEvent1;
+extern int ColorListTimer_5586C0;
+extern unsigned GameOptionsBitfield;
+extern bool GameOption_577B08;
+extern bool GameOption_577B0C;
+extern bool SoleEnhancedDefense;
+extern bool DebugLogTeams;
+extern bool CountingDown;
+extern bool ClientEvent2;
+
+extern int ClientFPS;
+extern int LastServerAIFrame;
+extern int CommStatsSpeedScale;
+extern int RecievedBytesSec;
+extern int SentBytesSec;
+extern int SentTCP;
+extern int SentUDP;
+extern int RecievedTCP;
+extern int RecievedUDP;
+extern int StatTiming1;
+extern int StatTiming2;
+extern CountDownTimerClass FramerateUpdateTimer;
+extern CountDownTimerClass TransmisionStatsTimer;
+extern CountDownTimerClass RegisterCratesTimer;
+extern CountDownTimerClass SquadGameStartTimer;
+extern char SoleHost[40];
+
+extern int Density;
+extern int CrateDensity;
+
+extern int StrengthsArray[3];
+extern int DamagesArray[3];
+extern int SpeedsArray[3];
+extern int RateOfFiresArray[3];
+extern int RangessArray[6];
+
 extern DynamicVectorClass<NewDeleteData*> NewDeletePackets;
 extern DynamicVectorClass<HealthData*> HealthPackets;
 extern DynamicVectorClass<DamageData*> DamagePackets;
@@ -447,4 +509,13 @@ extern DynamicVectorClass<CrateData*> CratePackets;
 extern DynamicVectorClass<PerCellData*> PerCellPackets;
 extern DynamicVectorClass<TechnoData*> TechnoPackets;
 
+extern DynamicVectorClass<VoiceThemeClass*> VoiceThemes;
+
+extern DynamicVectorClass<ReliableProtocolClass*> ReliableProtocols;
+extern DynamicVectorClass<ReliableCommClass*> ReliableComms;
+extern DynamicVectorClass<ReliableProtocolClass*> AdminProtocols;
+extern DynamicVectorClass<ReliableCommClass*> AdminComms;
+
+extern ProtocolClass* ListenerProtocol;
+extern ListenerClass* Listener;
 #endif

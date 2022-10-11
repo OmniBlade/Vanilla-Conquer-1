@@ -980,6 +980,68 @@ unsigned SolePacketSizes[PACKET_COUNT] = {
     7,
 };
 
+bool LogTeams;
+bool OfflineMode;
+bool WDTRadarAdded;
+bool ServerConnectionLost;
+bool CratesDisabled = true;
+bool IsServerAdmin;
+bool UseAltArt;
+CELL FlagHomes[4];
+time_t IdleTime;
+int IonFactor = 200;
+
+HousesType Side;
+HousesType SolePlayerHouse;
+RTTIType ChosenRTTI;
+int ChosenType;
+int Steel;
+int Green;
+int Orange;
+int TeamScores[4];
+char TeamMessages[10][80];
+int GameOption_577AEC;
+int GameOption_577AF0;
+int GameOption_577B00;
+int CurrentVoiceTheme = 1;
+int GameEvent;
+int ClientEvent1;
+int ColorListTimer_5586C0;
+unsigned GameOptionsBitfield;
+bool GameOption_577B08;
+bool GameOption_577B0C;
+bool SoleEnhancedDefense;
+bool DebugLogTeams;
+bool CountingDown;
+bool ClientEvent2;
+
+int ClientFPS;
+int LastServerAIFrame;
+int CommStatsSpeedScale;
+int RecievedBytesSec;
+int SentBytesSec;
+int SentTCP;
+int SentUDP;
+int RecievedTCP;
+int RecievedUDP;
+int StatTiming1;
+int StatTiming2;
+CountDownTimerClass FramerateUpdateTimer;
+CountDownTimerClass TransmisionStatsTimer;
+CountDownTimerClass RegisterCratesTimer;
+CountDownTimerClass SquadGameStartTimer;
+char SoleHost[40];
+
+int Density = 200;
+int CrateDensity;
+
+// These arrays don't look correct, unclear what they should look like originally.
+int StrengthsArray[3] = {800, 30, 120};
+int DamagesArray[3] = {240, 20, 80};
+int SpeedsArray[3] = {160, 25, 100};
+int RateOfFiresArray[3] = {200, 384, 1536};
+int RangessArray[6] = {3072, 850, 155, 53, 25, 1920};
+
 DynamicVectorClass<NewDeleteData*> NewDeletePackets;
 DynamicVectorClass<HealthData*> HealthPackets;
 DynamicVectorClass<DamageData*> DamagePackets;
@@ -995,3 +1057,8 @@ DynamicVectorClass<DoTurnData*> DoTurnPackets;
 DynamicVectorClass<CrateData*> CratePackets;
 DynamicVectorClass<PerCellData*> PerCellPackets;
 DynamicVectorClass<TechnoData*> TechnoPackets;
+
+DynamicVectorClass<VoiceThemeClass*> VoiceThemes;
+
+ProtocolClass* ListenerProtocol;
+ListenerClass* Listener;
