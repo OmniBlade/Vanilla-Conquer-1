@@ -102,7 +102,6 @@ public:
         SIGNIFICANT_BITS = 32
     };
 
-protected:
     static int Mix1[20];
     static int Mix2[20];
     int Seed;
