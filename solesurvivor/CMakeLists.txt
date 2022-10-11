@@ -89,6 +89,7 @@ set(SOLE_SRC
     queue.cpp
     radar.cpp
     radio.cpp
+    reliable.cpp
     reinf.cpp
     rules.cpp
     saveload.cpp

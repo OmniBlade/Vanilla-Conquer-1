@@ -244,6 +244,7 @@ inline CELL Coord_YCell(COORDINATE coord)
 #include "common/miscasm.h"
 #include "common/face.h"
 #include "listener.h"
+#include "reliable.h"
 /****************************************************************************
 **	This is a "node", used for the lists of available games & players.  The
 **	'Game' structure is used for games; the 'Player' structure for players.
