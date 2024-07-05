@@ -70,12 +70,15 @@ jobs:
       run: |
         cmake --build build
         cp ./build/vanillatd ./build/vanillatd.dbg
+        cp ./build/vanillass ./build/vanillass.dbg
         cp ./build/vanillara ./build/vanillara.dbg
         cp ./build/vanillamix ./build/vanillamix.dbg
         strip --strip-all ./build/vanillatd
+        strip --strip-all ./build/vanillass
         strip --strip-all ./build/vanillara
         strip --strip-all ./build/vanillamix
         objcopy --add-gnu-debuglink=./build/vanillatd.dbg ./build/vanillatd
+        objcopy --add-gnu-debuglink=./build/vanillass.dbg ./build/vanillass
         objcopy --add-gnu-debuglink=./build/vanillara.dbg ./build/vanillara
         objcopy --add-gnu-debuglink=./build/vanillamix.dbg ./build/vanillamix
 
@@ -88,8 +91,8 @@ jobs:
       if: ${{ matrix.networking == 'net' }}
       run: |
         mkdir artifact
-        7z a artifact/vanilla-conquer-linux-${{ matrix.platform }}-${{ matrix.os }}-x86_64-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/vanillatd ./build/vanillara ./build/vanillamix
-        7z a artifact/vanilla-conquer-linux-${{ matrix.platform }}-${{ matrix.os }}-x86_64-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/vanillatd.dbg ./build/vanillara.dbg ./build/vanillamix.dbg
+        7z a artifact/vanilla-conquer-linux-${{ matrix.platform }}-${{ matrix.os }}-x86_64-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/vanillatd ./build/vanillass ./build/vanillara ./build/vanillamix
+        7z a artifact/vanilla-conquer-linux-${{ matrix.platform }}-${{ matrix.os }}-x86_64-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/vanillatd.dbg ./build/vanillass.dbg ./build/vanillara.dbg ./build/vanillamix.dbg
 
     - name: Upload artifact
       if: ${{ matrix.networking == 'net' }}

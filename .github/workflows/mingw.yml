@@ -101,12 +101,15 @@ jobs:
       run: |
         cmake --build build
         cp ./build/vanillatd.exe ./build/vanillatd.dbg
+        cp ./build/vanillass.exe ./build/vanillass.dbg
         cp ./build/vanillara.exe ./build/vanillara.dbg
         cp ./build/vanillamix.exe ./build/vanillamix.dbg
         ${{ steps.vars.outputs.arc_path }}-w64-mingw32-strip --strip-all ./build/vanillatd.exe
+        ${{ steps.vars.outputs.arc_path }}-w64-mingw32-strip --strip-all ./build/vanillass.exe
         ${{ steps.vars.outputs.arc_path }}-w64-mingw32-strip --strip-all ./build/vanillara.exe
         ${{ steps.vars.outputs.arc_path }}-w64-mingw32-strip --strip-all ./build/vanillamix.exe
         ${{ steps.vars.outputs.arc_path }}-w64-mingw32-objcopy --add-gnu-debuglink=./build/vanillatd.dbg ./build/vanillatd.exe
+        ${{ steps.vars.outputs.arc_path }}-w64-mingw32-objcopy --add-gnu-debuglink=./build/vanillass.dbg ./build/vanillass.exe
         ${{ steps.vars.outputs.arc_path }}-w64-mingw32-objcopy --add-gnu-debuglink=./build/vanillara.dbg ./build/vanillara.exe
         ${{ steps.vars.outputs.arc_path }}-w64-mingw32-objcopy --add-gnu-debuglink=./build/vanillamix.dbg ./build/vanillamix.exe
 
@@ -114,8 +117,8 @@ jobs:
       if: ${{ matrix.networking == 'net' }}
       run: |
         mkdir artifact
-        7z a artifact/vanilla-conquer-win-gcc-${{ steps.vars.outputs.arc_path }}-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/vanillatd.exe ./build/vanillara.exe ./build/vanillamix.exe /tmp/SDL2-2.0.12/${{ steps.vars.outputs.arc_path }}-w64-mingw32/bin/SDL2.dll /tmp/openal-soft-1.21.0-bin/bin/${{ steps.vars.outputs.oal_path }}/OpenAL32.dll
-        7z a artifact/vanilla-conquer-win-gcc-${{ steps.vars.outputs.arc_path }}-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/vanillatd.dbg ./build/vanillara.dbg ./build/vanillamix.dbg
+        7z a artifact/vanilla-conquer-win-gcc-${{ steps.vars.outputs.arc_path }}-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/vanillatd.exe ./build/vanillass.exe ./build/vanillara.exe ./build/vanillamix.exe /tmp/SDL2-2.0.12/${{ steps.vars.outputs.arc_path }}-w64-mingw32/bin/SDL2.dll /tmp/openal-soft-1.21.0-bin/bin/${{ steps.vars.outputs.oal_path }}/OpenAL32.dll
+        7z a artifact/vanilla-conquer-win-gcc-${{ steps.vars.outputs.arc_path }}-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/vanillatd.dbg ./build/vanillass.dbg ./build/vanillara.dbg ./build/vanillamix.dbg
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4

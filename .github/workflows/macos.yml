@@ -71,20 +71,23 @@ jobs:
         export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
         cmake --build build
         dsymutil build/vanillatd.app/Contents/MacOS/vanillatd -o build/vanillatd.dSYM
+        dsymutil build/vanillatd.app/Contents/MacOS/vanillass -o build/vanillass.dSYM
         dsymutil build/vanillara.app/Contents/MacOS/vanillara -o build/vanillara.dSYM
         dsymutil build/vanillamix -o build/vanillamix.dSYM
         strip -Sx build/vanillatd.app/Contents/MacOS/vanillatd
+        strip -Sx build/vanillass.app/Contents/MacOS/vanillass
         strip -Sx build/vanillara.app/Contents/MacOS/vanillara
         strip -Sx build/vanillamix
         dylibbundler --create-dir --bundle-deps --overwrite-files --dest-dir ./build/vanillatd.app/Contents/libs --fix-file build/vanillatd.app/Contents/MacOS/vanillatd
+        dylibbundler --create-dir --bundle-deps --overwrite-files --dest-dir ./build/vanillatd.app/Contents/libs --fix-file build/vanillass.app/Contents/MacOS/vanillass
         dylibbundler --create-dir --bundle-deps --overwrite-files --dest-dir ./build/vanillara.app/Contents/libs --fix-file build/vanillara.app/Contents/MacOS/vanillara
 
     - name: Create archives
       if: ${{ matrix.networking == 'net' }}
       run: |
         mkdir artifact
-        7z a artifact/vanilla-conquer-macos-clang-universal2-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/vanillatd.app ./build/vanillara.app ./build/vanillamix
-        7z a artifact/vanilla-conquer-macos-clang-universal2-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/vanillatd.dSYM ./build/vanillara.dSYM ./build/vanillamix.dSYM
+        7z a artifact/vanilla-conquer-macos-clang-universal2-${{ steps.gitinfo.outputs.sha_short }}.zip ./build/vanillatd.app ./build/vanillass.app ./build/vanillara.app ./build/vanillamix
+        7z a artifact/vanilla-conquer-macos-clang-universal2-${{ steps.gitinfo.outputs.sha_short }}-debug.zip ./build/vanillatd.dSYM ./build/vanillass.dSYM ./build/vanillara.dSYM ./build/vanillamix.dSYM
 
     - name: Upload artifact
       if: ${{ matrix.networking == 'net' }}
