@@ -149,6 +149,32 @@ public:
     */
     ObjectClass* Object;
 
+    unsigned IsRefCounted : 1;
+
+    /*
+    **	Delete this animation at the next opportunity. This is flagged when the
+    **	animation is to be prematurely ended as a result of some outside event.
+    */
+    unsigned IsToDelete : 1;
+
+    /*
+    **	If the animation has just been created, then don't do any animation
+    **	processing until it has been through the render loop at least once.
+    */
+    unsigned IsBrandNew : 1;
+
+    /*
+    **	Use alternate color when drawing
+    */
+    unsigned IsAlternate : 1;
+
+    /*
+    **	If this animation is invisible, then this flag will be true. An invisible
+    **	animation is one that is created for the sole purpose of keeping all
+    **	machines syncronised. It will not be displayed.
+    */
+    unsigned IsInvisible : 1;
+
     /*
     **	If specified, this animation uses the sort target for Y sorting
     */
@@ -178,30 +204,6 @@ private:
     ** are going to render.
     */
     COORDINATE Adjust_Coord(COORDINATE coord);
-
-    /*
-    **	Delete this animation at the next opportunity. This is flagged when the
-    **	animation is to be prematurely ended as a result of some outside event.
-    */
-    unsigned IsToDelete : 1;
-
-    /*
-    **	If the animation has just been created, then don't do any animation
-    **	processing until it has been through the render loop at least once.
-    */
-    unsigned IsBrandNew : 1;
-
-    /*
-     **	Use alternate color when drawing
-     */
-    unsigned IsAlternate : 1;
-
-    /*
-    **	If this animation is invisible, then this flag will be true. An invisible
-    **	animation is one that is created for the sole purpose of keeping all
-    **	machines syncronised. It will not be displayed.
-    */
-    unsigned IsInvisible : 1;
 
     /*
     ** 2019/09/19 JAS

@@ -1627,6 +1627,11 @@ public:
     unsigned IsTranslucent : 1;
 
     /*
+    ** Sole Survivor addition. TODO name appropriately.
+    */
+    unsigned Unk: 1;
+
+    /*
     **	If this animation uses the white translucent table, then this flag
     **	will be true.
     */
@@ -1771,6 +1776,7 @@ public:
                   bool issticky,
                   bool ground,
                   bool istrans,
+                  bool unk,
                   bool isflame,
                   unsigned int damage,
                   int delaytime,

@@ -92,12 +92,6 @@
 */
 //#define VIRGIN_CHEAT_KEYS
 
-/**********************************************************************
-**	Optional parameter control for special options.
-*/
-//#define	PARM_6PLAYER		0x5D9F6F24		// "6"
-#define PARM_6PLAYER 0x9CAFC93B // Alternate 6 player keyphrase.
-
 /*
 **	Enable the set of limited cheat key options.
 */
@@ -153,6 +147,7 @@
 //#define	PARM_SPECIAL	0xE0F651B9	//	#7
 //#define	PARM_SPECIAL	0x10B9683D	//	#8
 //#define	PARM_SPECIAL	0xEE1CD37D	//	#9
+#define PARM_SECRET_CREDITS 0x7E6AB9E8
 
 /**********************************************************************
 **	Defines for verifying free disk space
@@ -226,7 +221,7 @@ typedef enum DiffType : unsigned char
 **	as the largest speech sample, plus a few bytes for overhead
 **	(16 bytes is sufficient).
 */
-#define SPEECH_BUFFER_SIZE 50000L
+#define SPEECH_BUFFER_SIZE 100000
 
 /**********************************************************************
 **	This is the size of the shape buffer. This buffer is used as a staging
@@ -349,46 +344,19 @@ typedef enum ThemeType : signed char
 {
     THEME_PICK_ANOTHER = -2,
     THEME_NONE = -1,
-    THEME_AIRSTRIKE,
-    THEME_80MX,
-    THEME_CHRG,
-    THEME_CREP,
-    THEME_DRIL,
-    THEME_DRON,
-    THEME_FIST,
-    THEME_RECON,
-    THEME_VOICE,
-    THEME_HEAVYG,
-    THEME_J1,
-    THEME_JDI_V2,
-    THEME_RADIO,
-    THEME_RAIN,
-    THEME_AOI,      // Act On Instinct
-    THEME_CCTHANG,  //	C&C Thang
-    THEME_DIE,      //	Die!!
-    THEME_FWP,      //	Fight, Win, Prevail
-    THEME_IND,      //	Industrial
-    THEME_IND2,     //	Industrial2
-    THEME_JUSTDOIT, //	Just Do It!
-    THEME_LINEFIRE, //	In The Line Of Fire
-    THEME_MARCH,    //	March To Your Doom
-    THEME_MECHMAN,  // Mechanical Man
-    THEME_NOMERCY,  //	No Mercy
-    THEME_OTP,      //	On The Prowl
-    THEME_PRP,      //	Prepare For Battle
-    THEME_ROUT,     //	Reaching Out
-    THEME_HEART,    //
-    THEME_STOPTHEM, //	Stop Them
-    THEME_TROUBLE,  //	Looks Like Trouble
-    THEME_WARFARE,  //	Warfare
-    THEME_BFEARED,  //	Enemies To Be Feared
-    THEME_IAM,      // I Am
-    THEME_WIN1,     //	Great Shot!
-    THEME_MAP1,     // Map subliminal techno "theme".
-    THEME_VALKYRIE, // Ride of the valkyries.
+    THEME_FIXME0,
+    THEME_FIXME1,
+    THEME_FIXME2,
+    THEME_FIXME3,
+    THEME_FIXME4,
+    THEME_FIXME5,
+    THEME_FIXME6,
+    THEME_FIXME7,
+    THEME_FIXME8,
+    THEME_MAP1, // Map subliminal techno "theme".
 
     THEME_COUNT,
-    THEME_LAST = THEME_BFEARED,
+    THEME_LAST = THEME_MAP1,
     THEME_FIRST = 0
 } ThemeType;
 
@@ -512,6 +480,7 @@ typedef enum MissionType : signed char
     MISSION_REPAIR,         // Repair process mission.
     MISSION_RESCUE,
     MISSION_MISSILE,
+    MISSION_FIND_CRATE,
 
     MISSION_COUNT,
     MISSION_FIRST = 0
@@ -615,15 +584,16 @@ enum ConcreteEnum : signed char
 typedef enum MPHType : unsigned char
 {
     MPH_IMMOBILE = 0,
-    MPH_VERY_SLOW = 5,
-    MPH_KINDA_SLOW = 6,
-    MPH_SLOW = 8,
-    MPH_SLOW_ISH = 10,
-    MPH_MEDIUM_SLOW = 12,
-    MPH_MEDIUM = 18,
-    MPH_MEDIUM_FAST = 30,
-    MPH_MEDIUM_FASTER = 35,
-    MPH_FAST = 40,
+    MPH_VERY_SLOW = 9,
+    MPH_KINDA_SLOW = 10,
+    MPH_SLOW = 11,
+    MPH_SLOW_ISH = 13,
+    MPH_MEDIUM_SLOW = 15,
+    MPH_MEDIUM = 21,
+    MPH_MEDIUM_FAST = 27,
+    MPH_MEDIUM_FASTER = 32,
+    MPH_FAST = 36,
+    MPH_FASTER = 41,
     MPH_ROCKET = 60,
     MPH_VERY_FAST = 100,
     MPH_LIGHT_SPEED = 255
@@ -662,14 +632,117 @@ typedef enum HousesType : signed char
     HOUSE_BAD,     // Brotherhood of Nod
     HOUSE_NEUTRAL, // Civilians
     HOUSE_JP,      // Disaster Containment Team
-    HOUSE_MULTI1,  // Multi-Player house #1
-    HOUSE_MULTI2,  // Multi-Player house #2
-    HOUSE_MULTI3,  // Multi-Player house #3
-    HOUSE_MULTI4,  // Multi-Player house #4
-    HOUSE_MULTI5,  // Multi-Player house #5
-    HOUSE_MULTI6,  // Multi-Player house #6
+    HOUSE_ADMIN,
+    HOUSE_SPECTATOR,
+    HOUSE_BLUE_TEAM,
+    HOUSE_ORANGE_TEAM,
+    HOUSE_GREEN_TEAM,
+    HOUSE_GREY_TEAM,
+    HOUSE_MULTI1, // Multi-Player house #1
+    HOUSE_MULTI2, // Multi-Player house #2
+    HOUSE_MULTI3, // Multi-Player house #3
+    HOUSE_MULTI4, // Multi-Player house #4
+    HOUSE_MULTI5, // Multi-Player house #5
+    HOUSE_MULTI6, // Multi-Player house #6
+    HOUSE_MULTI7,
+    HOUSE_MULTI8,
+    HOUSE_MULTI9,
+    HOUSE_MULTI10,
+    HOUSE_MULTI11,
+    HOUSE_MULTI12,
+    HOUSE_MULTI13,
+    HOUSE_MULTI14,
+    HOUSE_MULTI15,
+    HOUSE_MULTI16,
+    HOUSE_MULTI17,
+    HOUSE_MULTI18,
+    HOUSE_MULTI19,
+    HOUSE_MULTI20,
+    HOUSE_MULTI21,
+    HOUSE_MULTI22,
+    HOUSE_MULTI23,
+    HOUSE_MULTI24,
+    HOUSE_MULTI25,
+    HOUSE_MULTI26,
+    HOUSE_MULTI27,
+    HOUSE_MULTI28,
+    HOUSE_MULTI29,
+    HOUSE_MULTI30,
+    HOUSE_MULTI31,
+    HOUSE_MULTI32,
+    HOUSE_MULTI33,
+    HOUSE_MULTI34,
+    HOUSE_MULTI35,
+    HOUSE_MULTI36,
+    HOUSE_MULTI37,
+    HOUSE_MULTI38,
+    HOUSE_MULTI39,
+    HOUSE_MULTI40,
+    HOUSE_MULTI41,
+    HOUSE_MULTI42,
+    HOUSE_MULTI43,
+    HOUSE_MULTI44,
+    HOUSE_MULTI45,
+    HOUSE_MULTI46,
+    HOUSE_MULTI47,
+    HOUSE_MULTI48,
+    HOUSE_MULTI49,
+    HOUSE_MULTI50,
+    HOUSE_MULTI51,
+    HOUSE_MULTI52,
+    HOUSE_MULTI53,
+    HOUSE_MULTI54,
+    HOUSE_MULTI55,
+    HOUSE_MULTI56,
+    HOUSE_MULTI57,
+    HOUSE_MULTI58,
+    HOUSE_MULTI59,
+    HOUSE_MULTI60,
+    HOUSE_MULTI61,
+    HOUSE_MULTI62,
+    HOUSE_MULTI63,
+    HOUSE_MULTI64,
+    HOUSE_MULTI65,
+    HOUSE_MULTI66,
+    HOUSE_MULTI67,
+    HOUSE_MULTI68,
+    HOUSE_MULTI69,
+    HOUSE_MULTI70,
+    HOUSE_MULTI71,
+    HOUSE_MULTI72,
+    HOUSE_MULTI73,
+    HOUSE_MULTI74,
+    HOUSE_MULTI75,
+    HOUSE_MULTI76,
+    HOUSE_MULTI77,
+    HOUSE_MULTI78,
+    HOUSE_MULTI79,
+    HOUSE_MULTI80,
+    HOUSE_MULTI81,
+    HOUSE_MULTI82,
+    HOUSE_MULTI83,
+    HOUSE_MULTI84,
+    HOUSE_MULTI85,
+    HOUSE_MULTI86,
+    HOUSE_MULTI87,
+    HOUSE_MULTI88,
+    HOUSE_MULTI89,
+    HOUSE_MULTI90,
+    HOUSE_MULTI91,
+    HOUSE_MULTI92,
+    HOUSE_MULTI93,
+    HOUSE_MULTI94,
+    HOUSE_MULTI95,
+    HOUSE_MULTI96,
+    HOUSE_MULTI97,
+    HOUSE_MULTI98,
+    HOUSE_MULTI99,
+    HOUSE_MULTI100,
 
     HOUSE_COUNT,
+    MULTI_HOUSE_COUNT = 1 + (HOUSE_MULTI100 - HOUSE_MULTI1),
+    HOUSE_FIRST_TEAM = HOUSE_BLUE_TEAM,
+    HOUSE_LAST_TEAM = HOUSE_GREY_TEAM,
     HOUSE_FIRST = HOUSE_GOOD
 } HousesType;
 
@@ -943,18 +1016,22 @@ typedef enum OverlayType : signed char
     OVERLAY_TIBERIUM10,    // Tiberium patch.
     OVERLAY_TIBERIUM11,    // Tiberium patch.
     OVERLAY_TIBERIUM12,    // Tiberium patch.
-    OVERLAY_ROAD,          // Road/concrete piece.
+    OVERLAY_ROAD1,         // Road/concrete piece.
+    OVERLAY_ROAD2,         // Road/concrete piece.
     OVERLAY_SQUISH,        // Squish mark for overran infantry.
     OVERLAY_V12,           // Haystacks
     OVERLAY_V13,           // Haystack
     OVERLAY_V14,           // Wheat field
     OVERLAY_V15,           // Fallow field
-    OVERLAY_V16,           //	Corn field
+    OVERLAY_V16,           // Corn field
     OVERLAY_V17,           // Celery field
     OVERLAY_V18,           // Potato field
     OVERLAY_FLAG_SPOT,     // Flag start location.
     OVERLAY_WOOD_CRATE,    // Wooden goodie crate.
-    OVERLAY_STEEL_CRATE,   //	Steel goodie crate.
+    OVERLAY_STEEL_CRATE,   // Steel goodie crate.
+    OVERLAY_ARMOR_CRATE,   // Armor goodie crate.
+    OVERLAY_HEALTH_CRATE,  // Health goodie crate.
+    OVERLAY_SUPER_CRATE,   // Super goodie crate.
 
     OVERLAY_COUNT,
     OVERLAY_FIRST = 0
@@ -1493,6 +1570,14 @@ typedef enum AnimType : signed char
     ANIM_CRATE_RAPID,    // Red skull.
     ANIM_CRATE_STEALTH,  // Cloaking sphere.
     ANIM_CRATE_MISSILE,  // Green finned missile.
+    ANIM_CRATE_ARMORD,
+    ANIM_CRATE_HEALTHD,
+    ANIM_CRATE_LITENNGD,
+    ANIM_CRATE_MORTARD,
+    ANIM_CRATE_RADARD,
+    ANIM_CRATE_TIMEQK2,
+    ANIM_CRATE_UNCLOAK,
+    ANIM_CRATE_RELOAD,
     ANIM_ATOM_DOOR,
     ANIM_MOVE_FLASH,
     ANIM_OILFIELD_BURN,
@@ -1501,8 +1586,9 @@ typedef enum AnimType : signed char
     ANIM_STEG_DIE,
     ANIM_RAPT_DIE,
     ANIM_CHEM_BALL, // Chemical warrior explosion.
-    ANIM_FLAG,      // CTF flag.
-    ANIM_BEACON,    // Beacon.
+    ANIM_TELEFX,
+    ANIM_FLAG,   // CTF flag.
+    ANIM_BEACON, // Beacon.
 
     ANIM_FIRE_SMALL_VIRTUAL, // Small flame animation (virtual).
     ANIM_FIRE_MED_VIRTUAL,   // Medium flame animation (virtual).
@@ -2010,7 +2096,7 @@ inline TextPrintType operator~(TextPrintType a)
 #define BUILDING_MAX      500 // Lasts for hours.
 #define BULLET_MAX        50  // Lasts several seconds.
 #define FACTORY_MAX       32  // Lasts a few minutes.
-#define HOUSE_MAX         12  // Lasts entire scenario.
+#define HOUSE_MAX         128 // Lasts entire scenario.
 #define INFANTRY_MAX      500 // Lasts for minutes.
 #define OVERLAY_MAX       1   // Very transitory.
 #define REINFORCEMENT_MAX 50  // Maximum number of reinforcements.
@@ -2029,7 +2115,7 @@ inline TextPrintType operator~(TextPrintType a)
 
 #define OBUTTON_HEIGHT 9 // Is defined in mapedit.h, need for buttons
 
-#define CONQUER_PATH_MAX 9 // Number of cells to look ahead for movement.
+#define CONQUER_PATH_MAX 18 // Number of cells to look ahead for movement.
 
 #define EACH_UNIT_MAX     (UNIT_MAX / 4)     // Default maximum any one player can have.
 #define EACH_BUILDING_MAX (BUILDING_MAX / 4) // Default maximum any one player can build.
@@ -2383,15 +2469,23 @@ typedef enum VocType : signed char
     VOC_DINOYES,  // Yes Sir in dino-speak.
     VOC_DINOATK1, // Dino attack sound.
     VOC_DINODIE1, // Dino die sound.
-
-    VOC_BEACON, // Beacon sound.
+    VOC_CRATE_HEAL,
+    VOC_CRATE_ARMOR,
+    VOC_CRATE_WEAPON,
+    VOC_CRATE_SPEED,
+    VOC_CRATE_RELOAD,
+    VOC_CRATE_RANGE,
+    VOC_CRATE_TELEPORT,
+    VOC_CRATE_UNCLOAK,
+    VOC_CRATE_SHROUD,
+    VOC_CRATE_UNSHROUD,
 
     VOC_COUNT,
     VOC_BUILD_SELECT = VOC_TARGET,
     VOC_FIRST = 0
 } VocType;
 
-typedef enum VoxType : signed char
+typedef enum VoxType : signed short
 {
     VOX_NONE = -1,
     VOX_ACCOMPLISHED,      //	mission accomplished
@@ -2484,6 +2578,107 @@ typedef enum VoxType : signed char
                            //	VOX_BLUE_OFFLINE,					//	blue player has departed
                            //	VOX_BLUE_LOST,						//	blue player destroyed
                            //	VOX_BLUE_WON,						//	blue player is victorious
+    VOX_M_ARMOR1,
+    VOX_M_MEGAA1,
+    VOX_M_WEAPN1,
+    VOX_M_MEGAW1,
+    VOX_M_SPEED1,
+    VOX_M_MEGAS1,
+    VOX_M_RAPID1,
+    VOX_M_MEGARR,
+    VOX_M_RANGE1,
+    VOX_M_MGARNG,
+    VOX_M_HEAL1,
+    VOX_M_STLTHA,
+    VOX_M_STLTHD,
+    VOX_M_TELEP1,
+    VOX_M_NUKE1,
+    VOX_M_ION1,
+    VOX_M_STLALL,
+    VOX_M_DRK1,
+    VOX_M_MAPUP1,
+    VOX_M_RADAR1,
+    VOX_M_ARMGD1,
+    VOX_M_LOSER1,
+    VOX_M_SORRY1,
+    VOX_M_HELLO1,
+    VOX_M_HELLO2,
+    VOX_M_UNIT1,
+    VOX_E_ARMOR1,
+    VOX_E_MEGAA1,
+    VOX_E_WEAPN1,
+    VOX_E_MEGAW1,
+    VOX_E_SPEED1,
+    VOX_E_MEGAS1,
+    VOX_E_RAPID1,
+    VOX_E_MEGARR,
+    VOX_E_RANGE1,
+    VOX_E_MGARNG,
+    VOX_E_HEAL1,
+    VOX_E_STLTHA,
+    VOX_E_STLTHD,
+    VOX_E_TELEP1,
+    VOX_E_NUKE1,
+    VOX_E_ION1,
+    VOX_E_STLALL,
+    VOX_E_DRK1,
+    VOX_E_MAPUP1,
+    VOX_E_RADAR1,
+    VOX_E_ARMGD1,
+    VOX_E_LOSER1,
+    VOX_E_SORRY1,
+    VOX_E_HELLO1,
+    VOX_E_UNIT1,
+    VOX_C_ARMOR1,
+    VOX_C_MEGAA1,
+    VOX_C_WEAPN1,
+    VOX_C_MEGAW1,
+    VOX_C_SPEED1,
+    VOX_C_MEGAS1,
+    VOX_C_RAPID1,
+    VOX_C_MEGARR,
+    VOX_C_RANGE1,
+    VOX_C_MGARNG,
+    VOX_C_HEAL1,
+    VOX_C_STLTHA,
+    VOX_C_STLTHD,
+    VOX_C_TELEP1,
+    VOX_C_NUKE1,
+    VOX_C_ION1,
+    VOX_C_STLALL,
+    VOX_C_DRK1,
+    VOX_C_MAPUP1,
+    VOX_C_RADAR1,
+    VOX_C_ARMGD1,
+    VOX_C_LOSER1,
+    VOX_C_SORRY1,
+    VOX_C_HELLO1,
+    VOX_C_UNIT1,
+    VOX_S_ARMOR1,
+    VOX_S_MEGAA1,
+    VOX_S_WEAPN1,
+    VOX_S_MEGAW1,
+    VOX_S_SPEED1,
+    VOX_S_MEGAS1,
+    VOX_S_RAPID1,
+    VOX_S_MEGARR,
+    VOX_S_RANGE1,
+    VOX_S_MGARNG,
+    VOX_S_HEAL1,
+    VOX_S_STLTHA,
+    VOX_S_STLTHD,
+    VOX_S_TELEP1,
+    VOX_S_NUKE1,
+    VOX_S_ION1,
+    VOX_S_STLALL,
+    VOX_S_DRK1,
+    VOX_S_MAPUP1,
+    VOX_S_RADAR1,
+    VOX_S_ARMGD1,
+    VOX_S_LOSER1,
+    VOX_S_SORRY1,
+    VOX_S_HELLO1,
+    VOX_S_UNIT1,
 
     VOX_COUNT,
     //	VOX_MULTI_UNIT			= VOX_GOLD_UNIT,
@@ -2570,6 +2765,8 @@ typedef enum WaypointEnum : unsigned char
 typedef enum GameEnum : unsigned char
 {
     GAME_NORMAL,            // not multiplayer
+    GAME_CLIENT,            // Sole Survivor Client mode
+    GAME_HOST,              // Sole Survivor Server mode.
     GAME_MODEM,             // modem game
     GAME_NULL_MODEM,        // NULL-modem
     GAME_IPX,               // IPX Network game
@@ -2618,7 +2815,7 @@ typedef enum CommProtocolEnum : unsigned char
 */
 #define COMPAT_MESSAGE_LENGTH 28
 #define MAX_MESSAGE_SEGMENTS  3
-#define MAX_MESSAGE_LENGTH    COMPAT_MESSAGE_LENGTH * 3
+#define MAX_MESSAGE_LENGTH    (COMPAT_MESSAGE_LENGTH * 3) - 4 //80
 
 /*
 ** Defines for magic numbers to place in messages to allow concatenation.
@@ -2918,6 +3115,38 @@ typedef enum OptionControlType : signed char
     OPTION_COUNT
 } OptionControlType;
 
+enum VoiceSoundType
+{
+    VOX_THEME_SND_ARMOR,
+    VOX_THEME_SND_MEGAARMOR,
+    VOX_THEME_SND_WEAPON,
+    VOX_THEME_SND_MEGAWEAPON,
+    VOX_THEME_SND_SPEED,
+    VOX_THEME_SND_MEGASPEED,
+    VOX_THEME_SND_RAPIDRELOAD,
+    VOX_THEME_SND_MEGARAPIDRELOAD,
+    VOX_THEME_SND_RANGE,
+    VOX_THEME_SND_MEGARANGE,
+    VOX_THEME_SND_HEAL,
+    VOX_THEME_SND_STEALTHON,
+    VOX_THEME_SND_STEALTHOFF,
+    VOX_THEME_SND_TELEPORT,
+    VOX_THEME_SND_NUKE,
+    VOX_THEME_SND_ION,
+    VOX_THEME_SND_UNCLOAKALL,
+    VOX_THEME_SND_RESHROUD,
+    VOX_THEME_SND_UNSHROUD,
+    VOX_THEME_SND_RADAR,
+    VOX_THEME_SND_ARMAGEDDON,
+    VOX_THEME_SND_YOULOSE,
+    VOX_THEME_SND_TEST,
+    VOX_THEME_SND_UNIT1,
+    VOX_THEME_SND_COUNT,
+    VOX_THEME_SND_FIRST = 0,
+    VOX_THEME_SND_NONE = -1,
+};
+inline VoiceSoundType operator++(VoiceSoundType& n, int);
+
 /****************************************************************************
 **	Used to store firing data for a unit.
 */
@@ -2930,6 +3159,20 @@ typedef struct
 #define TOTAL_CRATE_TYPES 15
 
 #define size_of(typ, id) sizeof(((typ*)0)->id)
+
+enum TechnoPacketDataType
+{
+    TECHNO_PACKET_DATA_0,         // techno bitfield[1] 0x20 flip
+    TECHNO_PACKET_DATA_1,         // techno bitfield[1] 0x40 flip and [0] 2 flip
+    TECHNO_PACKET_DATA_STRENGTH,  // strength modification
+    TECHNO_PACKET_DATA_DAMAGE,    // damage modification
+    TECHNO_PACKET_DATA_SPEED,     // speed modification
+    TECHNO_PACKET_DATA_ROF,       // rate of fire modification
+    TECHNO_PACKET_DATA_RANGE,     // range modification
+    TECHNO_PACKET_DATA_CLOAKABLE, // techno bitfield [0] 2 flip if value 0 uncloak
+    TECHNO_PACKET_DATA_ORANGE_CRATE,
+    TECHNO_PACKET_DATA_DEMOLITION,
+};
 
 /*
 **

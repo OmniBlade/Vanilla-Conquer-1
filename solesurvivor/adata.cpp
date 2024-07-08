@@ -48,15 +48,16 @@ static AnimTypeClass const TricDie(ANIM_TRIC_DIE, // Animation number.
                                    false,         // Sticks to unit in square?
                                    true,          // Ground level animation?
                                    true,          // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   2,             // Delay between frames.
-                                   176,           // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   0,             // Ending frame of loop back.
-                                   20,            // Number of animation stages.
-                                   0,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   2,        // Delay between frames.
+                                   176,      // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   0,        // Ending frame of loop back.
+                                   20,       // Number of animation stages.
+                                   0,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const TRexDie(ANIM_TREX_DIE, // Animation number.
@@ -70,15 +71,16 @@ static AnimTypeClass const TRexDie(ANIM_TREX_DIE, // Animation number.
                                    false,         // Sticks to unit in square?
                                    true,          // Ground level animation?
                                    true,          // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   2,             // Delay between frames.
-                                   144,           // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   0,             // Ending frame of loop back.
-                                   40,            // Number of animation stages.
-                                   0,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   2,        // Delay between frames.
+                                   144,      // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   0,        // Ending frame of loop back.
+                                   40,       // Number of animation stages.
+                                   0,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const StegDie(ANIM_STEG_DIE, // Animation number.
@@ -92,15 +94,16 @@ static AnimTypeClass const StegDie(ANIM_STEG_DIE, // Animation number.
                                    false,         // Sticks to unit in square?
                                    true,          // Ground level animation?
                                    true,          // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   2,             // Delay between frames.
-                                   176,           // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   0,             // Ending frame of loop back.
-                                   22,            // Number of animation stages.
-                                   0,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   2,        // Delay between frames.
+                                   176,      // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   0,        // Ending frame of loop back.
+                                   22,       // Number of animation stages.
+                                   0,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const RaptDie(ANIM_RAPT_DIE, // Animation number.
@@ -114,15 +117,16 @@ static AnimTypeClass const RaptDie(ANIM_RAPT_DIE, // Animation number.
                                    false,         // Sticks to unit in square?
                                    true,          // Ground level animation?
                                    true,          // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   2,             // Delay between frames.
-                                   144,           // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   0,             // Ending frame of loop back.
-                                   40,            // Number of animation stages.
-                                   0,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   2,        // Delay between frames.
+                                   144,      // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   0,        // Ending frame of loop back.
+                                   40,       // Number of animation stages.
+                                   0,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const SAMN(ANIM_SAM_N, // Animation number.
@@ -136,15 +140,16 @@ static AnimTypeClass const SAMN(ANIM_SAM_N, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                18 * 0,     // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Ending frame of loop back.
-                                18,         // Number of animation stages.
-                                0,          // Number of times the animation loops.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                18 * 0,   // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Ending frame of loop back.
+                                18,       // Number of animation stages.
+                                0,        // Number of times the animation loops.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const SAMNW(ANIM_SAM_NW, // Animation number.
                                  "SAMFIRE",   // Data name of animation.
@@ -157,15 +162,16 @@ static AnimTypeClass const SAMNW(ANIM_SAM_NW, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 18 * 1,      // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Ending frame of loop back.
-                                 18,          // Number of animation stages.
-                                 0,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 18 * 1,   // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Ending frame of loop back.
+                                 18,       // Number of animation stages.
+                                 0,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const SAMW(ANIM_SAM_W, // Animation number.
                                 "SAMFIRE",  // Data name of animation.
@@ -178,15 +184,16 @@ static AnimTypeClass const SAMW(ANIM_SAM_W, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                18 * 2,     // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Ending frame of loop back.
-                                18,         // Number of animation stages.
-                                0,          // Number of times the animation loops.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                18 * 2,   // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Ending frame of loop back.
+                                18,       // Number of animation stages.
+                                0,        // Number of times the animation loops.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const SAMSW(ANIM_SAM_SW, // Animation number.
                                  "SAMFIRE",   // Data name of animation.
@@ -199,15 +206,16 @@ static AnimTypeClass const SAMSW(ANIM_SAM_SW, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 18 * 3,      // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Ending frame of loop back.
-                                 18,          // Number of animation stages.
-                                 0,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 18 * 3,   // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Ending frame of loop back.
+                                 18,       // Number of animation stages.
+                                 0,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const SAMS(ANIM_SAM_S, // Animation number.
                                 "SAMFIRE",  // Data name of animation.
@@ -220,15 +228,16 @@ static AnimTypeClass const SAMS(ANIM_SAM_S, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                18 * 4,     // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Ending frame of loop back.
-                                18,         // Number of animation stages.
-                                0,          // Number of times the animation loops.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                18 * 4,   // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Ending frame of loop back.
+                                18,       // Number of animation stages.
+                                0,        // Number of times the animation loops.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const SAMSE(ANIM_SAM_SE, // Animation number.
                                  "SAMFIRE",   // Data name of animation.
@@ -241,15 +250,16 @@ static AnimTypeClass const SAMSE(ANIM_SAM_SE, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 18 * 5,      // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Ending frame of loop back.
-                                 18,          // Number of animation stages.
-                                 0,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 18 * 5,   // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Ending frame of loop back.
+                                 18,       // Number of animation stages.
+                                 0,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const SAME(ANIM_SAM_E, // Animation number.
                                 "SAMFIRE",  // Data name of animation.
@@ -262,15 +272,16 @@ static AnimTypeClass const SAME(ANIM_SAM_E, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                18 * 6,     // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Ending frame of loop back.
-                                18,         // Number of animation stages.
-                                0,          // Number of times the animation loops.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                18 * 6,   // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Ending frame of loop back.
+                                18,       // Number of animation stages.
+                                0,        // Number of times the animation loops.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const SAMNE(ANIM_SAM_NE, // Animation number.
                                  "SAMFIRE",   // Data name of animation.
@@ -283,15 +294,16 @@ static AnimTypeClass const SAMNE(ANIM_SAM_NE, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 18 * 7,      // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Ending frame of loop back.
-                                 18,          // Number of animation stages.
-                                 0,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 18 * 7,   // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Ending frame of loop back.
+                                 18,       // Number of animation stages.
+                                 0,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 
 static AnimTypeClass const LZSmoke(ANIM_LZ_SMOKE, // Animation number.
@@ -305,15 +317,16 @@ static AnimTypeClass const LZSmoke(ANIM_LZ_SMOKE, // Animation number.
                                    false,         // Sticks to unit in square?
                                    true,          // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   72,            // Loop start frame number.
-                                   91,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   127,           // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   1,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   72,       // Loop start frame number.
+                                   91,       // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   127,      // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 
 /*
@@ -330,15 +343,16 @@ static AnimTypeClass const BurnSmall(ANIM_BURN_SMALL, // Animation number.
                                      false,           // Sticks to unit in square?
                                      true,            // Ground level animation?
                                      false,           // Translucent colors in this animation?
-                                     false,           // Is this a flame thrower animation?
-                                     0x0008,          // Damage to apply per tick (fixed point).
-                                     1,               // Delay between frames.
-                                     0,               // Starting frame number.
-                                     30,              // Loop start frame number.
-                                     62,              // Ending frame of loop back.
-                                     -1,              // Number of animation stages.
-                                     4,               // Number of times the animation loops.
-                                     VOC_NONE,        // Sound effect to play.
+                                     false,
+                                     false,    // Is this a flame thrower animation?
+                                     0x0008,   // Damage to apply per tick (fixed point).
+                                     1,        // Delay between frames.
+                                     0,        // Starting frame number.
+                                     30,       // Loop start frame number.
+                                     62,       // Ending frame of loop back.
+                                     -1,       // Number of animation stages.
+                                     4,        // Number of times the animation loops.
+                                     VOC_NONE, // Sound effect to play.
                                      ANIM_NONE);
 static AnimTypeClass const BurnMed(ANIM_BURN_MED, // Animation number.
                                    "BURN-M",      // Data name of animation.
@@ -351,15 +365,16 @@ static AnimTypeClass const BurnMed(ANIM_BURN_MED, // Animation number.
                                    false,         // Sticks to unit in square?
                                    true,          // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0010,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   30,            // Loop start frame number.
-                                   62,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   4,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0010,   // Damage to apply per tick (fixed point).
+                                   1,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   30,       // Loop start frame number.
+                                   62,       // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   4,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 static AnimTypeClass const BurnBig(ANIM_BURN_BIG, // Animation number.
                                    "BURN-L",      // Data name of animation.
@@ -372,15 +387,16 @@ static AnimTypeClass const BurnBig(ANIM_BURN_BIG, // Animation number.
                                    false,         // Sticks to unit in square?
                                    true,          // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0018,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   30,            // Loop start frame number.
-                                   62,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   4,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0018,   // Damage to apply per tick (fixed point).
+                                   1,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   30,       // Loop start frame number.
+                                   62,       // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   4,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 
 /*
@@ -398,15 +414,16 @@ static AnimTypeClass const OnFireSmall(ANIM_ON_FIRE_SMALL, // Animation number.
                                        false,              // Sticks to unit in square?
                                        true,               // Ground level animation?
                                        false,              // Translucent colors in this animation?
-                                       false,              // Is this a flame thrower animation?
-                                       0x0008,             // Damage to apply per tick (fixed point).
-                                       1,                  // Delay between frames.
-                                       0,                  // Starting frame number.
-                                       30,                 // Loop start frame number.
-                                       62,                 // Ending frame of loop back.
-                                       -1,                 // Number of animation stages.
-                                       4,                  // Number of times the animation loops.
-                                       VOC_NONE,           // Sound effect to play.
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0x0008,   // Damage to apply per tick (fixed point).
+                                       1,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       30,       // Loop start frame number.
+                                       62,       // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       4,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
                                        ANIM_SMOKE_M);
 static AnimTypeClass const OnFireMed(ANIM_ON_FIRE_MED, // Animation number.
                                      "BURN-M",         // Data name of animation.
@@ -419,15 +436,16 @@ static AnimTypeClass const OnFireMed(ANIM_ON_FIRE_MED, // Animation number.
                                      false,            // Sticks to unit in square?
                                      true,             // Ground level animation?
                                      false,            // Translucent colors in this animation?
-                                     false,            // Is this a flame thrower animation?
-                                     0x0010,           // Damage to apply per tick (fixed point).
-                                     1,                // Delay between frames.
-                                     0,                // Starting frame number.
-                                     30,               // Loop start frame number.
-                                     62,               // Ending frame of loop back.
-                                     -1,               // Number of animation stages.
-                                     4,                // Number of times the animation loops.
-                                     VOC_NONE,         // Sound effect to play.
+                                     false,
+                                     false,    // Is this a flame thrower animation?
+                                     0x0010,   // Damage to apply per tick (fixed point).
+                                     1,        // Delay between frames.
+                                     0,        // Starting frame number.
+                                     30,       // Loop start frame number.
+                                     62,       // Ending frame of loop back.
+                                     -1,       // Number of animation stages.
+                                     4,        // Number of times the animation loops.
+                                     VOC_NONE, // Sound effect to play.
                                      ANIM_ON_FIRE_SMALL);
 static AnimTypeClass const OnFireBig(ANIM_ON_FIRE_BIG, // Animation number.
                                      "BURN-L",         // Data name of animation.
@@ -440,15 +458,16 @@ static AnimTypeClass const OnFireBig(ANIM_ON_FIRE_BIG, // Animation number.
                                      false,            // Sticks to unit in square?
                                      true,             // Ground level animation?
                                      false,            // Translucent colors in this animation?
-                                     false,            // Is this a flame thrower animation?
-                                     0x0018,           // Damage to apply per tick (fixed point).
-                                     1,                // Delay between frames.
-                                     0,                // Starting frame number.
-                                     30,               // Loop start frame number.
-                                     62,               // Ending frame of loop back.
-                                     -1,               // Number of animation stages.
-                                     4,                // Number of times the animation loops.
-                                     VOC_NONE,         // Sound effect to play.
+                                     false,
+                                     false,    // Is this a flame thrower animation?
+                                     0x0018,   // Damage to apply per tick (fixed point).
+                                     1,        // Delay between frames.
+                                     0,        // Starting frame number.
+                                     30,       // Loop start frame number.
+                                     62,       // Ending frame of loop back.
+                                     -1,       // Number of animation stages.
+                                     4,        // Number of times the animation loops.
+                                     VOC_NONE, // Sound effect to play.
                                      ANIM_ON_FIRE_MED);
 
 /*
@@ -465,15 +484,16 @@ static AnimTypeClass const FlameN(ANIM_FLAME_N, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  true,         // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  true,     // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 static AnimTypeClass const FlameNW(ANIM_FLAME_NW, // Animation number.
                                    "FLAME-NW",    // Data name of animation.
@@ -486,15 +506,16 @@ static AnimTypeClass const FlameNW(ANIM_FLAME_NW, // Animation number.
                                    false,         // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   true,          // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   true,     // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   1,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   -1,       // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   1,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 static AnimTypeClass const FlameW(ANIM_FLAME_W, // Animation number.
                                   "FLAME-W",    // Data name of animation.
@@ -507,15 +528,16 @@ static AnimTypeClass const FlameW(ANIM_FLAME_W, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  true,         // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  true,     // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 static AnimTypeClass const FlameSW(ANIM_FLAME_SW, // Animation number.
                                    "FLAME-SW",    // Data name of animation.
@@ -528,15 +550,16 @@ static AnimTypeClass const FlameSW(ANIM_FLAME_SW, // Animation number.
                                    false,         // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   true,          // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   true,     // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   1,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   -1,       // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   1,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 static AnimTypeClass const FlameS(ANIM_FLAME_S, // Animation number.
                                   "FLAME-S",    // Data name of animation.
@@ -549,15 +572,16 @@ static AnimTypeClass const FlameS(ANIM_FLAME_S, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  true,         // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  true,     // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 static AnimTypeClass const FlameSE(ANIM_FLAME_SE, // Animation number.
                                    "FLAME-SE",    // Data name of animation.
@@ -570,15 +594,16 @@ static AnimTypeClass const FlameSE(ANIM_FLAME_SE, // Animation number.
                                    false,         // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   true,          // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   true,     // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   1,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   -1,       // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   1,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 static AnimTypeClass const FlameE(ANIM_FLAME_E, // Animation number.
                                   "FLAME-E",    // Data name of animation.
@@ -591,15 +616,16 @@ static AnimTypeClass const FlameE(ANIM_FLAME_E, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  true,         // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  true,     // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 static AnimTypeClass const FlameNE(ANIM_FLAME_NE, // Animation number.
                                    "FLAME-NE",    // Data name of animation.
@@ -612,15 +638,16 @@ static AnimTypeClass const FlameNE(ANIM_FLAME_NE, // Animation number.
                                    false,         // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   true,          // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_NONE,      // Sound effect to play.
+                                   false,
+                                   true,     // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   1,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   -1,       // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   1,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
                                    ANIM_NONE);
 
 /*
@@ -637,15 +664,16 @@ static AnimTypeClass const ChemN(ANIM_CHEM_N, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 0,           // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 -1,          // Ending frame of loop back.
-                                 -1,          // Number of animation stages.
-                                 1,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 1,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const ChemNW(ANIM_CHEM_NW, // Animation number.
                                   "CHEM-NW",    // Data name of animation.
@@ -658,15 +686,16 @@ static AnimTypeClass const ChemNW(ANIM_CHEM_NW, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  false,        // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 static AnimTypeClass const ChemW(ANIM_CHEM_W, // Animation number.
                                  "CHEM-W",    // Data name of animation.
@@ -679,15 +708,16 @@ static AnimTypeClass const ChemW(ANIM_CHEM_W, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 0,           // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 -1,          // Ending frame of loop back.
-                                 -1,          // Number of animation stages.
-                                 1,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 1,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const ChemSW(ANIM_CHEM_SW, // Animation number.
                                   "CHEM-SW",    // Data name of animation.
@@ -700,15 +730,16 @@ static AnimTypeClass const ChemSW(ANIM_CHEM_SW, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  false,        // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 static AnimTypeClass const ChemS(ANIM_CHEM_S, // Animation number.
                                  "CHEM-S",    // Data name of animation.
@@ -721,15 +752,16 @@ static AnimTypeClass const ChemS(ANIM_CHEM_S, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 0,           // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 -1,          // Ending frame of loop back.
-                                 -1,          // Number of animation stages.
-                                 1,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 1,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const ChemSE(ANIM_CHEM_SE, // Animation number.
                                   "CHEM-SE",    // Data name of animation.
@@ -742,15 +774,16 @@ static AnimTypeClass const ChemSE(ANIM_CHEM_SE, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  false,        // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 static AnimTypeClass const ChemE(ANIM_CHEM_E, // Animation number.
                                  "CHEM-E",    // Data name of animation.
@@ -763,15 +796,16 @@ static AnimTypeClass const ChemE(ANIM_CHEM_E, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 0,           // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 -1,          // Ending frame of loop back.
-                                 -1,          // Number of animation stages.
-                                 1,           // Number of times the animation loops.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 1,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const ChemNE(ANIM_CHEM_NE, // Animation number.
                                   "CHEM-NE",    // Data name of animation.
@@ -784,15 +818,16 @@ static AnimTypeClass const ChemNE(ANIM_CHEM_NE, // Animation number.
                                   false,        // Sticks to unit in square?
                                   false,        // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  false,        // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  0,            // Loop start frame number.
-                                  -1,           // Ending frame of loop back.
-                                  -1,           // Number of animation stages.
-                                  1,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  1,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE);
 
 static AnimTypeClass const Grenade(ANIM_GRENADE, // Animation number.
@@ -806,15 +841,16 @@ static AnimTypeClass const Grenade(ANIM_GRENADE, // Animation number.
                                    false,        // Sticks to unit in square?
                                    true,         // Ground level animation?
                                    false,        // Translucent colors in this animation?
-                                   false,        // Is this a flame thrower animation?
-                                   0x0000,       // Damage to apply per tick (fixed point).
-                                   1,            // Delay between frames.
-                                   0,            // Starting frame number.
-                                   0,            // Loop start frame number.
-                                   -1,           // Ending frame of loop back.
-                                   -1,           // Number of animation stages.
-                                   1,            // Number of times the animation loops.
-                                   VOC_GUN20,    // Sound effect to play.
+                                   false,
+                                   false,     // Is this a flame thrower animation?
+                                   0x0000,    // Damage to apply per tick (fixed point).
+                                   1,         // Delay between frames.
+                                   0,         // Starting frame number.
+                                   0,         // Loop start frame number.
+                                   -1,        // Ending frame of loop back.
+                                   -1,        // Number of animation stages.
+                                   1,         // Number of times the animation loops.
+                                   VOC_GUN20, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const FBall1(ANIM_FBALL1, // Animation number.
@@ -828,28 +864,30 @@ static AnimTypeClass const FBall1(ANIM_FBALL1, // Animation number.
                                   false,       // Sticks to unit in square?
                                   false,       // Ground level animation?
                                   false,       // Translucent colors in this animation?
-                                  false,       // Is this a flame thrower animation?
-                                  0x0000,      // Damage to apply per tick (fixed point).
-                                  1,           // Delay between frames.
-                                  0,           // Starting frame number.
-                                  0,           // Loop start frame number.
-                                  -1,          // Ending frame of loop back.
-                                  -1,          // Number of animation stages.
-                                  1,           // Number of times the animation loops.
-                                  VOC_XPLOS,   // Sound effect to play.
+                                  false,
+                                  false,     // Is this a flame thrower animation?
+                                  0x0000,    // Damage to apply per tick (fixed point).
+                                  1,         // Delay between frames.
+                                  0,         // Starting frame number.
+                                  0,         // Loop start frame number.
+                                  -1,        // Ending frame of loop back.
+                                  -1,        // Number of animation stages.
+                                  1,         // Number of times the animation loops.
+                                  VOC_XPLOS, // Sound effect to play.
                                   ANIM_NONE);
 
-static AnimTypeClass const Frag1(ANIM_FRAG1,   // Animation number.
-                                 "FRAG1",      // Data name of animation.
-                                 45,           // Maximum dimension of animation.
-                                 3,            // Biggest animation stage.
-                                 true,         // Normalized animation rate?
-                                 false,        // Uses white translucent table?
-                                 false,        // Scorches the ground?
-                                 true,         // Forms a crater?
-                                 true,         // Sticks to unit in square?
-                                 true,         // Ground level animation?
-                                 false,        // Translucent colors in this animation?
+static AnimTypeClass const Frag1(ANIM_FRAG1, // Animation number.
+                                 "FRAG1",    // Data name of animation.
+                                 45,         // Maximum dimension of animation.
+                                 3,          // Biggest animation stage.
+                                 true,       // Normalized animation rate?
+                                 false,      // Uses white translucent table?
+                                 false,      // Scorches the ground?
+                                 true,       // Forms a crater?
+                                 true,       // Sticks to unit in square?
+                                 true,       // Ground level animation?
+                                 false,      // Translucent colors in this animation?
+                                 false,
                                  false,        // Is this a flame thrower animation?
                                  0x0000,       // Damage to apply per tick (fixed point).
                                  1,            // Delay between frames.
@@ -863,17 +901,18 @@ static AnimTypeClass const Frag1(ANIM_FRAG1,   // Animation number.
                                  29 // Virtual stages
 );
 
-static AnimTypeClass const Frag3(ANIM_FRAG2,   // Animation number.
-                                 "FRAG3",      // Data name of animation.
-                                 41,           // Maximum dimension of animation.
-                                 3,            // Biggest animation stage.
-                                 true,         // Normalized animation rate?
-                                 false,        // Uses white translucent table?
-                                 false,        // Scorches the ground?
-                                 true,         // Forms a crater?
-                                 false,        // Sticks to unit in square?
-                                 true,         // Ground level animation?
-                                 false,        // Translucent colors in this animation?
+static AnimTypeClass const Frag3(ANIM_FRAG2, // Animation number.
+                                 "FRAG3",    // Data name of animation.
+                                 41,         // Maximum dimension of animation.
+                                 3,          // Biggest animation stage.
+                                 true,       // Normalized animation rate?
+                                 false,      // Uses white translucent table?
+                                 false,      // Scorches the ground?
+                                 true,       // Forms a crater?
+                                 false,      // Sticks to unit in square?
+                                 true,       // Ground level animation?
+                                 false,      // Translucent colors in this animation?
+                                 false,
                                  false,        // Is this a flame thrower animation?
                                  0x0000,       // Damage to apply per tick (fixed point).
                                  1,            // Delay between frames.
@@ -898,15 +937,16 @@ static AnimTypeClass const VehHit1(ANIM_VEH_HIT1, // Animation number.
                                    true,          // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_XPLOS,     // Sound effect to play.
+                                   false,
+                                   false,     // Is this a flame thrower animation?
+                                   0x0000,    // Damage to apply per tick (fixed point).
+                                   1,         // Delay between frames.
+                                   0,         // Starting frame number.
+                                   0,         // Loop start frame number.
+                                   -1,        // Ending frame of loop back.
+                                   -1,        // Number of animation stages.
+                                   1,         // Number of times the animation loops.
+                                   VOC_XPLOS, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const VehHit2(ANIM_VEH_HIT2, // Animation number.
@@ -920,15 +960,16 @@ static AnimTypeClass const VehHit2(ANIM_VEH_HIT2, // Animation number.
                                    true,          // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_XPLOS,     // Sound effect to play.
+                                   false,
+                                   false,     // Is this a flame thrower animation?
+                                   0x0000,    // Damage to apply per tick (fixed point).
+                                   1,         // Delay between frames.
+                                   0,         // Starting frame number.
+                                   0,         // Loop start frame number.
+                                   -1,        // Ending frame of loop back.
+                                   -1,        // Number of animation stages.
+                                   1,         // Number of times the animation loops.
+                                   VOC_XPLOS, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const VehHit3(ANIM_VEH_HIT3, // Animation number.
@@ -942,15 +983,16 @@ static AnimTypeClass const VehHit3(ANIM_VEH_HIT3, // Animation number.
                                    true,          // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_XPLOS,     // Sound effect to play.
+                                   false,
+                                   false,     // Is this a flame thrower animation?
+                                   0x0000,    // Damage to apply per tick (fixed point).
+                                   1,         // Delay between frames.
+                                   0,         // Starting frame number.
+                                   0,         // Loop start frame number.
+                                   -1,        // Ending frame of loop back.
+                                   -1,        // Number of animation stages.
+                                   1,         // Number of times the animation loops.
+                                   VOC_XPLOS, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const ArtExp1(ANIM_ART_EXP1, // Animation number.
@@ -964,15 +1006,16 @@ static AnimTypeClass const ArtExp1(ANIM_ART_EXP1, // Animation number.
                                    false,         // Sticks to unit in square?
                                    false,         // Ground level animation?
                                    false,         // Translucent colors in this animation?
-                                   false,         // Is this a flame thrower animation?
-                                   0x0000,        // Damage to apply per tick (fixed point).
-                                   1,             // Delay between frames.
-                                   0,             // Starting frame number.
-                                   0,             // Loop start frame number.
-                                   -1,            // Ending frame of loop back.
-                                   -1,            // Number of animation stages.
-                                   1,             // Number of times the animation loops.
-                                   VOC_XPLOSML2,  // Sound effect to play.
+                                   false,
+                                   false,        // Is this a flame thrower animation?
+                                   0x0000,       // Damage to apply per tick (fixed point).
+                                   1,            // Delay between frames.
+                                   0,            // Starting frame number.
+                                   0,            // Loop start frame number.
+                                   -1,           // Ending frame of loop back.
+                                   -1,           // Number of animation stages.
+                                   1,            // Number of times the animation loops.
+                                   VOC_XPLOSML2, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const Napalm1(ANIM_NAPALM1, // Animation number.
@@ -986,15 +1029,16 @@ static AnimTypeClass const Napalm1(ANIM_NAPALM1, // Animation number.
                                    false,        // Sticks to unit in square?
                                    false,        // Ground level animation?
                                    false,        // Translucent colors in this animation?
-                                   false,        // Is this a flame thrower animation?
-                                   0x0000,       // Damage to apply per tick (fixed point).
-                                   1,            // Delay between frames.
-                                   0,            // Starting frame number.
-                                   0,            // Loop start frame number.
-                                   -1,           // Ending frame of loop back.
-                                   -1,           // Number of animation stages.
-                                   1,            // Number of times the animation loops.
-                                   VOC_FLAMER1,  // Sound effect to play.
+                                   false,
+                                   false,       // Is this a flame thrower animation?
+                                   0x0000,      // Damage to apply per tick (fixed point).
+                                   1,           // Delay between frames.
+                                   0,           // Starting frame number.
+                                   0,           // Loop start frame number.
+                                   -1,          // Ending frame of loop back.
+                                   -1,          // Number of animation stages.
+                                   1,           // Number of times the animation loops.
+                                   VOC_FLAMER1, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const Napalm2(ANIM_NAPALM2, // Animation number.
@@ -1008,15 +1052,16 @@ static AnimTypeClass const Napalm2(ANIM_NAPALM2, // Animation number.
                                    false,        // Sticks to unit in square?
                                    false,        // Ground level animation?
                                    false,        // Translucent colors in this animation?
-                                   false,        // Is this a flame thrower animation?
-                                   0x0000,       // Damage to apply per tick (fixed point).
-                                   1,            // Delay between frames.
-                                   0,            // Starting frame number.
-                                   0,            // Loop start frame number.
-                                   -1,           // Ending frame of loop back.
-                                   -1,           // Number of animation stages.
-                                   1,            // Number of times the animation loops.
-                                   VOC_FLAMER1,  // Sound effect to play.
+                                   false,
+                                   false,       // Is this a flame thrower animation?
+                                   0x0000,      // Damage to apply per tick (fixed point).
+                                   1,           // Delay between frames.
+                                   0,           // Starting frame number.
+                                   0,           // Loop start frame number.
+                                   -1,          // Ending frame of loop back.
+                                   -1,          // Number of animation stages.
+                                   1,           // Number of times the animation loops.
+                                   VOC_FLAMER1, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const Napalm3(ANIM_NAPALM3, // Animation number.
@@ -1030,15 +1075,16 @@ static AnimTypeClass const Napalm3(ANIM_NAPALM3, // Animation number.
                                    false,        // Sticks to unit in square?
                                    false,        // Ground level animation?
                                    false,        // Translucent colors in this animation?
-                                   false,        // Is this a flame thrower animation?
-                                   0x0000,       // Damage to apply per tick (fixed point).
-                                   1,            // Delay between frames.
-                                   0,            // Starting frame number.
-                                   0,            // Loop start frame number.
-                                   -1,           // Ending frame of loop back.
-                                   -1,           // Number of animation stages.
-                                   1,            // Number of times the animation loops.
-                                   VOC_FLAMER1,  // Sound effect to play.
+                                   false,
+                                   false,       // Is this a flame thrower animation?
+                                   0x0000,      // Damage to apply per tick (fixed point).
+                                   1,           // Delay between frames.
+                                   0,           // Starting frame number.
+                                   0,           // Loop start frame number.
+                                   -1,          // Ending frame of loop back.
+                                   -1,          // Number of animation stages.
+                                   1,           // Number of times the animation loops.
+                                   VOC_FLAMER1, // Sound effect to play.
                                    ANIM_NONE);
 
 static AnimTypeClass const SmokePuff(ANIM_SMOKE_PUFF, // Animation number.
@@ -1052,15 +1098,16 @@ static AnimTypeClass const SmokePuff(ANIM_SMOKE_PUFF, // Animation number.
                                      false,           // Sticks to unit in square?
                                      false,           // Ground level animation?
                                      true,            // Translucent colors in this animation?
-                                     false,           // Is this a flame thrower animation?
-                                     0x0000,          // Damage to apply per tick (fixed point).
-                                     1,               // Delay between frames.
-                                     0,               // Starting frame number.
-                                     0,               // Loop start frame number.
-                                     -1,              // Ending frame of loop back.
-                                     -1,              // Number of animation stages.
-                                     1,               // Number of times the animation loops.
-                                     VOC_NONE,        // Sound effect to play.
+                                     false,
+                                     false,    // Is this a flame thrower animation?
+                                     0x0000,   // Damage to apply per tick (fixed point).
+                                     1,        // Delay between frames.
+                                     0,        // Starting frame number.
+                                     0,        // Loop start frame number.
+                                     -1,       // Ending frame of loop back.
+                                     -1,       // Number of animation stages.
+                                     1,        // Number of times the animation loops.
+                                     VOC_NONE, // Sound effect to play.
                                      ANIM_NONE);
 
 static AnimTypeClass const Piff(ANIM_PIFF, // Animation number.
@@ -1074,15 +1121,16 @@ static AnimTypeClass const Piff(ANIM_PIFF, // Animation number.
                                 false,     // Sticks to unit in square?
                                 false,     // Ground level animation?
                                 false,     // Translucent colors in this animation?
-                                false,     // Is this a flame thrower animation?
-                                0x0000,    // Damage to apply per tick (fixed point).
-                                1,         // Delay between frames.
-                                0,         // Starting frame number.
-                                0,         // Loop start frame number.
-                                -1,        // Ending frame of loop back.
-                                -1,        // Number of animation stages.
-                                1,         // Number of times the animation loops.
-                                VOC_NONE,  // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                0,        // Starting frame number.
+                                0,        // Loop start frame number.
+                                -1,       // Ending frame of loop back.
+                                -1,       // Number of animation stages.
+                                1,        // Number of times the animation loops.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 
 static AnimTypeClass const PiffPiff(ANIM_PIFFPIFF, // Animation number.
@@ -1096,15 +1144,16 @@ static AnimTypeClass const PiffPiff(ANIM_PIFFPIFF, // Animation number.
                                     false,         // Sticks to unit in square?
                                     false,         // Ground level animation?
                                     false,         // Translucent colors in this animation?
-                                    false,         // Is this a flame thrower animation?
-                                    0x0000,        // Damage to apply per tick (fixed point).
-                                    1,             // Delay between frames.
-                                    0,             // Starting frame number.
-                                    0,             // Loop start frame number.
-                                    -1,            // Ending frame of loop back.
-                                    -1,            // Number of animation stages.
-                                    1,             // Number of times the animation loops.
-                                    VOC_NONE,      // Sound effect to play.
+                                    false,
+                                    false,    // Is this a flame thrower animation?
+                                    0x0000,   // Damage to apply per tick (fixed point).
+                                    1,        // Delay between frames.
+                                    0,        // Starting frame number.
+                                    0,        // Loop start frame number.
+                                    -1,       // Ending frame of loop back.
+                                    -1,       // Number of animation stages.
+                                    1,        // Number of times the animation loops.
+                                    VOC_NONE, // Sound effect to play.
                                     ANIM_NONE);
 
 static AnimTypeClass const Fire3(ANIM_FIRE_SMALL, // Animation number.
@@ -1118,15 +1167,16 @@ static AnimTypeClass const Fire3(ANIM_FIRE_SMALL, // Animation number.
                                  false,           // Sticks to unit in square?
                                  true,            // Ground level animation?
                                  false,           // Translucent colors in this animation?
-                                 false,           // Is this a flame thrower animation?
-                                 0x0008,          // Damage to apply per tick (fixed point).
-                                 1,               // Delay between frames.
-                                 0,               // Starting frame number.
-                                 0,               // Loop start frame number.
-                                 -1,              // Ending frame of loop back.
-                                 -1,              // Number of animation stages.
-                                 2,               // Number of times the animation loops.
-                                 VOC_NONE,        // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0008,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 2,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE,
                                  -1,                     // Virtual stages
                                  0x100,                  // Virtual scale
@@ -1144,15 +1194,16 @@ static AnimTypeClass const Fire3Virtual(ANIM_FIRE_SMALL_VIRTUAL, // Animation nu
                                         false,                   // Sticks to unit in square?
                                         true,                    // Ground level animation?
                                         false,                   // Translucent colors in this animation?
-                                        false,                   // Is this a flame thrower animation?
-                                        0x0000,                  // Damage to apply per tick (fixed point).
-                                        1,                       // Delay between frames.
-                                        0,                       // Starting frame number.
-                                        10,                      // Loop start frame number.
-                                        21,                      // Ending frame of loop back.
-                                        29,                      // Number of animation stages.
-                                        2,                       // Number of times the animation loops.
-                                        VOC_NONE,                // Sound effect to play.
+                                        false,
+                                        false,    // Is this a flame thrower animation?
+                                        0x0000,   // Damage to apply per tick (fixed point).
+                                        1,        // Delay between frames.
+                                        0,        // Starting frame number.
+                                        10,       // Loop start frame number.
+                                        21,       // Ending frame of loop back.
+                                        29,       // Number of animation stages.
+                                        2,        // Number of times the animation loops.
+                                        VOC_NONE, // Sound effect to play.
                                         ANIM_NONE);
 
 static AnimTypeClass const Fire1(ANIM_FIRE_MED2, // Animation number.
@@ -1166,15 +1217,16 @@ static AnimTypeClass const Fire1(ANIM_FIRE_MED2, // Animation number.
                                  false,          // Sticks to unit in square?
                                  true,           // Ground level animation?
                                  false,          // Translucent colors in this animation?
-                                 false,          // Is this a flame thrower animation?
-                                 0x0010,         // Damage to apply per tick (fixed point).
-                                 1,              // Delay between frames.
-                                 0,              // Starting frame number.
-                                 0,              // Loop start frame number.
-                                 -1,             // Ending frame of loop back.
-                                 -1,             // Number of animation stages.
-                                 3,              // Number of times the animation loops.
-                                 VOC_NONE,       // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0010,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 3,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE,
                                  -1,                    // Virtual stages
                                  0x100,                 // Virtual scale
@@ -1192,15 +1244,16 @@ static AnimTypeClass const Fire1Virtual(ANIM_FIRE_MED2_VIRTUAL, // Animation num
                                         false,                  // Sticks to unit in square?
                                         true,                   // Ground level animation?
                                         false,                  // Translucent colors in this animation?
-                                        false,                  // Is this a flame thrower animation?
-                                        0x0000,                 // Damage to apply per tick (fixed point).
-                                        1,                      // Delay between frames.
-                                        0,                      // Starting frame number.
-                                        10,                     // Loop start frame number.
-                                        21,                     // Ending frame of loop back.
-                                        29,                     // Number of animation stages.
-                                        3,                      // Number of times the animation loops.
-                                        VOC_NONE,               // Sound effect to play.
+                                        false,
+                                        false,    // Is this a flame thrower animation?
+                                        0x0000,   // Damage to apply per tick (fixed point).
+                                        1,        // Delay between frames.
+                                        0,        // Starting frame number.
+                                        10,       // Loop start frame number.
+                                        21,       // Ending frame of loop back.
+                                        29,       // Number of animation stages.
+                                        3,        // Number of times the animation loops.
+                                        VOC_NONE, // Sound effect to play.
                                         ANIM_NONE);
 
 static AnimTypeClass const Fire4(ANIM_FIRE_TINY, // Animation number.
@@ -1214,15 +1267,16 @@ static AnimTypeClass const Fire4(ANIM_FIRE_TINY, // Animation number.
                                  false,          // Sticks to unit in square?
                                  true,           // Ground level animation?
                                  false,          // Translucent colors in this animation?
-                                 false,          // Is this a flame thrower animation?
-                                 0x0008,         // Damage to apply per tick (fixed point).
-                                 1,              // Delay between frames.
-                                 0,              // Starting frame number.
-                                 0,              // Loop start frame number.
-                                 -1,             // Ending frame of loop back.
-                                 -1,             // Number of animation stages.
-                                 3,              // Number of times the animation loops.
-                                 VOC_NONE,       // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0008,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 3,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE,
                                  -1,                    // Virtual stages
                                  0x100,                 // Virtual scale
@@ -1240,15 +1294,16 @@ static AnimTypeClass const Fire4Virtual(ANIM_FIRE_TINY_VIRTUAL, // Animation num
                                         false,                  // Sticks to unit in square?
                                         true,                   // Ground level animation?
                                         false,                  // Translucent colors in this animation?
-                                        false,                  // Is this a flame thrower animation?
-                                        0x0000,                 // Damage to apply per tick (fixed point).
-                                        1,                      // Delay between frames.
-                                        0,                      // Starting frame number.
-                                        10,                     // Loop start frame number.
-                                        21,                     // Ending frame of loop back.
-                                        29,                     // Number of animation stages.
-                                        3,                      // Number of times the animation loops.
-                                        VOC_NONE,               // Sound effect to play.
+                                        false,
+                                        false,    // Is this a flame thrower animation?
+                                        0x0000,   // Damage to apply per tick (fixed point).
+                                        1,        // Delay between frames.
+                                        0,        // Starting frame number.
+                                        10,       // Loop start frame number.
+                                        21,       // Ending frame of loop back.
+                                        29,       // Number of animation stages.
+                                        3,        // Number of times the animation loops.
+                                        VOC_NONE, // Sound effect to play.
                                         ANIM_NONE,
                                         30 // Virtual stages
 );
@@ -1264,15 +1319,16 @@ static AnimTypeClass const Fire2(ANIM_FIRE_MED, // Animation number.
                                  false,         // Sticks to unit in square?
                                  true,          // Ground level animation?
                                  false,         // Translucent colors in this animation?
-                                 false,         // Is this a flame thrower animation?
-                                 0x0010,        // Damage to apply per tick (fixed point).
-                                 1,             // Delay between frames.
-                                 0,             // Starting frame number.
-                                 0,             // Loop start frame number.
-                                 -1,            // Ending frame of loop back.
-                                 -1,            // Number of animation stages.
-                                 3,             // Number of times the animation loops.
-                                 VOC_NONE,      // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0010,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 -1,       // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 3,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE,
                                  -1,                   // Virtual stages
                                  0x100,                // Virtual scale
@@ -1290,15 +1346,16 @@ static AnimTypeClass const Fire2Virtual(ANIM_FIRE_MED_VIRTUAL, // Animation numb
                                         false,                 // Sticks to unit in square?
                                         true,                  // Ground level animation?
                                         false,                 // Translucent colors in this animation?
-                                        false,                 // Is this a flame thrower animation?
-                                        0x0000,                // Damage to apply per tick (fixed point).
-                                        1,                     // Delay between frames.
-                                        0,                     // Starting frame number.
-                                        10,                    // Loop start frame number.
-                                        21,                    // Ending frame of loop back.
-                                        29,                    // Number of animation stages.
-                                        3,                     // Number of times the animation loops.
-                                        VOC_NONE,              // Sound effect to play.
+                                        false,
+                                        false,    // Is this a flame thrower animation?
+                                        0x0000,   // Damage to apply per tick (fixed point).
+                                        1,        // Delay between frames.
+                                        0,        // Starting frame number.
+                                        10,       // Loop start frame number.
+                                        21,       // Ending frame of loop back.
+                                        29,       // Number of animation stages.
+                                        3,        // Number of times the animation loops.
+                                        VOC_NONE, // Sound effect to play.
                                         ANIM_NONE);
 
 static AnimTypeClass const OilFieldBurn(ANIM_OILFIELD_BURN, // Animation number.
@@ -1312,15 +1369,16 @@ static AnimTypeClass const OilFieldBurn(ANIM_OILFIELD_BURN, // Animation number.
                                         false,              // Sticks to unit in square?
                                         true,               // Ground level animation?
                                         false,              // Translucent colors in this animation?
-                                        false,              // Is this a flame thrower animation?
-                                        0x0000,             // Damage to apply per tick (fixed point).
-                                        1,                  // Delay between frames.
-                                        0,                  // Starting frame number.
-                                        33,                 // Loop start frame number.
-                                        99,                 // Ending frame of loop back.
-                                        66,                 // Number of animation stages.
-                                        127,                // Number of times the animation loops.
-                                        VOC_NONE,           // Sound effect to play.
+                                        false,
+                                        false,    // Is this a flame thrower animation?
+                                        0x0000,   // Damage to apply per tick (fixed point).
+                                        1,        // Delay between frames.
+                                        0,        // Starting frame number.
+                                        33,       // Loop start frame number.
+                                        99,       // Ending frame of loop back.
+                                        66,       // Number of animation stages.
+                                        127,      // Number of times the animation loops.
+                                        VOC_NONE, // Sound effect to play.
                                         ANIM_NONE);
 
 static AnimTypeClass const
@@ -1335,346 +1393,21 @@ static AnimTypeClass const
             false,             // Sticks to unit in square?
             true,              // Ground level animation?
             true,              // Translucent colors in this animation?
-            false,             // Is this a flame thrower animation?
-            0x0000,            // Damage to apply per tick (fixed point).
-            1,                 // Delay between frames.
-            0,                 // Starting frame number.
-            0,                 // Loop start frame number.
-            0,                 // Number of times the animation loops.
-                               //	2,											// Number of times the animation loops.
-            1,                 // Number of animation stages.
-                               //	2,											// Number of animation stages.
-            1,                 // Ending frame of loop back.
-            VOC_NONE,          // Sound effect to play.
+            false,
+            false,    // Is this a flame thrower animation?
+            0x0000,   // Damage to apply per tick (fixed point).
+            1,        // Delay between frames.
+            0,        // Starting frame number.
+            0,        // Loop start frame number.
+            0,        // Number of times the animation loops.
+                      //	2,											// Number of times the animation loops.
+            1,        // Number of animation stages.
+                      //	2,											// Number of animation stages.
+            1,        // Ending frame of loop back.
+            VOC_NONE, // Sound effect to play.
             ANIM_NONE,
             10 // Virtual stages
     );
-
-#ifdef NEVER
-static AnimTypeClass const E1RotFire(ANIM_E1_ROT_FIRE, // Animation number.
-                                     "E1ROT",          // Data name of animation.
-                                     false,            // Normalized animation rate?
-                                     false,            // Uses white translucent table?
-                                     false,            // Scorches the ground?
-                                     false,            // Forms a crater?
-                                     false,            // Sticks to unit in square?
-                                     true,             // Is a flat on the ground animation?
-                                     true,             // Ground level animation?
-                                     false,            // Translucent colors in this animation?
-                                     false,            // Is this a flame thrower animation?
-                                     0x0000,           // Damage to apply per tick (fixed point).
-                                     30,               // Delay between frames.
-                                     28,               // Starting frame number.
-                                     0,                // Loop start frame number.
-                                     0,                // Ending frame of loop back.
-                                     4,                // Number of animation stages.
-                                     1,                // Number of times the animation loops.
-                                     VOC_NONE,         // Sound effect to play.
-                                     ANIM_NONE);
-static AnimTypeClass const E1RotGrenade(ANIM_E1_ROT_GRENADE, // Animation number.
-                                        "E1ROT",             // Data name of animation.
-                                        false,               // Normalized animation rate?
-                                        false,               // Uses white translucent table?
-                                        false,               // Scorches the ground?
-                                        false,               // Forms a crater?
-                                        false,               // Sticks to unit in square?
-                                        true,                // Is a flat on the ground animation?
-                                        true,                // Ground level animation?
-                                        false,               // Translucent colors in this animation?
-                                        false,               // Is this a flame thrower animation?
-                                        0x0000,              // Damage to apply per tick (fixed point).
-                                        30,                  // Delay between frames.
-                                        24,                  // Starting frame number.
-                                        0,                   // Loop start frame number.
-                                        0,                   // Loopback frame number.
-                                        4,                   // Number of animation stages.
-                                        1,                   // Number of times the animation loops.
-                                        VOC_NONE,            // Sound effect to play.
-                                        ANIM_NONE);
-static AnimTypeClass const E1RotGun(ANIM_E1_ROT_GUN, // Animation number.
-                                    "E1ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    16,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-static AnimTypeClass const E1RotExp(ANIM_E1_ROT_EXP, // Animation number.
-                                    "E1ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    20,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-
-static AnimTypeClass const E2RotFire(ANIM_E2_ROT_FIRE, // Animation number.
-                                     "E2ROT",          // Data name of animation.
-                                     false,            // Normalized animation rate?
-                                     false,            // Uses white translucent table?
-                                     false,            // Scorches the ground?
-                                     false,            // Forms a crater?
-                                     false,            // Sticks to unit in square?
-                                     true,             // Is a flat on the ground animation?
-                                     true,             // Ground level animation?
-                                     false,            // Translucent colors in this animation?
-                                     false,            // Is this a flame thrower animation?
-                                     0x0000,           // Damage to apply per tick (fixed point).
-                                     30,               // Delay between frames.
-                                     28,               // Starting frame number.
-                                     0,                // Loop start frame number.
-                                     0,                // Loopback frame number.
-                                     4,                // Number of animation stages.
-                                     1,                // Number of times the animation loops.
-                                     VOC_NONE,         // Sound effect to play.
-                                     ANIM_NONE);
-static AnimTypeClass const E2RotGrenade(ANIM_E2_ROT_GRENADE, // Animation number.
-                                        "E2ROT",             // Data name of animation.
-                                        false,               // Normalized animation rate?
-                                        false,               // Uses white translucent table?
-                                        false,               // Scorches the ground?
-                                        false,               // Forms a crater?
-                                        false,               // Sticks to unit in square?
-                                        true,                // Is a flat on the ground animation?
-                                        true,                // Ground level animation?
-                                        false,               // Translucent colors in this animation?
-                                        false,               // Is this a flame thrower animation?
-                                        0x0000,              // Damage to apply per tick (fixed point).
-                                        30,                  // Delay between frames.
-                                        24,                  // Starting frame number.
-                                        0,                   // Loop start frame number.
-                                        0,                   // Loopback frame number.
-                                        4,                   // Number of animation stages.
-                                        1,                   // Number of times the animation loops.
-                                        VOC_NONE,            // Sound effect to play.
-                                        ANIM_NONE);
-static AnimTypeClass const E2RotGun(ANIM_E2_ROT_GUN, // Animation number.
-                                    "E2ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    16,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-static AnimTypeClass const E2RotExp(ANIM_E2_ROT_EXP, // Animation number.
-                                    "E2ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    20,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-
-static AnimTypeClass const E3RotFire(ANIM_E3_ROT_FIRE, // Animation number.
-                                     "E3ROT",          // Data name of animation.
-                                     false,            // Normalized animation rate?
-                                     false,            // Uses white translucent table?
-                                     false,            // Scorches the ground?
-                                     false,            // Forms a crater?
-                                     false,            // Sticks to unit in square?
-                                     true,             // Is a flat on the ground animation?
-                                     true,             // Ground level animation?
-                                     false,            // Translucent colors in this animation?
-                                     false,            // Is this a flame thrower animation?
-                                     0x0000,           // Damage to apply per tick (fixed point).
-                                     30,               // Delay between frames.
-                                     28,               // Starting frame number.
-                                     0,                // Loop start frame number.
-                                     0,                // Loopback frame number.
-                                     4,                // Number of animation stages.
-                                     1,                // Number of times the animation loops.
-                                     VOC_NONE,         // Sound effect to play.
-                                     ANIM_NONE);
-static AnimTypeClass const E3RotGrenade(ANIM_E3_ROT_GRENADE, // Animation number.
-                                        "E3ROT",             // Data name of animation.
-                                        false,               // Normalized animation rate?
-                                        false,               // Uses white translucent table?
-                                        false,               // Scorches the ground?
-                                        false,               // Forms a crater?
-                                        false,               // Sticks to unit in square?
-                                        true,                // Is a flat on the ground animation?
-                                        true,                // Ground level animation?
-                                        false,               // Translucent colors in this animation?
-                                        false,               // Is this a flame thrower animation?
-                                        0x0000,              // Damage to apply per tick (fixed point).
-                                        30,                  // Delay between frames.
-                                        24,                  // Starting frame number.
-                                        0,                   // Loop start frame number.
-                                        0,                   // Loopback frame number.
-                                        4,                   // Number of animation stages.
-                                        1,                   // Number of times the animation loops.
-                                        VOC_NONE,            // Sound effect to play.
-                                        ANIM_NONE);
-static AnimTypeClass const E3RotGun(ANIM_E3_ROT_GUN, // Animation number.
-                                    "E3ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    16,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-static AnimTypeClass const E3RotExp(ANIM_E3_ROT_EXP, // Animation number.
-                                    "E3ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    20,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-
-static AnimTypeClass const E4RotFire(ANIM_E4_ROT_FIRE, // Animation number.
-                                     "E4ROT",          // Data name of animation.
-                                     false,            // Normalized animation rate?
-                                     false,            // Uses white translucent table?
-                                     false,            // Scorches the ground?
-                                     false,            // Forms a crater?
-                                     false,            // Sticks to unit in square?
-                                     true,             // Is a flat on the ground animation?
-                                     true,             // Ground level animation?
-                                     false,            // Translucent colors in this animation?
-                                     false,            // Is this a flame thrower animation?
-                                     0x0000,           // Damage to apply per tick (fixed point).
-                                     30,               // Delay between frames.
-                                     28,               // Starting frame number.
-                                     0,                // Loop start frame number.
-                                     0,                // Loopback frame number.
-                                     4,                // Number of animation stages.
-                                     1,                // Number of times the animation loops.
-                                     VOC_NONE,         // Sound effect to play.
-                                     ANIM_NONE);
-static AnimTypeClass const E4RotGrenade(ANIM_E4_ROT_GRENADE, // Animation number.
-                                        "E4ROT",             // Data name of animation.
-                                        false,               // Normalized animation rate?
-                                        false,               // Uses white translucent table?
-                                        false,               // Scorches the ground?
-                                        false,               // Forms a crater?
-                                        false,               // Sticks to unit in square?
-                                        true,                // Is a flat on the ground animation?
-                                        true,                // Ground level animation?
-                                        false,               // Translucent colors in this animation?
-                                        false,               // Is this a flame thrower animation?
-                                        0x0000,              // Damage to apply per tick (fixed point).
-                                        30,                  // Delay between frames.
-                                        24,                  // Starting frame number.
-                                        0,                   // Loop start frame number.
-                                        0,                   // Loopback frame number.
-                                        4,                   // Number of animation stages.
-                                        1,                   // Number of times the animation loops.
-                                        VOC_NONE,            // Sound effect to play.
-                                        ANIM_NONE);
-static AnimTypeClass const E4RotGun(ANIM_E4_ROT_GUN, // Animation number.
-                                    "E4ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    16,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-static AnimTypeClass const E4RotExp(ANIM_E4_ROT_EXP, // Animation number.
-                                    "E4ROT",         // Data name of animation.
-                                    false,           // Normalized animation rate?
-                                    false,           // Uses white translucent table?
-                                    false,           // Scorches the ground?
-                                    false,           // Forms a crater?
-                                    false,           // Sticks to unit in square?
-                                    true,            // Is a flat on the ground animation?
-                                    true,            // Ground level animation?
-                                    false,           // Translucent colors in this animation?
-                                    false,           // Is this a flame thrower animation?
-                                    0x0000,          // Damage to apply per tick (fixed point).
-                                    30,              // Delay between frames.
-                                    20,              // Starting frame number.
-                                    0,               // Loop start frame number.
-                                    0,               // Loopback frame number.
-                                    4,               // Number of animation stages.
-                                    1,               // Number of times the animation loops.
-                                    VOC_NONE,        // Sound effect to play.
-                                    ANIM_NONE);
-#endif
 
 static AnimTypeClass const SmokeM(ANIM_SMOKE_M, // Animation number.
                                   "SMOKE_M",    // Data name of animation.
@@ -1687,15 +1420,16 @@ static AnimTypeClass const SmokeM(ANIM_SMOKE_M, // Animation number.
                                   false,        // Sticks to unit in square?
                                   true,         // Ground level animation?
                                   false,        // Translucent colors in this animation?
-                                  false,        // Is this a flame thrower animation?
-                                  0x0000,       // Damage to apply per tick (fixed point).
-                                  1,            // Delay between frames.
-                                  0,            // Starting frame number.
-                                  67,           // Loop start frame number.
-                                  -1,           // Loopback frame number.
-                                  -1,           // Number of animation stages.
-                                  6,            // Number of times the animation loops.
-                                  VOC_NONE,     // Sound effect to play.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  67,       // Loop start frame number.
+                                  -1,       // Loopback frame number.
+                                  -1,       // Number of animation stages.
+                                  6,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE,
                                   105 // Virtual stages
 );
@@ -1714,15 +1448,16 @@ static AnimTypeClass const GUNN(ANIM_GUN_N, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                0,          // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Number of times the animation loops.
-                                6,          // Number of animation stages.
-                                0,          // Ending frame of loop back.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                0,        // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Number of times the animation loops.
+                                6,        // Number of animation stages.
+                                0,        // Ending frame of loop back.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const GUNNW(ANIM_GUN_NW, // Animation number.
                                  "MINIGUN",   // Data name of animation.
@@ -1735,15 +1470,16 @@ static AnimTypeClass const GUNNW(ANIM_GUN_NW, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 6,           // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Number of times the animation loops.
-                                 6,           // Number of animation stages.
-                                 0,           // Ending frame of loop back.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 6,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Number of times the animation loops.
+                                 6,        // Number of animation stages.
+                                 0,        // Ending frame of loop back.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const GUNW(ANIM_GUN_W, // Animation number.
                                 "MINIGUN",  // Data name of animation.
@@ -1756,15 +1492,16 @@ static AnimTypeClass const GUNW(ANIM_GUN_W, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                12,         // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Number of times the animation loops.
-                                6,          // Number of animation stages.
-                                0,          // Ending frame of loop back.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                12,       // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Number of times the animation loops.
+                                6,        // Number of animation stages.
+                                0,        // Ending frame of loop back.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const GUNSW(ANIM_GUN_SW, // Animation number.
                                  "MINIGUN",   // Data name of animation.
@@ -1777,15 +1514,16 @@ static AnimTypeClass const GUNSW(ANIM_GUN_SW, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 18,          // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Number of times the animation loops.
-                                 6,           // Number of animation stages.
-                                 0,           // Ending frame of loop back.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 18,       // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Number of times the animation loops.
+                                 6,        // Number of animation stages.
+                                 0,        // Ending frame of loop back.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const GUNS(ANIM_GUN_S, // Animation number.
                                 "MINIGUN",  // Data name of animation.
@@ -1798,15 +1536,16 @@ static AnimTypeClass const GUNS(ANIM_GUN_S, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                24,         // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Number of times the animation loops.
-                                6,          // Number of animation stages.
-                                0,          // Ending frame of loop back.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                24,       // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Number of times the animation loops.
+                                6,        // Number of animation stages.
+                                0,        // Ending frame of loop back.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const GUNSE(ANIM_GUN_SE, // Animation number.
                                  "MINIGUN",   // Data name of animation.
@@ -1819,15 +1558,16 @@ static AnimTypeClass const GUNSE(ANIM_GUN_SE, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 30,          // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Number of times the animation loops.
-                                 6,           // Number of animation stages.
-                                 0,           // Ending frame of loop back.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 30,       // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Number of times the animation loops.
+                                 6,        // Number of animation stages.
+                                 0,        // Ending frame of loop back.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const GUNE(ANIM_GUN_E, // Animation number.
                                 "MINIGUN",  // Data name of animation.
@@ -1840,15 +1580,16 @@ static AnimTypeClass const GUNE(ANIM_GUN_E, // Animation number.
                                 false,      // Sticks to unit in square?
                                 false,      // Ground level animation?
                                 false,      // Translucent colors in this animation?
-                                false,      // Is this a flame thrower animation?
-                                0x0000,     // Damage to apply per tick (fixed point).
-                                1,          // Delay between frames.
-                                36,         // Starting frame number.
-                                0,          // Loop start frame number.
-                                0,          // Number of times the animation loops.
-                                6,          // Number of animation stages.
-                                0,          // Ending frame of loop back.
-                                VOC_NONE,   // Sound effect to play.
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                36,       // Starting frame number.
+                                0,        // Loop start frame number.
+                                0,        // Number of times the animation loops.
+                                6,        // Number of animation stages.
+                                0,        // Ending frame of loop back.
+                                VOC_NONE, // Sound effect to play.
                                 ANIM_NONE);
 static AnimTypeClass const GUNNE(ANIM_GUN_NE, // Animation number.
                                  "MINIGUN",   // Data name of animation.
@@ -1861,15 +1602,16 @@ static AnimTypeClass const GUNNE(ANIM_GUN_NE, // Animation number.
                                  false,       // Sticks to unit in square?
                                  false,       // Ground level animation?
                                  false,       // Translucent colors in this animation?
-                                 false,       // Is this a flame thrower animation?
-                                 0x0000,      // Damage to apply per tick (fixed point).
-                                 1,           // Delay between frames.
-                                 42,          // Starting frame number.
-                                 0,           // Loop start frame number.
-                                 0,           // Number of times the animation loops.
-                                 6,           // Number of animation stages.
-                                 0,           // Ending frame of loop back.
-                                 VOC_NONE,    // Sound effect to play.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 1,        // Delay between frames.
+                                 42,       // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Number of times the animation loops.
+                                 6,        // Number of animation stages.
+                                 0,        // Ending frame of loop back.
+                                 VOC_NONE, // Sound effect to play.
                                  ANIM_NONE);
 static AnimTypeClass const IonCannon(ANIM_ION_CANNON, // Animation number.
                                      "IONSFX",        // Data name of animation.
@@ -1882,31 +1624,33 @@ static AnimTypeClass const IonCannon(ANIM_ION_CANNON, // Animation number.
                                      false,           // Sticks to unit in square?
                                      false,           // Ground level animation?
                                      false,           // Translucent colors in this animation?
-                                     false,           // Is this a flame thrower animation?
-                                     0x0000,          // Damage to apply per tick (fixed point).
-                                     1,               // Delay between frames.
-                                     0,               // Starting frame number.
-                                     0,               // Loop start frame number.
-                                     0,               // Ending frame of loop back.
-                                     15,              // Number of animation stages.
-                                     0,               // Number of times the animation loops.
-                                     VOC_ION_CANNON,  // Sound effect to play.
+                                     false,
+                                     false,          // Is this a flame thrower animation?
+                                     0x0000,         // Damage to apply per tick (fixed point).
+                                     1,              // Delay between frames.
+                                     0,              // Starting frame number.
+                                     0,              // Loop start frame number.
+                                     0,              // Ending frame of loop back.
+                                     15,             // Number of animation stages.
+                                     0,              // Number of times the animation loops.
+                                     VOC_ION_CANNON, // Sound effect to play.
                                      ANIM_ART_EXP1,
                                      32,   // Virtual stages
                                      0x200 // Virtual scale
 );
 
-static AnimTypeClass const AtomBomb(ANIM_ATOM_BLAST,  // Animation number.
-                                    "ATOMSFX",        // Data name of animation.
-                                    72,               // Maximum dimension of animation.
-                                    19,               // Biggest animation stage.
-                                    false,            // Normalized animation rate?
-                                    false,            // Uses white translucent table?
-                                    true,             // Scorches the ground?
-                                    true,             // Forms a crater?
-                                    false,            // Sticks to unit in square?
-                                    false,            // Ground level animation?
-                                    false,            // Translucent colors in this animation?
+static AnimTypeClass const AtomBomb(ANIM_ATOM_BLAST, // Animation number.
+                                    "ATOMSFX",       // Data name of animation.
+                                    72,              // Maximum dimension of animation.
+                                    19,              // Biggest animation stage.
+                                    false,           // Normalized animation rate?
+                                    false,           // Uses white translucent table?
+                                    true,            // Scorches the ground?
+                                    true,            // Forms a crater?
+                                    false,           // Sticks to unit in square?
+                                    false,           // Ground level animation?
+                                    false,           // Translucent colors in this animation?
+                                    false,
                                     false,            // Is this a flame thrower animation?
                                     0x0000,           // Damage to apply per tick (fixed point).
                                     1,                // Delay between frames.
@@ -1931,15 +1675,16 @@ static AnimTypeClass const AtomDoor(ANIM_ATOM_DOOR, // Animation number.
                                     true,           // Sticks to unit in square?
                                     false,          // Ground level animation?
                                     false,          // Translucent colors in this animation?
-                                    false,          // Is this a flame thrower animation?
-                                    0x0000,         // Damage to apply per tick (fixed point).
-                                    1,              // Delay between frames.
-                                    0,              // Starting frame number.
-                                    0,              // Loop start frame number.
-                                    0,              // Ending frame of loop back.
-                                    -1,             // Number of animation stages.
-                                    0,              // Number of times the animation loops.
-                                    VOC_NONE,       // Sound effect to play.
+                                    false,
+                                    false,    // Is this a flame thrower animation?
+                                    0x0000,   // Damage to apply per tick (fixed point).
+                                    1,        // Delay between frames.
+                                    0,        // Starting frame number.
+                                    0,        // Loop start frame number.
+                                    0,        // Ending frame of loop back.
+                                    -1,       // Number of animation stages.
+                                    0,        // Number of times the animation loops.
+                                    VOC_NONE, // Sound effect to play.
                                     ANIM_NONE);
 
 static AnimTypeClass const CDeviator(ANIM_CRATE_DEVIATOR, // Animation number.
@@ -1953,16 +1698,17 @@ static AnimTypeClass const CDeviator(ANIM_CRATE_DEVIATOR, // Animation number.
                                      false,               // Sticks to unit in square?
                                      false,               // Ground level animation?
                                      false,               // Translucent colors in this animation?
-                                     false,               // Is this a flame thrower animation?
-                                     0x0000,              // Damage to apply per tick (fixed point).
-                                     2,                   // Delay between frames.
-                                     0,                   // Starting frame number.
-                                     0,                   // Loop start frame number.
-                                     0,                   // Ending frame of loop back.
-                                     -1,                  // Number of animation stages.
-                                     0,                   // Number of times the animation loops.
-                                     VOC_NONE,            // Sound effect to play.
-                                     ANIM_NONE            // Follow up animation.
+                                     false,
+                                     false,    // Is this a flame thrower animation?
+                                     0x0000,   // Damage to apply per tick (fixed point).
+                                     2,        // Delay between frames.
+                                     0,        // Starting frame number.
+                                     0,        // Loop start frame number.
+                                     0,        // Ending frame of loop back.
+                                     -1,       // Number of animation stages.
+                                     0,        // Number of times the animation loops.
+                                     VOC_NONE, // Sound effect to play.
+                                     ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CDollar(ANIM_CRATE_DOLLAR, // Animation number.
                                    "DOLLAR",          // Data name of animation.
@@ -1975,16 +1721,17 @@ static AnimTypeClass const CDollar(ANIM_CRATE_DOLLAR, // Animation number.
                                    false,             // Sticks to unit in square?
                                    false,             // Ground level animation?
                                    false,             // Translucent colors in this animation?
-                                   false,             // Is this a flame thrower animation?
-                                   0x0000,            // Damage to apply per tick (fixed point).
-                                   2,                 // Delay between frames.
-                                   0,                 // Starting frame number.
-                                   0,                 // Loop start frame number.
-                                   0,                 // Ending frame of loop back.
-                                   -1,                // Number of animation stages.
-                                   0,                 // Number of times the animation loops.
-                                   VOC_NONE,          // Sound effect to play.
-                                   ANIM_NONE          // Follow up animation.
+                                   false,
+                                   false,    // Is this a flame thrower animation?
+                                   0x0000,   // Damage to apply per tick (fixed point).
+                                   2,        // Delay between frames.
+                                   0,        // Starting frame number.
+                                   0,        // Loop start frame number.
+                                   0,        // Ending frame of loop back.
+                                   -1,       // Number of animation stages.
+                                   0,        // Number of times the animation loops.
+                                   VOC_NONE, // Sound effect to play.
+                                   ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CEarth(ANIM_CRATE_EARTH, // Animation number.
                                   "EARTH",          // Data name of animation.
@@ -1997,16 +1744,17 @@ static AnimTypeClass const CEarth(ANIM_CRATE_EARTH, // Animation number.
                                   false,            // Sticks to unit in square?
                                   false,            // Ground level animation?
                                   false,            // Translucent colors in this animation?
-                                  false,            // Is this a flame thrower animation?
-                                  0x0000,           // Damage to apply per tick (fixed point).
-                                  2,                // Delay between frames.
-                                  0,                // Starting frame number.
-                                  0,                // Loop start frame number.
-                                  0,                // Ending frame of loop back.
-                                  -1,               // Number of animation stages.
-                                  0,                // Number of times the animation loops.
-                                  VOC_NONE,         // Sound effect to play.
-                                  ANIM_NONE         // Follow up animation.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  2,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  0,        // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  0,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
+                                  ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CEmpulse(ANIM_CRATE_EMPULSE, // Animation number.
                                     "EMPULSE",          // Data name of animation.
@@ -2019,16 +1767,17 @@ static AnimTypeClass const CEmpulse(ANIM_CRATE_EMPULSE, // Animation number.
                                     false,              // Sticks to unit in square?
                                     false,              // Ground level animation?
                                     false,              // Translucent colors in this animation?
-                                    false,              // Is this a flame thrower animation?
-                                    0x0000,             // Damage to apply per tick (fixed point).
-                                    2,                  // Delay between frames.
-                                    0,                  // Starting frame number.
-                                    0,                  // Loop start frame number.
-                                    0,                  // Ending frame of loop back.
-                                    -1,                 // Number of animation stages.
-                                    0,                  // Number of times the animation loops.
-                                    VOC_NONE,           // Sound effect to play.
-                                    ANIM_NONE           // Follow up animation.
+                                    false,
+                                    false,    // Is this a flame thrower animation?
+                                    0x0000,   // Damage to apply per tick (fixed point).
+                                    2,        // Delay between frames.
+                                    0,        // Starting frame number.
+                                    0,        // Loop start frame number.
+                                    0,        // Ending frame of loop back.
+                                    -1,       // Number of animation stages.
+                                    0,        // Number of times the animation loops.
+                                    VOC_NONE, // Sound effect to play.
+                                    ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CInvun(ANIM_CRATE_INVUN, // Animation number.
                                   "INVUN",          // Data name of animation.
@@ -2041,16 +1790,17 @@ static AnimTypeClass const CInvun(ANIM_CRATE_INVUN, // Animation number.
                                   false,            // Sticks to unit in square?
                                   false,            // Ground level animation?
                                   false,            // Translucent colors in this animation?
-                                  false,            // Is this a flame thrower animation?
-                                  0x0000,           // Damage to apply per tick (fixed point).
-                                  2,                // Delay between frames.
-                                  0,                // Starting frame number.
-                                  0,                // Loop start frame number.
-                                  0,                // Ending frame of loop back.
-                                  -1,               // Number of animation stages.
-                                  0,                // Number of times the animation loops.
-                                  VOC_NONE,         // Sound effect to play.
-                                  ANIM_NONE         // Follow up animation.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  2,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  0,        // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  0,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
+                                  ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CMine(ANIM_CRATE_MINE, // Animation number.
                                  "MINE",          // Data name of animation.
@@ -2063,16 +1813,17 @@ static AnimTypeClass const CMine(ANIM_CRATE_MINE, // Animation number.
                                  false,           // Sticks to unit in square?
                                  false,           // Ground level animation?
                                  false,           // Translucent colors in this animation?
-                                 false,           // Is this a flame thrower animation?
-                                 0x0000,          // Damage to apply per tick (fixed point).
-                                 2,               // Delay between frames.
-                                 0,               // Starting frame number.
-                                 0,               // Loop start frame number.
-                                 0,               // Ending frame of loop back.
-                                 -1,              // Number of animation stages.
-                                 0,               // Number of times the animation loops.
-                                 VOC_NONE,        // Sound effect to play.
-                                 ANIM_NONE        // Follow up animation.
+                                 false,
+                                 false,    // Is this a flame thrower animation?
+                                 0x0000,   // Damage to apply per tick (fixed point).
+                                 2,        // Delay between frames.
+                                 0,        // Starting frame number.
+                                 0,        // Loop start frame number.
+                                 0,        // Ending frame of loop back.
+                                 -1,       // Number of animation stages.
+                                 0,        // Number of times the animation loops.
+                                 VOC_NONE, // Sound effect to play.
+                                 ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CRapid(ANIM_CRATE_RAPID, // Animation number.
                                   "RAPID",          // Data name of animation.
@@ -2085,16 +1836,17 @@ static AnimTypeClass const CRapid(ANIM_CRATE_RAPID, // Animation number.
                                   false,            // Sticks to unit in square?
                                   false,            // Ground level animation?
                                   false,            // Translucent colors in this animation?
-                                  false,            // Is this a flame thrower animation?
-                                  0x0000,           // Damage to apply per tick (fixed point).
-                                  2,                // Delay between frames.
-                                  0,                // Starting frame number.
-                                  0,                // Loop start frame number.
-                                  0,                // Ending frame of loop back.
-                                  -1,               // Number of animation stages.
-                                  0,                // Number of times the animation loops.
-                                  VOC_NONE,         // Sound effect to play.
-                                  ANIM_NONE         // Follow up animation.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  2,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  0,        // Ending frame of loop back.
+                                  -1,       // Number of animation stages.
+                                  0,        // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
+                                  ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CStealth(ANIM_CRATE_STEALTH, // Animation number.
                                     "STEALTH2",         // Data name of animation.
@@ -2107,16 +1859,17 @@ static AnimTypeClass const CStealth(ANIM_CRATE_STEALTH, // Animation number.
                                     false,              // Sticks to unit in square?
                                     false,              // Ground level animation?
                                     false,              // Translucent colors in this animation?
-                                    false,              // Is this a flame thrower animation?
-                                    0x0000,             // Damage to apply per tick (fixed point).
-                                    2,                  // Delay between frames.
-                                    0,                  // Starting frame number.
-                                    0,                  // Loop start frame number.
-                                    0,                  // Ending frame of loop back.
-                                    -1,                 // Number of animation stages.
-                                    0,                  // Number of times the animation loops.
-                                    VOC_NONE,           // Sound effect to play.
-                                    ANIM_NONE           // Follow up animation.
+                                    false,
+                                    false,    // Is this a flame thrower animation?
+                                    0x0000,   // Damage to apply per tick (fixed point).
+                                    2,        // Delay between frames.
+                                    0,        // Starting frame number.
+                                    0,        // Loop start frame number.
+                                    0,        // Ending frame of loop back.
+                                    -1,       // Number of animation stages.
+                                    0,        // Number of times the animation loops.
+                                    VOC_NONE, // Sound effect to play.
+                                    ANIM_NONE // Follow up animation.
 );
 static AnimTypeClass const CMissile(ANIM_CRATE_MISSILE, // Animation number.
                                     "MISSILE2",         // Data name of animation.
@@ -2129,16 +1882,209 @@ static AnimTypeClass const CMissile(ANIM_CRATE_MISSILE, // Animation number.
                                     false,              // Sticks to unit in square?
                                     false,              // Ground level animation?
                                     false,              // Translucent colors in this animation?
-                                    false,              // Is this a flame thrower animation?
-                                    0x0000,             // Damage to apply per tick (fixed point).
-                                    2,                  // Delay between frames.
-                                    0,                  // Starting frame number.
-                                    0,                  // Loop start frame number.
-                                    0,                  // Ending frame of loop back.
-                                    -1,                 // Number of animation stages.
-                                    0,                  // Number of times the animation loops.
-                                    VOC_NONE,           // Sound effect to play.
-                                    ANIM_NONE           // Follow up animation.
+                                    false,
+                                    false,    // Is this a flame thrower animation?
+                                    0x0000,   // Damage to apply per tick (fixed point).
+                                    2,        // Delay between frames.
+                                    0,        // Starting frame number.
+                                    0,        // Loop start frame number.
+                                    0,        // Ending frame of loop back.
+                                    -1,       // Number of animation stages.
+                                    0,        // Number of times the animation loops.
+                                    VOC_NONE, // Sound effect to play.
+                                    ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_551724(ANIM_CRATE_ARMORD, // Animation number.
+                                       "ARMORD",          // Data name of animation.
+                                       48,                // Maximum dimension of animation.
+                                       0,                 // Biggest animation stage.
+                                       true,              // Normalized animation rate?
+                                       false,             // Uses white translucent table?
+                                       false,             // Scorches the ground?
+                                       false,             // Forms a crater?
+                                       false,             // Sticks to unit in square?
+                                       false,             // Ground level animation?
+                                       false,             // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_55176C(ANIM_CRATE_HEALTHD, // Animation number.
+                                       "HEALTHD",          // Data name of animation.
+                                       48,                 // Maximum dimension of animation.
+                                       0,                  // Biggest animation stage.
+                                       true,               // Normalized animation rate?
+                                       false,              // Uses white translucent table?
+                                       false,              // Scorches the ground?
+                                       false,              // Forms a crater?
+                                       false,              // Sticks to unit in square?
+                                       false,              // Ground level animation?
+                                       false,              // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_5517B4(ANIM_CRATE_LITENNGD, // Animation number.
+                                       "LITENNGD",          // Data name of animation.
+                                       48,                  // Maximum dimension of animation.
+                                       0,                   // Biggest animation stage.
+                                       true,                // Normalized animation rate?
+                                       false,               // Uses white translucent table?
+                                       false,               // Scorches the ground?
+                                       false,               // Forms a crater?
+                                       false,               // Sticks to unit in square?
+                                       false,               // Ground level animation?
+                                       false,               // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_5517FC(ANIM_CRATE_MORTARD, // Animation number.
+                                       "MORTARD",          // Data name of animation.
+                                       48,                 // Maximum dimension of animation.
+                                       0,                  // Biggest animation stage.
+                                       true,               // Normalized animation rate?
+                                       false,              // Uses white translucent table?
+                                       false,              // Scorches the ground?
+                                       false,              // Forms a crater?
+                                       false,              // Sticks to unit in square?
+                                       false,              // Ground level animation?
+                                       false,              // Translucent colors in this animation?
+                                       true,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_551844(ANIM_CRATE_RADARD, // Animation number.
+                                       "RADARD",          // Data name of animation.
+                                       48,                // Maximum dimension of animation.
+                                       0,                 // Biggest animation stage.
+                                       true,              // Normalized animation rate?
+                                       false,             // Uses white translucent table?
+                                       false,             // Scorches the ground?
+                                       false,             // Forms a crater?
+                                       false,             // Sticks to unit in square?
+                                       false,             // Ground level animation?
+                                       false,             // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_55188C(ANIM_CRATE_TIMEQK2, // Animation number.
+                                       "TIMEQK2",          // Data name of animation.
+                                       48,                 // Maximum dimension of animation.
+                                       0,                  // Biggest animation stage.
+                                       true,               // Normalized animation rate?
+                                       false,              // Uses white translucent table?
+                                       false,              // Scorches the ground?
+                                       false,              // Forms a crater?
+                                       false,              // Sticks to unit in square?
+                                       false,              // Ground level animation?
+                                       false,              // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_5518D4(ANIM_CRATE_UNCLOAK, // Animation number.
+                                       "UNCLOAKD",         // Data name of animation.
+                                       48,                 // Maximum dimension of animation.
+                                       0,                  // Biggest animation stage.
+                                       true,               // Normalized animation rate?
+                                       false,              // Uses white translucent table?
+                                       false,              // Scorches the ground?
+                                       false,              // Forms a crater?
+                                       false,              // Sticks to unit in square?
+                                       false,              // Ground level animation?
+                                       false,              // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_55191C(ANIM_CRATE_RELOAD, // Animation number.
+                                       "RELOAD",          // Data name of animation.
+                                       48,                // Maximum dimension of animation.
+                                       0,                 // Biggest animation stage.
+                                       true,              // Normalized animation rate?
+                                       false,             // Uses white translucent table?
+                                       false,             // Scorches the ground?
+                                       false,             // Forms a crater?
+                                       false,             // Sticks to unit in square?
+                                       false,             // Ground level animation?
+                                       false,             // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0,        // Damage to apply per tick (fixed point).
+                                       1,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE // Follow up animation.
 );
 
 static AnimTypeClass const MoveFlash(ANIM_MOVE_FLASH, // Animation number.
@@ -2152,16 +2098,17 @@ static AnimTypeClass const MoveFlash(ANIM_MOVE_FLASH, // Animation number.
                                      false,           // Sticks to unit in square?
                                      true,            // Ground level animation?
                                      false,           // Translucent colors in this animation?
-                                     false,           // Is this a flame thrower animation?
-                                     0x0000,          // Damage to apply per tick (fixed point).
-                                     1,               // Delay between frames.
-                                     0,               // Starting frame number.
-                                     0,               // Loop start frame number.
-                                     0,               // Ending frame of loop back.
-                                     -1,              // Number of animation stages.
-                                     0,               // Number of times the animation loops.
-                                     VOC_NONE,        // Sound effect to play.
-                                     ANIM_NONE        // Follow up animation.
+                                     false,
+                                     false,    // Is this a flame thrower animation?
+                                     0x0000,   // Damage to apply per tick (fixed point).
+                                     1,        // Delay between frames.
+                                     0,        // Starting frame number.
+                                     0,        // Loop start frame number.
+                                     0,        // Ending frame of loop back.
+                                     -1,       // Number of animation stages.
+                                     0,        // Number of times the animation loops.
+                                     VOC_NONE, // Sound effect to play.
+                                     ANIM_NONE // Follow up animation.
 );
 
 static AnimTypeClass const ChemBall(ANIM_CHEM_BALL, // Animation number.
@@ -2175,16 +2122,18 @@ static AnimTypeClass const ChemBall(ANIM_CHEM_BALL, // Animation number.
                                     false,          // Sticks to unit in square?
                                     false,          // Ground level animation?
                                     false,          // Translucent colors in this animation?
-                                    false,          // Is this a flame thrower animation?
-                                    0x0000,         // Damage to apply per tick (fixed point).
-                                    1,              // Delay between frames.
-                                    0,              // Starting frame number.
-                                    0,              // Loop start frame number.
-                                    -1,             // Ending frame of loop back.
-                                    -1,             // Number of animation stages.
-                                    1,              // Number of times the animation loops.
-                                    VOC_FLAMER1,    // Sound effect to play.
-                                    ANIM_NONE);
+                                    false,
+                                    false,       // Is this a flame thrower animation?
+                                    0x0000,      // Damage to apply per tick (fixed point).
+                                    1,           // Delay between frames.
+                                    0,           // Starting frame number.
+                                    0,           // Loop start frame number.
+                                    -1,          // Ending frame of loop back.
+                                    -1,          // Number of animation stages.
+                                    1,           // Number of times the animation loops.
+                                    VOC_FLAMER1, // Sound effect to play.
+                                    ANIM_NONE    // Follow up animation.
+);
 
 static AnimTypeClass const Flag(ANIM_FLAG, // Animation number.
                                 "FLAGFLY", // Data name of animation.
@@ -2197,16 +2146,41 @@ static AnimTypeClass const Flag(ANIM_FLAG, // Animation number.
                                 false,     // Sticks to unit in square?
                                 false,     // Ground level animation?
                                 false,     // Translucent colors in this animation?
-                                false,     // Is this a flame thrower animation?
-                                0x0000,    // Damage to apply per tick (fixed point).
-                                1,         // Delay between frames.
-                                0,         // Starting frame number.
-                                0,         // Loop start frame number.
-                                -1,        // Ending frame of loop back.
-                                -1,        // Number of animation stages.
-                                -1,        // Number of times the animation loops.
-                                VOC_NONE,  // Sound effect to play.
-                                ANIM_NONE);
+                                false,
+                                false,    // Is this a flame thrower animation?
+                                0x0000,   // Damage to apply per tick (fixed point).
+                                1,        // Delay between frames.
+                                0,        // Starting frame number.
+                                0,        // Loop start frame number.
+                                -1,       // Ending frame of loop back.
+                                -1,       // Number of animation stages.
+                                -1,       // Number of times the animation loops.
+                                VOC_NONE, // Sound effect to play.
+                                ANIM_NONE // Follow up animation.
+);
+
+static AnimTypeClass const stru_5519F4(ANIM_TELEFX, // Animation number.
+                                       "TELEFX",    // Data name of animation.
+                                       48,          // Maximum dimension of animation.
+                                       0,           // Biggest animation stage.
+                                       true,        // Normalized animation rate?
+                                       false,       // Uses white translucent table?
+                                       false,       // Scorches the ground?
+                                       false,       // Forms a crater?
+                                       false,       // Sticks to unit in square?
+                                       false,       // Ground level animation?
+                                       false,       // Translucent colors in this animation?
+                                       false,
+                                       false,    // Is this a flame thrower animation?
+                                       0x0000,   // Damage to apply per tick (fixed point).
+                                       2,        // Delay between frames.
+                                       0,        // Starting frame number.
+                                       0,        // Loop start frame number.
+                                       0,        // Ending frame of loop back.
+                                       -1,       // Number of animation stages.
+                                       0,        // Number of times the animation loops.
+                                       VOC_NONE, // Sound effect to play.
+                                       ANIM_NONE);
 
 static AnimTypeClass const Beacon(ANIM_BEACON, // Animation number.
                                   "MOVEFLSH",  // Data name of animation.
@@ -2219,15 +2193,16 @@ static AnimTypeClass const Beacon(ANIM_BEACON, // Animation number.
                                   false,       // Sticks to unit in square?
                                   false,       // Ground level animation?
                                   false,       // Translucent colors in this animation?
-                                  false,       // Is this a flame thrower animation?
-                                  0x0000,      // Damage to apply per tick (fixed point).
-                                  1,           // Delay between frames.
-                                  0,           // Starting frame number.
-                                  0,           // Loop start frame number.
-                                  -1,          // Ending frame of loop back.
-                                  1,           // Number of animation stages.
-                                  -1,          // Number of times the animation loops.
-                                  VOC_NONE,    // Sound effect to play.
+                                  false,
+                                  false,    // Is this a flame thrower animation?
+                                  0x0000,   // Damage to apply per tick (fixed point).
+                                  1,        // Delay between frames.
+                                  0,        // Starting frame number.
+                                  0,        // Loop start frame number.
+                                  -1,       // Ending frame of loop back.
+                                  1,        // Number of animation stages.
+                                  -1,       // Number of times the animation loops.
+                                  VOC_NONE, // Sound effect to play.
                                   ANIM_NONE,
                                   -1,                 // Virtual stages
                                   0x100,              // Virtual scale
@@ -2245,34 +2220,34 @@ static AnimTypeClass const BeaconVirtual(ANIM_BEACON_VIRTUAL, // Animation numbe
                                          false,               // Sticks to unit in square?
                                          false,               // Ground level animation?
                                          false,               // Translucent colors in this animation?
-                                         false,               // Is this a flame thrower animation?
-                                         0x0000,              // Damage to apply per tick (fixed point).
-                                         1,                   // Delay between frames.
-                                         0,                   // Starting frame number.
-                                         0,                   // Loop start frame number.
-                                         -1,                  // Ending frame of loop back.
-                                         1,                   // Number of animation stages.
-                                         -1,                  // Number of times the animation loops.
-                                         VOC_NONE,            // Sound effect to play.
+                                         false,
+                                         false,    // Is this a flame thrower animation?
+                                         0x0000,   // Damage to apply per tick (fixed point).
+                                         1,        // Delay between frames.
+                                         0,        // Starting frame number.
+                                         0,        // Loop start frame number.
+                                         -1,       // Ending frame of loop back.
+                                         1,        // Number of animation stages.
+                                         -1,       // Number of times the animation loops.
+                                         VOC_NONE, // Sound effect to play.
                                          ANIM_NONE);
 
 AnimTypeClass const* const AnimTypeClass::Pointers[ANIM_COUNT] = {
-    &FBall1,       &Grenade,      &Frag1,     &Frag3,     &VehHit1,     &VehHit2,      &VehHit3,      &ArtExp1,
-    &Napalm1,      &Napalm2,      &Napalm3,   &SmokePuff, &Piff,        &PiffPiff,     &FlameN,       &FlameNE,
-    &FlameE,       &FlameSE,      &FlameS,    &FlameSW,   &FlameW,      &FlameNW,      &ChemN,        &ChemNE,
-    &ChemE,        &ChemSE,       &ChemS,     &ChemSW,    &ChemW,       &ChemNW,       &Fire3,        &Fire2,
-    &Fire1,        &Fire4,        &Gunfire,
-#ifdef NEVER
-    &E1RotFire,    &E1RotGrenade, &E1RotGun,  &E1RotExp,  &E2RotFire,   &E2RotGrenade, &E2RotGun,     &E2RotExp,
-    &E3RotFire,    &E3RotGrenade, &E3RotGun,  &E3RotExp,  &E4RotFire,   &E4RotGrenade, &E4RotGun,     &E4RotExp,
-#endif
-    &SmokeM,       &BurnSmall,    &BurnMed,   &BurnBig,   &OnFireSmall, &OnFireMed,    &OnFireBig,    &SAMN,
-    &SAMNE,        &SAME,         &SAMSE,     &SAMS,      &SAMSW,       &SAMW,         &SAMNW,        &GUNN,
-    &GUNNE,        &GUNE,         &GUNSE,     &GUNS,      &GUNSW,       &GUNW,         &GUNNW,        &LZSmoke,
-    &IonCannon,    &AtomBomb,     &CDeviator, &CDollar,   &CEarth,      &CEmpulse,     &CInvun,       &CMine,
-    &CRapid,       &CStealth,     &CMissile,  &AtomDoor,  &MoveFlash,   &OilFieldBurn, &TricDie,      &TRexDie,
-    &StegDie,      &RaptDie,      &ChemBall,  &Flag,      &Beacon,      &Fire3Virtual, &Fire2Virtual, &Fire1Virtual,
-    &Fire4Virtual, &BeaconVirtual};
+    &FBall1,       &Grenade,      &Frag1,         &Frag3,        &VehHit1,     &VehHit2,      &VehHit3,
+    &ArtExp1,      &Napalm1,      &Napalm2,       &Napalm3,      &SmokePuff,   &Piff,         &PiffPiff,
+    &FlameN,       &FlameNE,      &FlameE,        &FlameSE,      &FlameS,      &FlameSW,      &FlameW,
+    &FlameNW,      &ChemN,        &ChemNE,        &ChemE,        &ChemSE,      &ChemS,        &ChemSW,
+    &ChemW,        &ChemNW,       &Fire3,         &Fire2,        &Fire1,       &Fire4,        &Gunfire,
+    &SmokeM,       &BurnSmall,    &BurnMed,       &BurnBig,      &OnFireSmall, &OnFireMed,    &OnFireBig,
+    &SAMN,         &SAMNE,        &SAME,          &SAMSE,        &SAMS,        &SAMSW,        &SAMW,
+    &SAMNW,        &GUNN,         &GUNNE,         &GUNE,         &GUNSE,       &GUNS,         &GUNSW,
+    &GUNW,         &GUNNW,        &LZSmoke,       &IonCannon,    &AtomBomb,    &CDeviator,    &CDollar,
+    &CEarth,       &CEmpulse,     &CInvun,        &CMine,        &CRapid,      &CStealth,     &CMissile,
+    &stru_551724,  &stru_55176C,  &stru_5517B4,   &stru_5517FC,  &stru_551844, &stru_55188C,  &stru_5518D4,
+    &stru_55191C,  &AtomDoor,     &MoveFlash,     &OilFieldBurn, &TricDie,     &TRexDie,      &StegDie,
+    &RaptDie,      &ChemBall,     &stru_5519F4,   &Flag,         &Beacon,      &Fire3Virtual, &Fire2Virtual,
+    &Fire1Virtual, &Fire4Virtual, &BeaconVirtual,
+};
 
 /***********************************************************************************************
  * AnimTypeClass::AnimTypeClass -- Constructor for animation types.                            *
@@ -2300,6 +2275,7 @@ AnimTypeClass::AnimTypeClass(AnimType anim,
                              bool issticky,
                              bool ground,
                              bool istrans,
+                             bool unk,
                              bool isflame,
                              unsigned int damage,
                              int delaytime,
@@ -2326,6 +2302,7 @@ AnimTypeClass::AnimTypeClass(AnimType anim,
     IsScorcher = isscorcher;
     IsSticky = issticky;
     IsTranslucent = istrans;
+    Unk = unk;
     IsWhiteTrans = iswhitetrans;
     LoopEnd = loopend;
     LoopStart = loopstart;

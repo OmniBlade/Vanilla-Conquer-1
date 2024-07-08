@@ -80,14 +80,12 @@ static AircraftTypeClass const AttackPlane(AIRCRAFT_A10, // What kind of aircraf
                                            800,          // Credit cost to construct.
                                            0,            // The scenario this becomes available.
                                            10,
-                                           1, // Risk, reward when calculating AI.
-                                           HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                               | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
-                                               | HOUSEF_BAD, // Who can own this aircraft type.
+                                           1,                                    // Risk, reward when calculating AI.
+                                           HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // Who can own this aircraft type.
                                            WEAPON_NAPALM,
                                            WEAPON_NONE,
                                            ARMOR_ALUMINUM, // Armor type of this aircraft.
-                                           MPH_FAST,       // Maximum speed of aircraft.
+                                           MPH_FASTER,     // Maximum speed of aircraft.
                                            5,              // Rate of turn.
                                            MISSION_HUNT    // Default mission for aircraft.
 );
@@ -121,16 +119,14 @@ static AircraftTypeClass const TransportHeli(AIRCRAFT_TRANSPORT, // What kind of
                                              1500,               // Credit cost to construct.
                                              98,                 // The scenario this becomes available.
                                              10,
-                                             80, // Risk, reward when calculating AI.
-                                             HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4
-                                                 | HOUSEF_MULTI5 | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD
-                                                 | HOUSEF_GOOD, // Who can own this aircraft type.
+                                             80,                                   // Risk, reward when calculating AI.
+                                             HOUSEF_JP | HOUSEF_BAD | HOUSEF_GOOD, // Who can own this aircraft type.
                                              WEAPON_NONE,
                                              WEAPON_NONE,
-                                             ARMOR_ALUMINUM,  // Armor type of this aircraft.
-                                             MPH_MEDIUM_FAST, // Maximum speed of aircraft.
-                                             5,               // Rate of turn.
-                                             MISSION_HUNT     // Default mission for aircraft.
+                                             ARMOR_ALUMINUM,    // Armor type of this aircraft.
+                                             MPH_MEDIUM_FASTER, // Maximum speed of aircraft.
+                                             5,                 // Rate of turn.
+                                             MISSION_HUNT       // Default mission for aircraft.
 );
 
 // Apache attach helicopter.
@@ -162,14 +158,12 @@ static AircraftTypeClass const AttackHeli(AIRCRAFT_HELICOPTER, // What kind of a
                                           1200,                // Credit cost to construct.
                                           10,                  // The scenario this becomes available.
                                           10,
-                                          80, // Risk, reward when calculating AI.
-                                          HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                              | HOUSEF_MULTI6 | HOUSEF_JP
-                                              | HOUSEF_BAD, // Who can own this aircraft type.
+                                          80,                     // Risk, reward when calculating AI.
+                                          HOUSEF_JP | HOUSEF_BAD, // Who can own this aircraft type.
                                           WEAPON_CHAIN_GUN,
                                           WEAPON_NONE,
                                           ARMOR_STEEL, // Armor type of this aircraft.
-                                          MPH_FAST,    // Maximum speed of aircraft.
+                                          MPH_FASTER,  // Maximum speed of aircraft.
                                           4,           // Rate of turn.
                                           MISSION_HUNT // Default mission for aircraft.
 );
@@ -203,14 +197,12 @@ static AircraftTypeClass const OrcaHeli(AIRCRAFT_ORCA,   // What kind of aircraf
                                         1200,            // Credit cost to construct.
                                         10,              // The scenario this becomes available.
                                         10,
-                                        80, // Risk, reward when calculating AI.
-                                        HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                            | HOUSEF_MULTI6 | HOUSEF_JP
-                                            | HOUSEF_GOOD, // Who can own this aircraft type.
+                                        80,                      // Risk, reward when calculating AI.
+                                        HOUSEF_JP | HOUSEF_GOOD, // Who can own this aircraft type.
                                         WEAPON_DRAGON,
                                         WEAPON_NONE,
                                         ARMOR_STEEL, // Armor type of this aircraft.
-                                        MPH_FAST,    // Maximum speed of aircraft.
+                                        MPH_FASTER,  // Maximum speed of aircraft.
                                         4,           // Rate of turn.
                                         MISSION_HUNT // Default mission for aircraft.
 );
@@ -244,14 +236,12 @@ static AircraftTypeClass const CargoPlane(AIRCRAFT_CARGO, // What kind of aircra
                                           800,            // Credit cost to construct.
                                           0,              // The scenario this becomes available.
                                           10,
-                                          1, // Risk, reward when calculating AI.
-                                          HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                              | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
-                                              | HOUSEF_BAD, // Who can own this aircraft type.
+                                          1,                                    // Risk, reward when calculating AI.
+                                          HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // Who can own this aircraft type.
                                           WEAPON_NONE,
                                           WEAPON_NONE,
                                           ARMOR_ALUMINUM, // Armor type of this aircraft.
-                                          MPH_FAST,       // Maximum speed of aircraft.
+                                          MPH_FASTER,     // Maximum speed of aircraft.
                                           5,              // Rate of turn.
                                           MISSION_HUNT    // Default mission for aircraft.
 );
@@ -449,7 +439,10 @@ void AircraftTypeClass::One_Time(void)
  *=============================================================================================*/
 ObjectClass* AircraftTypeClass::Create_One_Of(HouseClass* house) const
 {
-    return (new AircraftClass(Type, house->Class->House));
+    if (AircraftClass::New_Allowed()) {
+		return(new AircraftClass(Type, house->Class->House));
+	}
+	return NULL;
 }
 
 #ifdef SCENARIO_EDITOR
