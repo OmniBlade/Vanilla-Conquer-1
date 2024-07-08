@@ -90,6 +90,9 @@
 #include "function.h"
 #include "ccini.h"
 
+bool AircraftClass::IsNewAllowed;
+bool AircraftClass::IsDeleteAllowed;
+
 /***********************************************************************************************
  * AircraftClass::Validate -- validates aircraft pointer													  *
  *                                                                                             *
@@ -158,12 +161,27 @@ TARGET AircraftClass::As_Target(void) const
  * HISTORY:                                                                                    *
  *   07/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void* AircraftClass::operator new(size_t) noexcept
+void* AircraftClass::operator new(size_t, int heap_index)
 {
-    void* ptr = Aircraft.Allocate();
+    TARGET target;
+    NewDeletePacketData* data;
+
+    if (!IsNewAllowed)
+        return NULL;
+
+    void* ptr = Aircraft.Allocate(heap_index);
     if (ptr) {
-        ((AircraftClass*)ptr)->Set_Active();
+        ((AircraftClass*)ptr)->IsActive = true;
     }
+
+    if (GameToPlay == GAME_HOST) {
+        target = Build_Target(KIND_AIRCRAFT, Aircraft.ID((AircraftClass*)ptr));
+        data = new NewDeletePacketData;
+        data->IsDeletePacket = false;
+        data->Whom = target;
+        NewDeletePacketDatas.Add(data);
+    }
+
     return (ptr);
 }
 
@@ -183,7 +201,20 @@ void* AircraftClass::operator new(size_t) noexcept
  *=============================================================================================*/
 void AircraftClass::operator delete(void* ptr)
 {
+    TARGET target;
+    NewDeletePacketData* data;
+
+    if (!IsDeleteAllowed)
+        return;
+
     if (ptr) {
+        if (GameToPlay == GAME_HOST) {
+            data = new NewDeletePacketData;
+            target = Build_Target(KIND_AIRCRAFT, Aircraft.ID((AircraftClass*)ptr));
+            data->Whom = target;
+            data->IsDeletePacket = 1;
+            NewDeletePacketDatas.Add(data);
+        }
         ((AircraftClass*)ptr)->IsActive = false;
     }
     Aircraft.Free((AircraftClass*)ptr);
@@ -230,7 +261,7 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house)
     IsTakingOff = false;
     IsHovering = false;
     IsHoming = false;
-    Strength = Class->MaxStrength;
+    Strength = Class->MaxStrength + Mod1;
     NavCom = TARGET_NONE;
     SecondaryFacing = PrimaryFacing;
     Jitter = 0;
@@ -243,13 +274,6 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house)
     if (classid != AIRCRAFT_CARGO && GameToPlay == GAME_INTERNET) {
         House->AircraftTotals.Increment_Unit_Total((int)classid);
     }
-
-#ifdef USE_RA_AI
-    //
-    // Added for RA AI in TD. ST - 7/26/2019 9:12AM
-    //
-    House->Tracking_Add(this);
-#endif
 }
 
 /***********************************************************************************************
@@ -355,7 +379,7 @@ void AircraftClass::Draw_It(int x, int y, WindowNumberType window)
     **	The orca attack helicopter uses a special shape set when it is travelling
     **	forward above a certain speed.
     */
-    if (*this == AIRCRAFT_ORCA && Get_Speed() >= MPH_MEDIUM_FAST) {
+    if (*this == AIRCRAFT_ORCA && Get_Speed() >= MPH_MEDIUM_FASTER) {
         shapenum += 32;
     }
 
@@ -512,7 +536,7 @@ void AircraftClass::Read_INI(CCINIClass& ini)
 
         ini.Get_String(INI_Name(), entry, NULL, buf, sizeof(buf) - 1);
         inhouse = HouseTypeClass::From_Name(strtok(buf, ","));
-        if (inhouse != HOUSE_NONE) {
+        if (inhouse != HOUSE_NONE && New_Allowed()) {
             classid = AircraftTypeClass::From_Name(strtok(NULL, ","));
 
             if (classid != AIRCRAFT_NONE) {
@@ -535,7 +559,7 @@ void AircraftClass::Read_INI(CCINIClass& ini)
                             delete air;
                         } else {
 
-                            air->Strength = Fixed_To_Cardinal(air->Class->MaxStrength, strength);
+                            air->Strength = Fixed_To_Cardinal(air->Class->MaxStrength + air->Mod1, strength);
                             if (air->Unlimbo(coord, dir)) {
                                 air->Assign_Mission(AircraftClass::Mission_From_Name(strtok(NULL, ",\n\r")));
                             } else {
@@ -728,6 +752,9 @@ void AircraftClass::AI(void)
 
     FootClass::AI();
 
+    if (!IsActive)
+        return;
+
     /*
     **	A Mission change can always occur if the aircraft is landed or flying.
     */
@@ -739,8 +766,11 @@ void AircraftClass::AI(void)
     **	Handle any body rotation at this time. Body rotation can occur even if the
     **	flying object is not actually moving.
     */
+    int rot = Class->ROT;
+    rot = (rot * SpeedScale) / 256;
+
     if (PrimaryFacing.Is_Rotating()) {
-        if (PrimaryFacing.Rotation_Adjust(Class->ROT)) {
+        if (PrimaryFacing.Rotation_Adjust(rot)) {
             Mark();
         }
     }
@@ -748,7 +778,7 @@ void AircraftClass::AI(void)
         SecondaryFacing = PrimaryFacing;
     }
     if (SecondaryFacing.Is_Rotating()) {
-        if (SecondaryFacing.Rotation_Adjust(Class->ROT)) {
+        if (SecondaryFacing.Rotation_Adjust(rot)) {
             Mark();
         }
     }
@@ -756,21 +786,32 @@ void AircraftClass::AI(void)
     /*
     **	Handle reinforcement delay.
     */
-    bool do_physics = true;
-    if (Special.ModernBalance) {
-        if (*this == AIRCRAFT_CARGO && !Map.In_Radar(Coord_Cell(Coord)) && ReinforcementStart > Frame) {
-            do_physics = false;
-        }
+    int dist1;
+    int dist3;
+    int dist2;
+
+    dist1 = Distance(NavCom);
+    if (Class->Type == AIRCRAFT_TRANSPORT || Class->Type == AIRCRAFT_HELICOPTER || Class->Type == AIRCRAFT_ORCA) {
+        dist2 = Distance(NavCom);
+    } else {
+        dist2 = 99999;
     }
-    if (do_physics && Physics(Coord, PrimaryFacing) != IMPACT_NONE) {
+
+    if (Physics(Coord, PrimaryFacing, dist2) != IMPACT_NONE) {
         Mark();
+    }
+
+    dist3 = Distance(NavCom);
+    if (Class->Type == AIRCRAFT_TRANSPORT || Class->Type == AIRCRAFT_HELICOPTER || Class->Type == AIRCRAFT_ORCA) {
+        if (dist3 > dist1 && (SpeedScale / 8) > dist1) {
+            Coord = As_Coord(NavCom);
+        }
     }
 
     /*
     **	Perform sighting every so often as controlled by the sight timer.
     */
-    // if (IsOwnedByPlayer && Class->SightRange && SightTimer.Expired()) {		// Changed for multiple player mapping
-    if (House->IsHuman && Class->SightRange && SightTimer.Expired()) {
+    if ((IsOwnedByPlayer || PlayerPtr->Is_Ally(Owner())) && Class->SightRange && SightTimer.Expired()) {
         Map.Sight_From(House, Coord_Cell(Coord), Class->SightRange, false);
         SightTimer = TICKS_PER_SECOND;
     }
@@ -786,8 +827,12 @@ void AircraftClass::AI(void)
         LayerType layer = In_Which_Layer();
 
         if (IsLanding) {
-            if (Altitude)
-                Altitude--;
+            if (Altitude) {
+                Altitude -= SpeedScale / 256;
+                if (Altitude < 0)
+                    Altitude = 0;
+            }
+
             if (!Altitude) {
                 IsLanding = false;
                 Set_Speed(0);
@@ -799,7 +844,7 @@ void AircraftClass::AI(void)
             }
         }
         if (IsTakingOff) {
-            Altitude++;
+            Altitude += SpeedScale / 256;
             if (Altitude >= FLIGHT_LEVEL) {
                 Altitude = FLIGHT_LEVEL;
                 IsTakingOff = false;
@@ -843,8 +888,7 @@ void AircraftClass::AI(void)
                     Assign_Destination(TARGET_NONE); // Clear the navcom.
                     Transmit_Message(RADIO_TETHER);
                     Map.Place_Down(Coord_Cell(Coord), this);
-                    // if (IsOwnedByPlayer) {				// Changed for multiple player mapping. ST - 3/6/2019 1:31PM
-                    if (House->IsHuman) {
+                    if (IsOwnedByPlayer || PlayerPtr->Is_Ally(Owner())) {
                         Map.Sight_From(House, Coord_Cell(Coord), 1, false);
                     }
                 } else {
@@ -887,7 +931,7 @@ void AircraftClass::AI(void)
             **	that the civilian evacuation trigger event has been fulfilled.
             */
             while (Is_Something_Attached()) {
-                FootClass* obj = Detach_Object();
+                FootClass* obj = (FootClass*)Remove_From_Cargo();
                 if (obj->What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)obj)->Class->IsCivilian
                     && !((InfantryClass*)obj)->IsTechnician) {
                     House->IsCivEvacuated = true;
@@ -1022,7 +1066,13 @@ short const* AircraftClass::Overlap_List(void) const
  *=============================================================================================*/
 void AircraftClass::Init(void)
 {
+    IsNewAllowed = true;
+    IsDeleteAllowed = true;
     Aircraft.Free_All();
+
+    for (int i = 0; i < Aircraft.Length(); i++) {
+        Aircraft.Raw_Ptr(i)->IsActive = false;
+    }
 }
 
 /***********************************************************************************************
@@ -1129,14 +1179,14 @@ int AircraftClass::Mission_Unload(void)
                 }
 
                 if (navdist < 0x0080) {
-                    FootClass* unit = (FootClass*)Detach_Object();
+                    FootClass* unit = (FootClass*)Remove_From_Cargo();
 
                     if (unit) {
                         CELL cell = Contact_With_Whom()->Find_Exit_Cell(unit);
                         if (cell) {
                             ScenarioInit++;
                             if (!unit->Unlimbo(Cell_Coord(cell))) {
-                                Attach(unit);
+                                Add_To_Cargo(unit);
                             } else {
 
                                 /*
@@ -1155,7 +1205,7 @@ int AircraftClass::Mission_Unload(void)
                             Transmit_Message(RADIO_OVER_OUT);
                             Assign_Target(TARGET_NONE);
                         } else {
-                            Attach(unit);
+                            Add_To_Cargo(unit);
                         }
 
                         //							if (Is_Something_Attached()) {
@@ -1254,7 +1304,7 @@ int AircraftClass::Mission_Unload(void)
         case UNLOAD_PASSENGERS:
             if (!IsTethered) {
                 if (Is_Something_Attached()) {
-                    FootClass* unit = (FootClass*)Detach_Object();
+                    FootClass* unit = (FootClass*)Remove_From_Cargo();
 
                     /*
                     **	First thing is to lift the transport off of the map so that the unlimbo
@@ -1556,10 +1606,10 @@ int AircraftClass::Exit_Object(TechnoClass* unit)
  * HISTORY:                                                                                    *
  *   03/19/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-BulletClass* AircraftClass::Fire_At(TARGET target, int which)
+BulletClass* AircraftClass::Fire_At(TARGET target, int which, bool unk)
 {
     Validate();
-    BulletClass* bullet = FootClass::Fire_At(target, which);
+    BulletClass* bullet = FootClass::Fire_At(target, which, unk);
 
     if (bullet) {
 
@@ -1611,7 +1661,7 @@ BulletClass* AircraftClass::Fire_At(TARGET target, int which)
  * HISTORY:                                                                                    *
  *   05/26/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType AircraftClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType AircraftClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
     Validate();
     ResultType res = RESULT_NONE;
@@ -1627,7 +1677,7 @@ ResultType AircraftClass::Take_Damage(int& damage, int distance, WarheadType war
     **	In order for a this to be damaged, it must either be a unit
     **	with a crew or a sandworm.
     */
-    res = FootClass::Take_Damage(damage, distance, warhead, source);
+    res = FootClass::Take_Damage(damage, distance, warhead, source, unk);
 
     switch (res) {
     case RESULT_DESTROYED: {
@@ -1708,12 +1758,12 @@ int AircraftClass::Mission_Move(void)
                 }
                 SecondaryFacing.Set_Desired(PrimaryFacing.Desired());
                 if (Distance(NavCom) < 0x0080) {
-                    FootClass* unit = (FootClass*)Detach_Object();
+                    FootClass* unit = (FootClass*)Remove_From_Cargo();
 
                     if (unit) {
                         ScenarioInit++;
                         if (!unit->Unlimbo(Coord_Snap(Contact_With_Whom()->Coord))) {
-                            Attach(unit);
+                            Add_To_Cargo(unit);
                         }
                         ScenarioInit--;
 
@@ -2000,26 +2050,26 @@ void AircraftClass::Debug_Dump(MonoClass* mono) const
 {
     Validate();
     mono->Set_Cursor(0, 0);
-    mono->Print("ÚName:ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂMission:ÄÄÄÂTarCom:ÂNavCom:ÂRadio:ÂCoord:ÄÄÂAltitudeÂSt:Ä¿\n"
-                "³                   ³           ³       ³       ³      ³        ³        ³    ³\n"
-                "ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂNÂYÂHealth:ÄÂFdir:ÂÄBdir:ÄÂSpeed:ÂÄÄÄÄÄÁÄÄÄÄÄÄÂCargo:ÄÄÄÄÁÄÄÄÄ´\n"
-                "³Active........³ ³ ³        ³     ³       ³      ³            ³               ³\n"
-                "³Limbo.........³ ³ ÃÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n"
-                "³Owned.........³ ³ ³Last Message:                                             ³\n"
-                "³Discovered....³ ³ ÃTimer:ÂArm:ÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂFlash:ÂStage:ÂTeam:ÄÄÄÄÂArch:´\n"
-                "³Selected......³ ³ ³      ³    ³      ³         ³      ³      ³         ³     ³\n"
-                "³Teathered.....³ ³ ÃÄÄÄÄÄÄÁÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÙ\n"
-                "³Locked on Map.³ ³ ³                                                           \n"
-                "³              ³ ³ ³                                                           \n"
-                "³Is A Loaner...³ ³ ³                                                           \n"
-                "³Is Landing....³ ³ ³                                                           \n"
-                "³Is Taking Off.³ ³ ³                                                           \n"
-                "³              ³ ³ ³                                                           \n"
-                "³              ³ ³ ³                                                           \n"
-                "³              ³ ³ ³                                                           \n"
-                "³Recoiling.....³ ³ ³                                                           \n"
-                "³To Display....³ ³ ³                                                           \n"
-                "ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÁÄÙ                                                           \n");
+    mono->Print("ï¿½Name:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Mission:ï¿½ï¿½ï¿½ï¿½TarCom:ï¿½NavCom:ï¿½Radio:ï¿½Coord:ï¿½ï¿½ï¿½Altitudeï¿½St:Ä¿\n"
+                "ï¿½                   ï¿½           ï¿½       ï¿½       ï¿½      ï¿½        ï¿½        ï¿½    ï¿½\n"
+                "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Nï¿½Yï¿½Health:ï¿½ï¿½Fdir:ï¿½ï¿½Bdir:ï¿½ï¿½Speed:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Cargo:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´\n"
+                "ï¿½Active........ï¿½ ï¿½ ï¿½        ï¿½     ï¿½       ï¿½      ï¿½            ï¿½               ï¿½\n"
+                "ï¿½Limbo.........ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´\n"
+                "ï¿½Owned.........ï¿½ ï¿½ ï¿½Last Message:                                             ï¿½\n"
+                "ï¿½Discovered....ï¿½ ï¿½ ï¿½Timer:ï¿½Arm:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Flash:ï¿½Stage:ï¿½Team:ï¿½ï¿½ï¿½ï¿½ï¿½Arch:ï¿½\n"
+                "ï¿½Selected......ï¿½ ï¿½ ï¿½      ï¿½    ï¿½      ï¿½         ï¿½      ï¿½      ï¿½         ï¿½     ï¿½\n"
+                "ï¿½Teathered.....ï¿½ ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n"
+                "ï¿½Locked on Map.ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½              ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½Is A Loaner...ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½Is Landing....ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½Is Taking Off.ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½              ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½              ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½              ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½Recoiling.....ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½To Display....ï¿½ ï¿½ ï¿½                                                           \n"
+                "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½                                                           \n");
     mono->Set_Cursor(1, 1);
     mono->Printf("%s:%s", House->Class->IniName, Class->IniName);
     mono->Set_Cursor(36, 3);
@@ -2833,6 +2883,9 @@ MoveType AircraftClass::Can_Enter_Cell(CELL cell, FacingType) const
     if (!Map.In_Radar(cell))
         return (MOVE_NO);
 
+    if (GameToPlay == GAME_CLIENT)
+        return (MOVE_OK);
+
     CellClass* cellptr = &Map[cell];
 
     if (!cellptr->Is_Generally_Clear(true))
@@ -3096,7 +3149,7 @@ int AircraftClass::Mission_Enter(void)
 
             case RADIO_ATTACH:
                 Limbo();
-                Contact_With_Whom()->Attach(this);
+                Contact_With_Whom()->Add_To_Cargo(this);
                 break;
 
             default:
@@ -3225,19 +3278,11 @@ DirType AircraftClass::Fire_Direction(void) const
 AircraftClass::~AircraftClass(void)
 {
     if (GameActive && Class) {
-
-#ifdef USE_RA_AI
-        //
-        // Added for RA AI in TD. ST - 7/26/2019 9:12AM
-        //
-        House->Tracking_Remove(this);
-#endif
-
         /*
         **	If there are any cargo members, delete them.
         */
         while (Is_Something_Attached()) {
-            delete Detach_Object();
+            delete Remove_From_Cargo();
         }
 
         Limbo();
@@ -3245,6 +3290,28 @@ AircraftClass::~AircraftClass(void)
 
     if (GameActive && Class && Team)
         Team->Remove(this);
+}
+
+void AircraftClass::Destruct(void)
+{
+    if (GameActive && Class) {
+        /*
+		**	If there are any cargo members, delete them.
+		*/
+        while (Is_Something_Attached()) {
+            delete Remove_From_Cargo();
+        }
+
+        Limbo();
+    }
+
+    if (GameActive && Class && Team)
+        Team->Remove(this);
+
+    if (GameActive && House)
+        --House->CurUnits;
+
+    IsActive = false;
 }
 
 /***********************************************************************************************

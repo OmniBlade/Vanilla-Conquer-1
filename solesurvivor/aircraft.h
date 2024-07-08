@@ -48,7 +48,7 @@ public:
     AircraftTypeClass const* const Class;
 
     //-----------------------------------------------------------------------------
-    void* operator new(size_t) noexcept;
+    void* operator new(size_t, int heap_index = -1) noexcept;
     void operator delete(void*);
     static void* operator new(size_t, void* ptr)
     {
@@ -164,8 +164,9 @@ public:
     **	Combat related.
     */
     //		virtual bool Target_Something_Nearby(ThreatType threat=THREAT_NORMAL);
-    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source);
-    virtual BulletClass* Fire_At(TARGET target, int which);
+    virtual ResultType
+    Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk = false);
+    virtual BulletClass* Fire_At(TARGET target, int which, bool unk = false);
     virtual TARGET As_Target(void) const;
 
     /*
@@ -277,6 +278,27 @@ private:
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
+    static bool New_Allowed()
+    {
+        return IsNewAllowed;
+    }
+    virtual bool Delete_Allowed()
+    {
+        return IsDeleteAllowed;
+    }
+    virtual void Destruct();
+
+    static void Set_New_Allowed(bool allowed)
+    {
+        IsNewAllowed = allowed;
+    }
+    static void Set_Delete_Allowed(bool allowed)
+    {
+        IsDeleteAllowed = allowed;
+    }
+
+    static bool IsNewAllowed;
+    static bool IsDeleteAllowed;
 };
 
 #endif

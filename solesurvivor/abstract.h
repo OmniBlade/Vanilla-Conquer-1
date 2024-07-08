@@ -150,6 +150,16 @@ public:
     */
     virtual void AI(void){};
 
+    virtual bool Delete_Allowed()
+    {
+        return true;
+    }
+    
+    virtual void Destruct()
+    {
+        IsActive = false;
+    }
+
     /*
     ** Workaround for difference between watcom and VC destructor behavior
     */

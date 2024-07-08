@@ -1123,3 +1123,7 @@ void On_Achievement_Event(const HouseClass* player_ptr, const char* achievement_
 
 /* Holds the title filename. On 320x200, set to TITLE.CPS, else HTITLE.PCX. */
 extern char* TitlePicture;
+
+
+// Sole stuff
+void Get_Or_Set_Current_Directory(bool get);

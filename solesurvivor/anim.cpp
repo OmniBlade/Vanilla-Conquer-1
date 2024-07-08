@@ -137,13 +137,21 @@ void Shorten_Attached_Anims(ObjectClass* obj)
 COORDINATE AnimClass::Sort_Y(void) const
 {
     Validate();
+
     if (Object) {
-        return (Coord_Add(Object->Sort_Y(), 0x00010000L));
+        if (!Object->IsActive) {
+            (*(ObjectClass**)&Object) = NULL;
+            return 0;
+        }
+    }
+
+    if (Object) {
+        return (Coord_Add(Object->Sort_Y(), 0x00010000));
     }
     if (Target_Legal(SortTarget)) {
         ObjectClass* obj = As_Object(SortTarget);
         if (obj && obj->IsActive) {
-            return (Coord_Add(obj->Sort_Y(), 0x00010000L));
+            return (Coord_Add(obj->Sort_Y(), 0x00010000));
         }
     }
     if (*this == ANIM_MOVE_FLASH) {
@@ -282,6 +290,8 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window)
                 transtable = Map.WhiteTranslucentTable;
             if (!transtable && Class->IsTranslucent)
                 transtable = Map.TranslucentTable;
+            if (Class->Unk)
+                transtable = Map.UnitShadow;
 
             /*
             **	Set the shape flags to properly take into account any fading or ghosting
@@ -618,6 +628,7 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     : Class(&AnimTypeClass::As_Reference(animnum))
 {
     Object = 0;
+    IsRefCounted = false;
     SortTarget = TARGET_NONE;
     OwnerHouse = HOUSE_NONE;
     KillTime = 0ULL;
@@ -742,6 +753,11 @@ AnimClass::~AnimClass(void)
                 if (Object->In_Which_Layer() == LAYER_GROUND)
                     Object->Mark(MARK_OVERLAP_DOWN);
             }
+
+            if (IsRefCounted) {
+                Object->AnimRefCount--;
+            }
+
             Coord = Coord_Add(Object->Center_Coord(), Coord);
             Object = NULL;
         }
@@ -784,20 +800,10 @@ void AnimClass::AI(void)
         IsToDelete = true;
     }
 
-    /*
-    **	Check the kill time.
-    */
-    if (KillTime > 0ULL) {
-#ifdef _WIN32
-        FILETIME ft;
-        GetSystemTimeAsFileTime(&ft);
-
-        unsigned long long now =
-            (unsigned long long)ft.dwLowDateTime + ((unsigned long long)ft.dwHighDateTime << 32ULL);
-        if (now >= KillTime) {
-            IsToDelete = true;
-        }
-#endif
+    // Added after Sole 1.00, todo determine when
+    if (Class->Type == ANIM_SMOKE_M && ((TechnoClass*)Object)
+        && Object->Strength == ((TechnoClass*)Object)->Class_Of().MaxStrength + ((TechnoClass*)Object)->Mod1) {
+        IsToDelete = true;
     }
 
     /*
@@ -944,6 +950,9 @@ void AnimClass::Attach_To(ObjectClass* obj)
 {
     Validate();
     if (!obj)
+        return;
+
+    if (!obj->IsActive)
         return;
 
     if (obj->In_Which_Layer() == LAYER_GROUND)
@@ -1134,7 +1143,11 @@ void AnimClass::Middle(void)
                 new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), Cell_Coord(tcell));
             }
         }
-        Shake_The_Screen(3);
+
+        if (OwnerHouse == PlayerPtr->Class->House) {
+            Map.Shake_The_Screen(3 * 3);
+        }
+
         if (GameToPlay == GAME_NORMAL) {
             Fade_Palette_To(GamePalette, 15, NULL);
         }

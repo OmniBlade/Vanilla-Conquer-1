@@ -39,6 +39,8 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "soundint.h"
+#include "voicethemes.h"
 
 /***************************************************************************
 **	Controls what special effects may occur on the sound effect.
@@ -348,6 +350,74 @@ int Sound_Effect(VocType voc, VolType volume, int variation, signed short pan_va
     return (-1);
 }
 
+int Priority_Sound_Effect(VocType voc, VolType volume, int variation, signed short /*pan_value*/)
+{
+    char name[_MAX_FNAME + _MAX_EXT]; // Working filename of sound effect.
+
+    if (!Options.Volume || voc == VOC_NONE || !SoundOn || SampleType == SAMPLE_NONE) {
+        return (-1);
+    }
+
+    /*
+	**	Fetch a pointer to the sound effect data. Modify the sound as appropriate and desired.
+	*/
+    char const* ext = ".AUD";
+    if (Special.IsJuvenile && SoundEffectName[voc].Where == IN_JUV) {
+        ext = ".JUV";
+    } else {
+        if (SoundEffectName[voc].Where == IN_VAR) {
+
+            /*
+			**	For infantry, use a variation on the response. For vehicles, always
+			**	use the vehicle response table.
+			*/
+            if (variation < 0) {
+                if (ABS(variation) % 2) {
+                    ext = ".V00";
+                } else {
+                    ext = ".V02";
+                }
+            } else {
+                if (variation % 2) {
+                    ext = ".V01";
+                } else {
+                    ext = ".V03";
+                }
+            }
+        }
+    }
+    _makepath(name, NULL, NULL, SoundEffectName[voc].Name, ext);
+    void const* ptr = MFCD::Retrieve(name);
+
+    /*
+	**	If the sound data pointer is not null, then presume that it is valid.
+	*/
+    if (ptr) {
+        return (Play_Sample(ptr, 254, VOL_5, 0));
+    }
+    return (-1);
+}
+
+int Priority_Sound_Effect(VocType voc)
+{
+    char name[_MAX_FNAME + _MAX_EXT]; // Working filename of sound effect.
+
+    /*
+	**	Fetch a pointer to the sound effect data. Modify the sound as appropriate and desired.
+	*/
+    char const* ext = ".AUD";
+    _makepath(name, NULL, NULL, SoundEffectName[voc].Name, ext);
+    void const* ptr = MFCD::Retrieve(name);
+
+    /*
+	**	If the sound data pointer is not null, then presume that it is valid.
+	*/
+    if (ptr) {
+        return (Play_Sample(ptr, 255, Fixed_To_Cardinal(VOL_FULL, (int)Options.Volume), 0));
+    }
+    return (-1);
+}
+
 /*
 **	This elaborates all the EVA speech voices.
 */
@@ -406,6 +476,107 @@ char const* Speech[VOX_COUNT] = {
     "GSTRUC1",  //	GDI structure destroyed
     "NSTRUC1",  //	NOD structure destroyed
     "ENMYUNIT", // Enemy unit destroyed
+    "M_ARMOR1",
+    "M_MEGAA1",
+    "M_WEAPN1",
+    "M_MEGAW1",
+    "M_SPEED1",
+    "M_MEGAS1",
+    "M_RAPID1",
+    "M_MEGARR",
+    "M_RANGE1",
+    "M_MGARNG",
+    "M_HEAL1",
+    "M_STLTHA",
+    "M_STLTHD",
+    "M_UBTEL1",
+    "M_NUKE1",
+    "M_ION1",
+    "M_STLALL",
+    "M_DRK1",
+    "M_MAPUP1",
+    "M_RADAR1",
+    "M_ARMGD1",
+    "M_LOSER1",
+    "M_SORRY1",
+    "M_HELLO1",
+    "M_HELLO2",
+    "M_UNIT1",
+    "E_ARMOR1",
+    "E_MEGAA1",
+    "E_WEAPN1",
+    "E_MEGAW1",
+    "E_SPEED1",
+    "E_MEGAS1",
+    "E_RAPID1",
+    "E_MEGARR",
+    "E_RANGE1",
+    "E_MGARNG",
+    "E_HEAL1",
+    "E_STLTHA",
+    "E_STLTHD",
+    "E_TELEP1",
+    "E_NUKE1",
+    "E_ION1",
+    "E_STLALL",
+    "E_DRK1",
+    "E_MAPUP1",
+    "E_RADAR1",
+    "E_ARMGD1",
+    "E_LOSER1",
+    "E_SORRY1",
+    "E_HELLO1",
+    "E_UNIT1",
+    "C_ARMOR1",
+    "C_MEGAA1",
+    "C_WEAPN1",
+    "C_MEGAW1",
+    "C_SPEED1",
+    "C_MEGAS1",
+    "C_RAPID1",
+    "C_MEGARR",
+    "C_RANGE1",
+    "C_MGARNG",
+    "C_HEAL1",
+    "C_STLTHA",
+    "C_STLTHD",
+    "C_TELEP1",
+    "C_NUKE1",
+    "C_ION1",
+    "C_STLALL",
+    "C_DRK1",
+    "C_MAPUP1",
+    "C_RADAR1",
+    "C_ARMGD1",
+    "C_LOSER1",
+    "C_SORRY1",
+    "C_HELLO1",
+    "C_UNIT1",
+    "S_ARMOR1",
+    "S_MEGAA1",
+    "S_WEAPN1",
+    "S_MEGAW1",
+    "S_SPEED1",
+    "S_MEGAS1",
+    "S_RAPID1",
+    "S_MEGARR",
+    "S_RANGE1",
+    "S_MGARNG",
+    "S_HEAL1",
+    "S_STLTHA",
+    "S_STLTHD",
+    "S_TELEP1",
+    "S_NUKE1",
+    "S_ION1",
+    "S_STLALL",
+    "S_DRK1",
+    "S_MAPUP1",
+    "S_RADAR1",
+    "S_ARMGD1",
+    "S_LOSER1",
+    "S_SORRY1",
+    "S_HELLO1",
+    "S_UNIT1",
     //	"GUKILL1",		//	gold unit destroyed
     //	"GSTRUD1",		//	gold structure destroyed
     //	"GONLINE1",		//	gold player online
@@ -574,4 +745,387 @@ bool Is_Speaking(void)
         return (true);
     }
     return (false);
+}
+
+typedef struct _riffchunk
+{
+    FOURCC fcc;
+    DWORD cb;
+} RIFFCHUNK, *LPRIFFCHUNK;
+
+typedef struct _rifflist
+{
+    FOURCC fcc;
+    DWORD cb;
+    FOURCC fccListType;
+} RIFFLIST, *LPRIFFLIST;
+
+void Play_Wave(char* filename, bool is_special)
+{
+    static void* _PlayingVOXSample;
+    static void* _QueuedPlayingVOXSample;
+    static bool _PlayingVOXSampleIsSpecial;
+
+    AUDHeaderType* ptr;
+    PCMWAVEFORMAT format;
+    RIFFLIST hdr;
+    FILE* handle;
+    void* sample;
+    bool data_loaded;
+    int size;
+    int fmtsize;
+    int left;
+    bool format_loaded;
+
+    sample = 0;
+    if (_PlayingVOXSample) {
+        if (!Is_Sample_Playing(_PlayingVOXSample)) {
+            delete[] _PlayingVOXSample;
+            _PlayingVOXSample = NULL;
+        }
+    }
+    if (_QueuedPlayingVOXSample) {
+        if (!Is_Sample_Playing(_QueuedPlayingVOXSample)) {
+            delete[] _QueuedPlayingVOXSample;
+            _QueuedPlayingVOXSample = NULL;
+        }
+    }
+
+    if (_PlayingVOXSample && _QueuedPlayingVOXSample) {
+        return;
+    }
+
+    if (_PlayingVOXSampleIsSpecial && (_PlayingVOXSample || _QueuedPlayingVOXSample)) {
+        return;
+    }
+
+    if (1) {
+        handle = fopen(filename, "rb");
+        if (handle) {
+            if (fread(&hdr, sizeof(RIFFLIST), 1, handle) != 1) {
+                fclose(handle);
+                return;
+            }
+
+            if (hdr.fcc != mmioFOURCC('R', 'I', 'F', 'F')) {
+                fclose(handle);
+                return;
+            }
+
+            if (hdr.fccListType != mmioFOURCC('W', 'A', 'V', 'E')) {
+                fclose(handle);
+                return;
+            }
+
+            left = hdr.cb - sizeof(int);
+            format_loaded = false;
+            data_loaded = false;
+
+            while (left > 0) {
+                if (fread(&hdr, sizeof(RIFFCHUNK), 1, handle) != 1) {
+                    fclose(handle);
+                    return;
+                }
+
+                left -= sizeof(RIFFCHUNK);
+
+                switch (hdr.fcc) {
+                case mmioFOURCC('f', 'm', 't', ' '):
+                    if (fread(&format, sizeof(PCMWAVEFORMAT), 1, handle) != 1) {
+                        fclose(handle);
+                        return;
+                    }
+
+                    if (format.wf.wFormatTag != WAVE_FORMAT_PCM) {
+                        fclose(handle);
+                        return;
+                    }
+
+                    left -= sizeof(PCMWAVEFORMAT);
+                    format_loaded = true;
+
+                    fmtsize = hdr.cb - sizeof(PCMWAVEFORMAT);
+
+                    if (fmtsize > 0) {
+                        fseek(handle, fmtsize, 1);
+                    }
+                    break;
+
+                case mmioFOURCC('d', 'a', 't', 'a'):
+                    left -= hdr.cb;
+                    data_loaded = true;
+                    size = hdr.cb;
+                    sample = new unsigned char[hdr.cb + sizeof(AUDHeaderType)];
+                    if (fread((unsigned char*)sample + sizeof(AUDHeaderType), 1, hdr.cb, handle) != hdr.cb) {
+                        fclose(handle);
+                        return;
+                    }
+                    left = 0;
+                    break;
+
+                default:
+                    left -= hdr.cb;
+                    fseek(handle, hdr.cb, 1);
+                    break;
+                }
+            }
+            fclose(handle);
+
+            if (format_loaded && data_loaded) {
+                ptr = (AUDHeaderType*)sample;
+
+                memset(ptr, 0, sizeof(AUDHeaderType));
+                ptr->Rate = format.wf.nSamplesPerSec;
+                ptr->UncompSize = size;
+                ptr->Size = ptr->UncompSize;
+
+                if (format.wf.nChannels == 2) {
+                    ptr->Flags |= AUD_FLAG_STEREO;
+                }
+
+                if (format.wBitsPerSample == 16) {
+                    ptr->Flags |= AUD_FLAG_16BIT;
+                }
+
+                ptr->Compression = SCOMP_NONE;
+
+                printf("Playing sample: %d bits, %s, Size:%d, Rate:%d\n",
+                       format.wBitsPerSample,
+                       format.wf.nChannels == 2 ? "stereo" : "mono",
+                       size,
+                       format.wf.nSamplesPerSec);
+
+                Play_Sample(sample, 255, 128);
+
+                if (!_PlayingVOXSample) {
+                    _PlayingVOXSample = sample;
+                } else {
+                    _QueuedPlayingVOXSample = sample;
+                }
+                _PlayingVOXSampleIsSpecial = is_special;
+            }
+        }
+    }
+}
+
+void Init_Voice_Themes(void)
+{
+    char buffer[260];
+    char filename[260];
+
+    AudVoiceThemeClass* aud_voc;
+    WavVoiceThemeClass* wav_voc;
+
+    // No audio theme.
+    aud_voc = new AudVoiceThemeClass;
+    aud_voc->Set_Theme_Name(Text_String(TXT_VOX_THEME_NONE));
+    VoiceThemeClass* v0 = (VoiceThemeClass*)aud_voc;
+    VoiceThemes.Add(v0);
+
+    // Eva theme.
+    aud_voc = new AudVoiceThemeClass;
+    aud_voc->Set_Theme_Name("EVA");
+    aud_voc->Add(VOX_THEME_SND_ARMOR, VOX_E_ARMOR1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAARMOR, VOX_E_MEGAA1, 1);
+    aud_voc->Add(VOX_THEME_SND_WEAPON, VOX_E_WEAPN1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAWEAPON, VOX_E_MEGAW1, 1);
+    aud_voc->Add(VOX_THEME_SND_SPEED, VOX_E_SPEED1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGASPEED, VOX_E_MEGAS1, 1);
+    aud_voc->Add(VOX_THEME_SND_RAPIDRELOAD, VOX_E_RAPID1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARAPIDRELOAD, VOX_E_MEGARR, 1);
+    aud_voc->Add(VOX_THEME_SND_RANGE, VOX_E_RANGE1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARANGE, VOX_E_MGARNG, 1);
+    aud_voc->Add(VOX_THEME_SND_HEAL, VOX_E_HEAL1, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHON, VOX_E_STLTHA, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHOFF, VOX_E_STLTHD, 1);
+    aud_voc->Add(VOX_THEME_SND_TELEPORT, VOX_E_TELEP1, 1);
+    aud_voc->Add(VOX_THEME_SND_NUKE, VOX_E_NUKE1, 1);
+    aud_voc->Add(VOX_THEME_SND_ION, VOX_E_ION1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNCLOAKALL, VOX_E_STLALL, 1);
+    aud_voc->Add(VOX_THEME_SND_RESHROUD, VOX_E_DRK1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNSHROUD, VOX_E_MAPUP1, 1);
+    aud_voc->Add(VOX_THEME_SND_RADAR, VOX_E_RADAR1, 1);
+    aud_voc->Add(VOX_THEME_SND_ARMAGEDDON, VOX_E_ARMGD1, 1);
+    aud_voc->Add(VOX_THEME_SND_YOULOSE, VOX_E_LOSER1, 2);
+    aud_voc->Add(VOX_THEME_SND_TEST, VOX_E_HELLO1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNIT1, VOX_E_UNIT1, 1);
+    VoiceThemeClass* v1 = (VoiceThemeClass*)aud_voc;
+    VoiceThemes.Add(v1);
+
+    // Commando theme.
+    aud_voc = new AudVoiceThemeClass;
+    aud_voc->Set_Theme_Name("Commando");
+    aud_voc->Add(VOX_THEME_SND_ARMOR, VOX_C_ARMOR1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAARMOR, VOX_C_MEGAA1, 1);
+    aud_voc->Add(VOX_THEME_SND_WEAPON, VOX_C_WEAPN1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAWEAPON, VOX_C_MEGAW1, 1);
+    aud_voc->Add(VOX_THEME_SND_SPEED, VOX_C_SPEED1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGASPEED, VOX_C_MEGAS1, 1);
+    aud_voc->Add(VOX_THEME_SND_RAPIDRELOAD, VOX_C_RAPID1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARAPIDRELOAD, VOX_C_MEGARR, 1);
+    aud_voc->Add(VOX_THEME_SND_RANGE, VOX_C_RANGE1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARANGE, VOX_C_MGARNG, 1);
+    aud_voc->Add(VOX_THEME_SND_HEAL, VOX_C_HEAL1, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHON, VOX_C_STLTHA, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHOFF, VOX_C_STLTHD, 1);
+    aud_voc->Add(VOX_THEME_SND_TELEPORT, VOX_C_TELEP1, 1);
+    aud_voc->Add(VOX_THEME_SND_NUKE, VOX_C_NUKE1, 1);
+    aud_voc->Add(VOX_THEME_SND_ION, VOX_C_ION1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNCLOAKALL, VOX_C_STLALL, 1);
+    aud_voc->Add(VOX_THEME_SND_RESHROUD, VOX_C_DRK1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNSHROUD, VOX_C_MAPUP1, 1);
+    aud_voc->Add(VOX_THEME_SND_RADAR, VOX_C_RADAR1, 1);
+    aud_voc->Add(VOX_THEME_SND_ARMAGEDDON, VOX_C_ARMGD1, 1);
+    aud_voc->Add(VOX_THEME_SND_YOULOSE, VOX_C_LOSER1, 2);
+    aud_voc->Add(VOX_THEME_SND_TEST, VOX_C_HELLO1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNIT1, VOX_C_UNIT1, 1);
+    VoiceThemeClass* v2 = (VoiceThemeClass*)aud_voc;
+    VoiceThemes.Add(v2);
+
+    // Let's Make a Kill theme
+    aud_voc = new AudVoiceThemeClass;
+    aud_voc->Set_Theme_Name(Text_String(TXT_LETS_MAKE_KILL));
+    aud_voc->Add(VOX_THEME_SND_ARMOR, VOX_M_ARMOR1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAARMOR, VOX_M_MEGAA1, 1);
+    aud_voc->Add(VOX_THEME_SND_WEAPON, VOX_M_WEAPN1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAWEAPON, VOX_M_MEGAW1, 1);
+    aud_voc->Add(VOX_THEME_SND_SPEED, VOX_M_SPEED1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGASPEED, VOX_M_MEGAS1, 1);
+    aud_voc->Add(VOX_THEME_SND_RAPIDRELOAD, VOX_M_RAPID1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARAPIDRELOAD, VOX_M_MEGARR, 1);
+    aud_voc->Add(VOX_THEME_SND_RANGE, VOX_M_RANGE1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARANGE, VOX_M_MGARNG, 1);
+    aud_voc->Add(VOX_THEME_SND_HEAL, VOX_M_HEAL1, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHON, VOX_M_STLTHA, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHOFF, VOX_M_STLTHD, 1);
+    aud_voc->Add(VOX_THEME_SND_TELEPORT, VOX_M_TELEP1, 1);
+    aud_voc->Add(VOX_THEME_SND_NUKE, VOX_M_NUKE1, 1);
+    aud_voc->Add(VOX_THEME_SND_ION, VOX_M_ION1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNCLOAKALL, VOX_M_STLALL, 1);
+    aud_voc->Add(VOX_THEME_SND_RESHROUD, VOX_M_DRK1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNSHROUD, VOX_M_MAPUP1, 1);
+    aud_voc->Add(VOX_THEME_SND_RADAR, VOX_M_RADAR1, 1);
+    aud_voc->Add(VOX_THEME_SND_ARMAGEDDON, VOX_M_ARMGD1, 1);
+    aud_voc->Add(VOX_THEME_SND_YOULOSE, VOX_M_LOSER1, 2);
+    aud_voc->Add(VOX_THEME_SND_TEST, VOX_M_HELLO1, 2);
+    aud_voc->Add(VOX_THEME_SND_UNIT1, VOX_M_UNIT1, 1);
+    VoiceThemeClass* v3 = (VoiceThemeClass*)aud_voc;
+    VoiceThemes.Add(v3);
+
+    // 1-900-KILL-YOU theme
+    aud_voc = new AudVoiceThemeClass;
+    aud_voc->Set_Theme_Name(Text_String(TXT_1_900_KILL_YOU));
+    aud_voc->Add(VOX_THEME_SND_ARMOR, VOX_S_ARMOR1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAARMOR, VOX_S_MEGAA1, 1);
+    aud_voc->Add(VOX_THEME_SND_WEAPON, VOX_S_WEAPN1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGAWEAPON, VOX_S_MEGAW1, 1);
+    aud_voc->Add(VOX_THEME_SND_SPEED, VOX_S_SPEED1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGASPEED, VOX_S_MEGAS1, 1);
+    aud_voc->Add(VOX_THEME_SND_RAPIDRELOAD, VOX_S_RAPID1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARAPIDRELOAD, VOX_S_MEGARR, 1);
+    aud_voc->Add(VOX_THEME_SND_RANGE, VOX_S_RANGE1, 1);
+    aud_voc->Add(VOX_THEME_SND_MEGARANGE, VOX_S_MGARNG, 1);
+    aud_voc->Add(VOX_THEME_SND_HEAL, VOX_S_HEAL1, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHON, VOX_S_STLTHA, 1);
+    aud_voc->Add(VOX_THEME_SND_STEALTHOFF, VOX_S_STLTHD, 1);
+    aud_voc->Add(VOX_THEME_SND_TELEPORT, VOX_S_TELEP1, 1);
+    aud_voc->Add(VOX_THEME_SND_NUKE, VOX_S_NUKE1, 1);
+    aud_voc->Add(VOX_THEME_SND_ION, VOX_S_ION1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNCLOAKALL, VOX_S_STLALL, 1);
+    aud_voc->Add(VOX_THEME_SND_RESHROUD, VOX_S_DRK1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNSHROUD, VOX_S_MAPUP1, 1);
+    aud_voc->Add(VOX_THEME_SND_RADAR, VOX_S_RADAR1, 1);
+    aud_voc->Add(VOX_THEME_SND_ARMAGEDDON, VOX_S_ARMGD1, 1);
+    aud_voc->Add(VOX_THEME_SND_YOULOSE, VOX_S_LOSER1, 2);
+    aud_voc->Add(VOX_THEME_SND_TEST, VOX_S_HELLO1, 1);
+    aud_voc->Add(VOX_THEME_SND_UNIT1, VOX_S_UNIT1, 1);
+    VoiceThemeClass* v4 = (VoiceThemeClass*)aud_voc;
+    VoiceThemes.Add(v4);
+
+    CDFileClass fc("VOICES.INI");
+    INIClass ini;
+    ini.Load(fc);
+
+#if 0 // TODO, reimplement as INIClass calls.
+    GetPrivateProfileStringA(0, 0, "", tempbuf, _ShapeBufferSize, filename);
+
+    name = tempbuf;
+    while (*name) {
+        wav_voc = new WavVoiceThemeClass;
+
+        wav_voc->Set_Theme_Name(name);
+        if (GetPrivateProfileStringA(name, "Armor", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_ARMOR, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "MegaArmor", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_MEGAARMOR, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Weapon", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_WEAPON, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "MegaWeapon", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_MEGAWEAPON, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Speed", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_SPEED, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "MegaSpeed", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_MEGASPEED, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "RapidReload", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_RAPIDRELOAD, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "MegaRapidReload", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_MEGARAPIDRELOAD, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Range", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_RANGE, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "MegaRange", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_MEGARANGE, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Heal", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_HEAL, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "StealthOn", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_STEALTHON, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "StealthOff", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_STEALTHOFF, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Teleport", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_TELEPORT, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Nuke", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_NUKE, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Ion", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_ION, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "UncloakAll", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_UNCLOAKALL, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Reshroud", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_RESHROUD, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Unshroud", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_UNSHROUD, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Radar", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_RADAR, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Armageddon", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_ARMAGEDDON, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "YouLose", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_YOULOSE, buffer);
+        }
+        if (GetPrivateProfileStringA(name, "Test", "", buffer, 255, filename) > 0) {
+            wav_voc->Add(VOX_THEME_SND_TEST, buffer);
+        }
+        VoiceThemeClass* v5 = (VoiceThemeClass*)wav_voc;
+        VoiceThemes.Add(v5);
+        name += strlen(name) + 1;
+    }
+#endif
 }
