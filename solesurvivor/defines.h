@@ -50,11 +50,6 @@
 */
 //#define DEMO
 
-/*
-** Use AI pulled in from Red Alert. ST - 7/26/2019 11:42AM
-*/
-#define USE_RA_AI
-
 /**********************************************************************
 **  Define this to allow play of the bonus missions for the Gateway
 **  bundle deal.

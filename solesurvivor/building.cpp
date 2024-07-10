@@ -132,6 +132,9 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x02800280L,
 };
 
+bool BuildingClass::IsNewAllowed;
+bool BuildingClass::IsDeleteAllowed;
+
 /***********************************************************************************************
  * BuildingClass::Validate -- validates building pointer													  *
  *                                                                                             *
@@ -817,13 +820,13 @@ bool BuildingClass::Mark(MarkType mark)
  * HISTORY:                                                                                    *
  *   04/16/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-BulletClass* BuildingClass::Fire_At(TARGET target, int which)
+BulletClass* BuildingClass::Fire_At(TARGET target, int which, bool unk)
 {
     Validate();
     BulletClass* bullet; // Projectile.
     WeaponTypeClass const* weapon = (which == 0) ? &Weapons[Class->Primary] : &Weapons[Class->Secondary];
 
-    bullet = TechnoClass::Fire_At(target, which);
+    bullet = TechnoClass::Fire_At(target, which, unk);
     if (bullet) {
         if (*this == STRUCT_SAM) {
             AnimClass* anim =
@@ -996,6 +999,9 @@ void BuildingClass::AI(void)
     */
     TechnoClass::AI();
 
+    if (!IsActive)
+        return;
+
     /*
     **	If now is a good time to act on a new mission, then do so. This occurs here because
     **	some AI event may have requested a mission change (usually from another mission
@@ -1064,7 +1070,7 @@ void BuildingClass::AI(void)
     **	Obelisk charging logic.
     */
     if (*this == STRUCT_OBELISK && BState != BSTATE_CONSTRUCTION) {
-        if (Target_Legal(TarCom) && House->Power_Fraction() >= 1) {
+        if (Target_Legal(TarCom) && (House->Power_Fraction() >= 1 || BuildingUnk)) {
             if (!IsCharged) {
                 if (IsCharging) {
                     if (stagechange) {
@@ -1079,7 +1085,11 @@ void BuildingClass::AI(void)
                     IsCharged = false;
                     IsCharging = true;
                     Set_Stage(0);
-                    Set_Rate(OBELISK_ANIMATION_RATE);
+                    int rof = OBELISK_ANIMATION_RATE - (OBELISK_ANIMATION_RATE * Mod4 / sole_array[3][2]);
+                    if (rof < 3) {
+                        rof = 3;
+                    }
+                    Set_Rate(rof);
                     Sound_Effect(VOC_LASER_POWER, Coord);
                 }
             }
@@ -1111,8 +1121,8 @@ void BuildingClass::AI(void)
                 House->Spend_Money(cost);
                 Strength += step;
 
-                if (Strength >= Class->MaxStrength) {
-                    Strength = Class->MaxStrength;
+                if (Strength >= Class->MaxStrength + Mod1) {
+                    Strength = Class->MaxStrength + Mod1;
                     IsRepairing = false;
                 }
             } else {
@@ -1137,7 +1147,7 @@ void BuildingClass::AI(void)
         */
         case 0:
             Factory->Abandon();
-            delete Factory;
+            DELETE_FACTORY(Factory);
             Factory = 0;
             break;
 
@@ -1147,7 +1157,7 @@ void BuildingClass::AI(void)
 
         case 2:
             Factory->Completed();
-            delete Factory;
+            DELETE_FACTORY(Factory);
             Factory = 0;
             break;
         }
@@ -1198,7 +1208,7 @@ void BuildingClass::AI(void)
                 */
                 if (PlacementDelay.Expired() && !Factory->Is_Building()) {
                     Factory->Abandon();
-                    delete Factory;
+                    DELETE_FACTORY(Factory);
                     Factory = 0;
                 }
 
@@ -1219,14 +1229,10 @@ void BuildingClass::AI(void)
                     if (techno) {
                         Factory = new FactoryClass;
                         if (Factory) {
-                            if (!Factory->Set(*techno, *House)) {
-                                delete Factory;
+                            if (!Factory->Set(*techno, *House, false)) {
+                                DELETE_OR_ABANDON_FACTORY(Factory);
                                 Factory = 0;
                             } else {
-#ifdef USE_RA_AI
-                                House->Production_Begun(
-                                    Factory->Get_Object()); // Added for RA AI in TD. ST - 7/26/2019 9:46AM
-#endif
                                 Factory->Start();
                             }
                         }
@@ -1240,18 +1246,6 @@ void BuildingClass::AI(void)
     **	Check for demolition timeout. When timeout has expired, the building explodes.
     */
     if (IsGoingToBlow && CountDown.Expired()) {
-#ifdef REMASTER_BUILD
-        /*
-        ** Maybe trigger an achivement. ST - 11/14/2019 1:53PM
-        */
-        TechnoTypeClass const* object_type = Techno_Type_Class();
-        if (object_type) {
-            TechnoClass* saboteur = As_Techno(WhomToRepay);
-            if (saboteur && saboteur->IsActive && saboteur->House && saboteur->House->IsHuman) {
-                On_Achievement_Event(saboteur->House, "BUILDING_DESTROYED_C4", object_type->IniName);
-            }
-        }
-#endif
         SabotagedType = Class->Type;
         int damage = 5000;
         Take_Damage(damage, 0, WARHEAD_FIRE, As_Techno(WhomToRepay));
@@ -1316,19 +1310,6 @@ void BuildingClass::AI(void)
 bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
 {
     Validate();
-#ifdef OBSOLETE
-    if (*this == STRUCT_ROAD) {
-        if (Can_Enter_Cell(Coord_Cell(coord), FACING_NONE) == MOVE_OK) {
-            ObjectClass* o = OverlayTypeClass::As_Reference(OVERLAY_ROAD).Create_One_Of(House);
-            if (o && o->Unlimbo(coord)) {
-                Transmit_Message(RADIO_OVER_OUT);
-                Delete_This();
-                return (true);
-            }
-        }
-        return (false);
-    }
-#endif
 
     /*
     **	If this is a wall type building, then it never gets unlimboed. Instead, it gets
@@ -1383,13 +1364,6 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
         House->BScan |= (1L << Class->Type);
         House->ActiveBScan |= (1L << Class->Type);
 
-#ifdef USE_RA_AI
-        //
-        // Added for RA AI in TD. ST - 7/26/2019 9:25AM
-        //
-        House->Recalc_Center();
-#endif
-
         /*
         **	Update the total factory type, assuming this building has a factory.
         */
@@ -1420,14 +1394,8 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
         House->IsRecalcNeeded = true;
         LastStrength = 0;
 
-        // Changed for new multiplayer. ST - 4/3/2019 11:20AM
-        // if ((!IsDiscoveredByPlayer && Map[Coord_Cell(coord)].IsVisible) || GameToPlay != GAME_NORMAL) {
-        //	Revealed(PlayerPtr);
-        //}
-        if (!Is_Discovered_By_Player(House) && Map[Coord_Cell(coord)].Is_Visible(House) || GameToPlay != GAME_NORMAL) {
-            if (House->IsHuman) {
-                Revealed(House);
-            }
+        if (!IsDiscoveredByPlayer && Map[Coord_Cell(coord)].Is_Visible(House)) {
+            Revealed(PlayerPtr);
         }
 
         if (!House->IsHuman) {
@@ -1473,7 +1441,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   07/15/1995 JLB : Power ratio gets adjusted.                                               *
  *=============================================================================================*/
-ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
     Validate();
     ResultType res = RESULT_NONE;
@@ -1505,7 +1473,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
         /*
         **	Perform the low level damage assessment.
         */
-        res = TechnoClass::Take_Damage(damage, distance, warhead, source);
+        res = TechnoClass::Take_Damage(damage, distance, warhead, source, unk);
 
         switch (res) {
         case RESULT_DESTROYED:
@@ -1514,7 +1482,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
             **	Destroy all attached objects.
             */
             while (Attached_Object()) {
-                FootClass* obj = Detach_Object();
+                ObjectClass* obj = Remove_From_Cargo();
 
                 Detach_All(true);
                 delete obj;
@@ -1549,12 +1517,9 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
                 new AnimClass(ANIM_FBALL1, scatter_coord, delay);
             }
 
-            shakes = Class->Cost_Of() / 400;
+            shakes = Class->Cost_Of() / 100;
             if (shakes) {
-                Shake_The_Screen(shakes, Owner());
-                if (source && Owner() != source->Owner()) {
-                    Shake_The_Screen(shakes, source->Owner());
-                }
+                Map.Shake_The_Screen(shakes);
             }
             Sound_Effect(VOC_CRUMBLE, Coord);
             if (Mission == MISSION_DECONSTRUCTION) {
@@ -1572,18 +1537,6 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
             if (GameToPlay == GAME_NORMAL && *this == STRUCT_TEMPLE) {
                 if (warhead == WARHEAD_PB) {
                     TempleIoned = true;
-#ifdef REMASTER_BUILD
-                    /*
-                    ** Maybe trigger an achivement if the structure is owned by an AI house in campaign mode. ST -
-                    ** 11/14/2019 1:53PM
-                    */
-                    if (!House->IsHuman && source && source->House && source->House->IsHuman) {
-                        TechnoTypeClass const* object_type = Techno_Type_Class();
-                        if (object_type) {
-                            On_Achievement_Event(source->House, "ION_DESTROYS_TEMPLE", object_type->IniName);
-                        }
-                    }
-#endif
                 } else {
                     TempleIoned = false;
                 }
@@ -1726,44 +1679,11 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
  *=============================================================================================*/
 void BuildingClass::Look(bool)
 {
-    /*
-    ** Changed this function to reveal for the appropriate players in GlyphX multiplayer. ST - 4/17/2019 11:50AM
-    */
     Validate();
-
-    if (Class->SightRange) {
-        Map.Sight_From(House, Coord_Cell(Center_Coord()), Class->SightRange, false);
-    }
-
-#if (0)
-    if (GameToPlay != GAME_GLYPHX_MULTIPLAYER) {
-
-        if (Is_Owned_By_Player(PlayerPtr) || Is_Discovered_By_Player(PlayerPtr)) {
-            Map.Sight_From(PlayerPtr, Coord_Cell(Center_Coord()), Class->SightRange, false);
-        }
-    } else {
-
-        for (int i = 0; i < MPlayerCount; i++) {
-            HousesType house_type = MPlayerHouses[i];
-            HouseClass* house = HouseClass::As_Pointer(house_type);
-
-            if (Is_Owned_By_Player(house) || Is_Discovered_By_Player(house)) {
-                Map.Sight_From(house, Coord_Cell(Center_Coord()), Class->SightRange, false);
-            }
-        }
-    }
-#endif
-}
-
-#if (0) // For reference. ST - 4/17/2019 11:38AM
-void BuildingClass::Look(bool)
-{
-    Validate();
-    if (IsOwnedByPlayer || IsDiscoveredByPlayer) {
+    if (IsOwnedByPlayer || IsDiscoveredByPlayer || PlayerPtr->Is_Ally(Owner())) {
         Map.Sight_From(PlayerPtr, Coord_Cell(Center_Coord()), Class->SightRange, false);
     }
 }
-#endif
 
 /***********************************************************************************************
  * BuildingClass::new -- Allocates a building object from building pool.                       *
@@ -1784,11 +1704,25 @@ void BuildingClass::Look(bool)
  *   05/17/1994 JLB : Revamped allocation scheme                                               *
  *   07/29/1994 JLB : Simplified.                                                              *
  *=============================================================================================*/
-void* BuildingClass::operator new(size_t) noexcept
+void* BuildingClass::operator new(size_t, int heap_index) noexcept
 {
-    void* ptr = Buildings.Allocate();
+    TARGET target;
+    NewDeletePacketData* data;
+
+    if (!IsNewAllowed)
+        return NULL;
+
+    void* ptr = Buildings.Allocate(heap_index);
     if (ptr) {
-        ((BuildingClass*)ptr)->Set_Active();
+        ((BuildingClass*)ptr)->IsActive = true;
+    }
+
+    if (GameToPlay == GAME_HOST) {
+        target = Build_Target(KIND_BUILDING, Buildings.ID((BuildingClass*)ptr));
+        data = new NewDeletePacketData;
+        data->IsDeletePacket = false;
+        data->Whom = target;
+        NewDeletePacketDatas.Add(data);
     }
     return (ptr);
 }
@@ -1811,7 +1745,20 @@ void* BuildingClass::operator new(size_t) noexcept
  *=============================================================================================*/
 void BuildingClass::operator delete(void* ptr)
 {
+    TARGET target;
+    NewDeletePacketData* data;
+
+    if (!IsDeleteAllowed)
+        return;
+
     if (ptr) {
+        if (GameToPlay == GAME_HOST) {
+            data = new NewDeletePacketData;
+            target = Build_Target(KIND_BUILDING, Buildings.ID((BuildingClass*)ptr));
+            data->Whom = target;
+            data->IsDeletePacket = 1;
+            NewDeletePacketDatas.Add(data);
+        }
         ((BuildingClass*)ptr)->IsActive = false;
     }
     Buildings.Free((BuildingClass*)ptr);
@@ -1852,11 +1799,10 @@ BuildingClass::BuildingClass(StructType type, HousesType house)
     BState = BSTATE_NONE;
     CountDown.Set(0);
     Factory = 0;
-#ifndef USE_RA_AI
-    House->CurBuildings++; // Removed for RA AI in TD
-#endif
+    House->CurBuildings++;
     WhomToRepay = TARGET_NONE;
     IsCaptured = false;
+    BuildingUnk = false;
     IsCharged = false;
     IsCharging = false;
     IsSurvivorless = false;
@@ -1866,7 +1812,7 @@ BuildingClass::BuildingClass(StructType type, HousesType house)
     IsSecondShot = !Class->IsTwoShooter;
     IsWrenchVisible = false;
     QueueBState = BSTATE_NONE;
-    Strength = Class->MaxStrength;
+    Strength = Class->MaxStrength + Mod1;
     WhoLastHurtMe = house;
     Ammo = Class->MaxAmmo;
 
@@ -1884,16 +1830,12 @@ BuildingClass::BuildingClass(StructType type, HousesType house)
         IsCaptured = true;
     }
 
-    if (GameToPlay == GAME_INTERNET) {
-        House->BuildingTotals.Increment_Unit_Total((int)type);
+    if (GameToPlay == GAME_HOST) {
+        Timer1.Set(0);
+        TechnoUnk2 = false;
+        TechnoUnk3 = false;
     }
-
-#ifdef USE_RA_AI
-    //
-    // Added for RA AI in TD. ST - 7/26/2019 9:12AM
-    //
-    House->Tracking_Add(this);
-#endif // USE_RA_AI
+    TechnoUnk1 = false;
 }
 
 /***********************************************************************************************
@@ -1914,17 +1856,21 @@ BuildingClass::~BuildingClass(void)
 {
     if (GameActive && Class) {
         if (House) {
-#ifndef USE_RA_AI
             House->CurBuildings--;
-#else
-            //
-            // Added for RA AI in TD. ST - 7/26/2019 9:12AM
-            //
-            House->Tracking_Remove(this);
-#endif
         }
         Limbo();
     }
+}
+
+void BuildingClass::Destruct(void)
+{
+    if (GameActive && Class) {
+        if (House) {
+            House->CurBuildings--;
+        }
+        Limbo();
+    }
+    IsActive = false;
 }
 
 /***********************************************************************************************
@@ -1954,8 +1900,8 @@ void BuildingClass::Drop_Debris(TARGET source)
     **	Special case for Chan to run from destroyed technology
     **	building.
     */
-    if (GameToPlay == GAME_NORMAL && *this == STRUCT_MISSION && PlayerPtr->ActLike == HOUSE_BAD
-        && Scen.Scenario == 10) {
+    if (GameToPlay == GAME_NORMAL && *this == STRUCT_MISSION && PlayerPtr->ActLike == HOUSE_BAD && Scen.Scenario == 10
+        && InfantryClass::New_Allowed()) {
         InfantryClass* i = new InfantryClass(INFANTRY_CHAN, House->Class->House);
 
         ScenarioInit++;
@@ -1994,7 +1940,7 @@ void BuildingClass::Drop_Debris(TARGET source)
         if (!House->IsToDie && !IsSurvivorless) {
             InfantryClass* i = NULL;
 
-            if (Random_Pick(0, odds) == 1) {
+            if (Random_Pick(0, odds) == 1 && InfantryClass::New_Allowed()) {
                 i = new InfantryClass(Crew_Type(), House->Class->House);
                 if (i) {
                     if (Class->Get_Buildup_Data() != NULL && i->Class->IsNominal)
@@ -2129,10 +2075,10 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
  *   05/28/1994 JLB : Created.                                                                 *
  *   11/02/1994 JLB : Checks for range before assigning target.                                *
  *=============================================================================================*/
-void BuildingClass::Assign_Target(TARGET target)
+void BuildingClass::Assign_Target(TARGET target, bool unk)
 {
     Validate();
-    if (*this != STRUCT_SAM && !In_Range(target, 0)) {
+    if (*this != STRUCT_SAM && !In_Range(target, 0) && GameToPlay != GAME_CLIENT) {
         target = TARGET_NONE;
     }
 
@@ -2155,7 +2101,14 @@ void BuildingClass::Assign_Target(TARGET target)
  *=============================================================================================*/
 void BuildingClass::Init(void)
 {
+    IsNewAllowed = true;
+    IsDeleteAllowed = true;
+
     Buildings.Free_All();
+
+    for (int i = 0; i < Buildings.Length(); i++) {
+        Buildings.Raw_Ptr(i)->IsActive = false;
+    }
 }
 
 /***********************************************************************************************
@@ -2223,7 +2176,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             if (Cell_X(Coord_Cell(Center_Coord())) - Map.MapCellX < Map.MapCellWidth / 2) {
                 cell = XY_Cell(Map.MapCellX - 1, Random_Pick(0, Map.MapCellHeight - 1) + Map.MapCellY);
             } else {
-                cell = XY_Cell(Map.MapCellX + Map.MapCellWidth, Random_Pick(0, Map.MapCellHeight - 1) + Map.MapCellY);
+                cell =
+                    XY_Cell(Map.MapCellX + Map.MapCellWidth - 1, Random_Pick(0, Map.MapCellHeight - 1) + Map.MapCellY);
             }
             ScenarioInit++;
             if (air->Unlimbo(Cell_Coord(cell), DIR_N)) {
@@ -2294,20 +2248,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             if (cell)
                 found = true;
 
-#ifdef OBSOLETE
-            CELL const* ptr;
-            bool found = false;
-
-            ptr = Class->ExitList;
-            while (*ptr != REFRESH_EOL) {
-                cell = Coord_Cell(Coord) + *ptr++;
-                if (base->Can_Enter_Cell(cell) == MOVE_OK) {
-                    found = true;
-                    break;
-                }
-            }
-#endif
-
             if (found) {
                 DirType dir = Direction(cell);
                 COORDINATE start = Coord_Add(Coord, Class->ExitPoint);
@@ -2345,8 +2285,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             */
 
             BaseNodeClass* node = Base.Next_Buildable(((BuildingClass*)base)->Class->Type);
-            // Replaced with RA AI functioality. ST - 7/25/2019 4:14PM
-#ifndef USE_RA_AI
             if (node) {
                 if (Flush_For_Placement(base, Coord_Cell(node->Coord))) {
                     return (1);
@@ -2355,42 +2293,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     return (2);
                 }
             }
-#else
-            if (GameToPlay == GAME_NORMAL) {
-                if (node) {
-                    if (Flush_For_Placement(base, Coord_Cell(node->Coord))) {
-                        return (1);
-                    }
-                    if (base->Unlimbo(node->Coord)) {
-                        return (2);
-                    }
-                }
-            } else {
-
-                COORDINATE coord = 0;
-                if (node) {
-                    coord = node->Coord;
-                } else {
-
-                    /*
-                    **	Find a suitable new spot to place.
-                    */
-                    coord = House->Find_Build_Location((BuildingClass*)base);
-                }
-
-                if (coord) {
-                    if (Flush_For_Placement(base, Coord_Cell(coord))) {
-                        return (1);
-                    }
-                    if (base->Unlimbo(coord)) {
-                        if (node && ((BuildingClass*)base)->Class->Type == House->BuildStructure) {
-                            House->BuildStructure = STRUCT_NONE;
-                        }
-                        return (2);
-                    }
-                }
-            }
-#endif
         }
         break;
     }
@@ -2907,58 +2809,35 @@ void BuildingClass::Grand_Opening(bool captured)
     if (*this == STRUCT_REFINERY && !ScenarioInit && !captured && !Debug_Map
         && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
         CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_SW));
-        //		if (!Map[cell].Cell_Unit()) {
-        UnitClass* unit = new UnitClass(UNIT_HARVESTER, House->Class->House);
-        if (unit) {
-
-            /*
-            **	Try to place down the harvesters. If it could not be placed, then try
-            **	to place it in a nearby location.
-            */
-            if (!unit->Unlimbo(Cell_Coord(cell), DIR_SW)) {
-                cell = Nearby_Location(unit);
+        if (UnitClass::New_Allowed()) {
+            UnitClass* unit = new UnitClass(UNIT_HARVESTER, House->Class->House);
+            if (unit) {
 
                 /*
-                **	If the harvester could still not be placed, then refund the money
-                **	to the owner and then bail.
+                **	Try to place down the harvesters. If it could not be placed, then try
+                **	to place it in a nearby location.
                 */
                 if (!unit->Unlimbo(Cell_Coord(cell), DIR_SW)) {
-                    House->Refund_Money(unit->Class->Cost_Of());
-                    delete unit;
+                    cell = Nearby_Location(unit);
+
+                    /*
+                    **	If the harvester could still not be placed, then refund the money
+                    **	to the owner and then bail.
+                    */
+                    if (!unit->Unlimbo(Cell_Coord(cell), DIR_SW)) {
+                        House->Refund_Money(unit->Class->Cost_Of());
+                        delete unit;
+                    }
                 }
-            }
-        } else {
+            } else {
 
-            /*
-            **	If the harvester could not be created in the first place, then give
-            **	the full refund price to the owning player.
-            */
-            House->Refund_Money(UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost_Of());
-        }
-    }
-    //	}
-
-    /*
-    **	Helicopter pads get a free attack helicopter.
-    */
-    if (*this == STRUCT_HELIPAD && !captured
-        && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
-        ScenarioInit++;
-        AircraftClass* air = 0;
-        if (House->ActLike == HOUSE_GOOD) {
-            air = new AircraftClass(AIRCRAFT_ORCA, House->Class->House);
-        } else {
-            air = new AircraftClass(AIRCRAFT_HELICOPTER, House->Class->House);
-        }
-        if (air) {
-            air->Altitude = 0;
-            if (air->Unlimbo(Docking_Coord(), air->Pose_Dir())) {
-                air->Assign_Mission(MISSION_GUARD);
-                air->Transmit_Message(RADIO_HELLO, this);
-                Transmit_Message(RADIO_TETHER);
+                /*
+                **	If the harvester could not be created in the first place, then give
+                **	the full refund price to the owning player.
+                */
+                House->Refund_Money(UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost_Of());
             }
         }
-        ScenarioInit--;
     }
 }
 
@@ -3007,7 +2886,7 @@ void BuildingClass::Repair(int control)
     */
     VocType sound = VOC_NONE;
     if (IsRepairing) {
-        if (Strength == Class->MaxStrength) {
+        if (Strength == Class->MaxStrength + Mod1) {
             sound = VOC_SCOLD;
         } else {
             sound = VOC_BUTTON;
@@ -3110,7 +2989,7 @@ ActionType BuildingClass::What_Action(ObjectClass* object) const
     ActionType action = TechnoClass::What_Action(object);
 
     if (action == ACTION_SELF) {
-        if (Class->IsFactory && PlayerPtr == House) {
+        if (Class->IsFactory && (PlayerPtr == House || IsServerAdmin)) {
             switch (Class->ToBuild) {
             case RTTI_AIRCRAFTTYPE:
                 if (House->AircraftFactories < 2) {
@@ -3253,6 +3132,7 @@ void BuildingClass::Begin_Mode(BStateType bstate)
  *=============================================================================================*/
 void BuildingClass::Read_INI(CCINIClass& ini)
 {
+#if 0 // buildings not allowed preplaced on map in Sole?
     BuildingClass* b;   // Working unit pointer.
     HousesType bhouse;  // Building house.
     StructType classid; // Building type.
@@ -3333,6 +3213,7 @@ void BuildingClass::Read_INI(CCINIClass& ini)
             }
         }
     }
+#endif
 }
 
 /***********************************************************************************************
@@ -3355,6 +3236,7 @@ void BuildingClass::Read_INI(CCINIClass& ini)
  *=============================================================================================*/
 void BuildingClass::Write_INI(CCINIClass& ini)
 {
+#if 0 // buildings not allowed preplaced on map in Sole?
     /*
     **	First, clear out all existing building data from the ini file.
     */
@@ -3383,6 +3265,7 @@ void BuildingClass::Write_INI(CCINIClass& ini)
             ini.Put_String(INI_Name(), uname, buf);
         }
     }
+#endif
 }
 
 /***********************************************************************************************
@@ -3519,8 +3402,14 @@ FireErrorType BuildingClass::Can_Fire(TARGET target, int which) const
         /*
         **	Advanced guard towers need power to fire.
         */
-        if (*this == STRUCT_ATOWER && House->Power_Fraction() < 1) {
-            return (FIRE_BUSY);
+        if (*this == STRUCT_ATOWER) {
+            if (BuildingUnk) {
+                return (canfire);
+            }
+
+            if (House->Power_Fraction() < 1) {
+                return (FIRE_BUSY);
+            }
         }
 
         /*
@@ -3597,8 +3486,12 @@ bool BuildingClass::Toggle_Primary(void)
  *   05/03/1995 JLB : Created.                                                                 *
  *   07/05/1995 JLB : Fixed production problem with capturing enemy buildings.                 *
  *=============================================================================================*/
-bool BuildingClass::Captured(HouseClass* newowner)
+bool BuildingClass::Captured(HouseClass* newowner, bool unk)
 {
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return false;
+    }
+
     Validate();
     if (Can_Capture() && newowner != House) {
         switch (Owner()) {
@@ -3614,27 +3507,6 @@ bool BuildingClass::Captured(HouseClass* newowner)
         if (House == PlayerPtr) {
             Map.PowerClass::IsToRedraw = true;
             Map.Flag_To_Redraw(false);
-        }
-#ifdef REMASTER_BUILD
-        /*
-        ** Maybe trigger an achivement. ST - 11/14/2019 1:53PM
-        */
-        if (newowner->IsHuman) {
-            TechnoTypeClass const* object_type = Techno_Type_Class();
-            if (object_type) {
-                if (newowner->ActLike != House->ActLike) {
-                    On_Achievement_Event(newowner, "OPPOSING_BUILDING_CAPTURED", object_type->IniName);
-                } else {
-                    On_Achievement_Event(newowner, "BUILDING_CAPTURED", object_type->IniName);
-                }
-            }
-        }
-#endif
-        /*
-        ** Add this building to the list of buildings captured this game. For internet stats purposes
-        */
-        if (GameToPlay == GAME_INTERNET) {
-            newowner->CapturedBuildings.Increment_Unit_Total(Class->Type);
         }
 
         House->Adjust_Power(-Power_Output());
@@ -3689,33 +3561,14 @@ bool BuildingClass::Captured(HouseClass* newowner)
             break;
         }
 
-#ifdef NEVER
-        if (IsOwnedByPlayer && !ScenarioInit) {
-            Map.Recalc();
-        }
-        if (!House->IsHuman) {
-            Update_Specials();
-        }
-#endif
-
         /*
         **	Flag that both owners now need to update their buildable lists.
         */
         House->IsRecalcNeeded = true;
         newowner->IsRecalcNeeded = true;
 
-        HouseClass* oldowner = House; // Added for RA AI in TD. ST - 7/26/2019 9:25AM
-
         IsCaptured = true;
-        TechnoClass::Captured(newowner);
-
-#ifdef USE_RA_AI
-        //
-        // Added for RA AI in TD. ST - 7/26/2019 9:25AM
-        //
-        oldowner->Recalc_Center();
-        House->Recalc_Center();
-#endif
+        TechnoClass::Captured(newowner, unk);
 
         SmudgeType bib;
         CELL cell = Coord_Cell(Coord);
@@ -4121,30 +3974,31 @@ int BuildingClass::Mission_Deconstruction(void)
                     }
                     if (typ == INFANTRY_E7)
                         engine = true;
-
-                    InfantryClass* infantry = new InfantryClass(typ, House->Class->House);
-                    if (infantry) {
-                        ScenarioInit++;
-                        COORDINATE coord = Coord_Add(Center_Coord(), XYP_COORD(0, -12));
-
-                        /* extra check to prevent building crew for Obelisk or AGT spawning
-                           one cell above building foundation */
-                        if (*this == STRUCT_ATOWER || *this == STRUCT_OBELISK) {
-                            coord = Map[Coord_Cell(coord)].Adjacent_Cell(FACING_S)->Cell_Coord();
-                        }
-                        coord = Map[Coord_Cell(coord)].Closest_Free_Spot(coord, false);
-
-                        if (infantry->Unlimbo(coord, DIR_N)) {
-                            if (infantry->Class->IsNominal)
-                                infantry->IsTechnician = true;
-                            ScenarioInit--;
-                            infantry->Scatter(0, true);
+                    if (InfantryClass::New_Allowed()) {
+                        InfantryClass* infantry = new InfantryClass(typ, House->Class->House);
+                        if (infantry) {
                             ScenarioInit++;
-                            infantry->Assign_Mission(MISSION_GUARD_AREA);
-                        } else {
-                            delete infantry;
+                            COORDINATE coord = Coord_Add(Center_Coord(), XYP_COORD(0, -12));
+
+                            /* extra check to prevent building crew for Obelisk or AGT spawning
+                           one cell above building foundation */
+                            if (*this == STRUCT_ATOWER || *this == STRUCT_OBELISK) {
+                                coord = Map[Coord_Cell(coord)].Adjacent_Cell(FACING_S)->Cell_Coord();
+                            }
+                            coord = Map[Coord_Cell(coord)].Closest_Free_Spot(coord, false);
+
+                            if (infantry->Unlimbo(coord, DIR_N)) {
+                                if (infantry->Class->IsNominal)
+                                    infantry->IsTechnician = true;
+                                ScenarioInit--;
+                                infantry->Scatter(0, true);
+                                ScenarioInit++;
+                                infantry->Assign_Mission(MISSION_GUARD_AREA);
+                            } else {
+                                delete infantry;
+                            }
+                            ScenarioInit--;
                         }
-                        ScenarioInit--;
                     }
                     count--;
                 }
@@ -4193,43 +4047,45 @@ int BuildingClass::Mission_Deconstruction(void)
             */
             if (Target_Legal(ArchiveTarget) && Special.IsMCVDeploy && *this == STRUCT_CONST && House->IsHuman) {
                 ScenarioInit++;
-                UnitClass* unit = new UnitClass(UNIT_MCV, House->Class->House);
-                ScenarioInit--;
-                if (unit) {
-
-                    /*
-                    **	Unlimbo the MCV onto the map. The MCV should start in the same
-                    **	health condition that the construction yard was in.
-                    */
-                    int ratio = Health_Ratio();
-                    int money = Refund_Amount();
-                    TARGET arch = ArchiveTarget;
-                    COORDINATE place = Coord_Snap(Adjacent_Cell(Coord, DIR_SE));
-
-                    Delete_This();
-
-                    if (unit->Unlimbo(place, DIR_SW)) {
-                        unit->Strength = Fixed_To_Cardinal(unit->Class_Of().MaxStrength, ratio);
+                if (UnitClass::New_Allowed()) {
+                    UnitClass* unit = new UnitClass(UNIT_MCV, House->Class->House);
+                    ScenarioInit--;
+                    if (unit) {
 
                         /*
-                        **	Lift the move destination from the building and assign
-                        **	it to the unit.
+                        **	Unlimbo the MCV onto the map. The MCV should start in the same
+                        **	health condition that the construction yard was in.
                         */
-                        if (Target_Legal(arch)) {
-                            unit->Assign_Destination(arch);
-                            unit->Assign_Mission(MISSION_MOVE);
+                        int ratio = Health_Ratio();
+                        int money = Refund_Amount();
+                        TARGET arch = ArchiveTarget;
+                        COORDINATE place = Coord_Snap(Adjacent_Cell(Coord, DIR_SE));
+
+                        Delete_This();
+
+                        if (unit->Unlimbo(place, DIR_SW)) {
+                            unit->Strength = Fixed_To_Cardinal(unit->Class_Of().MaxStrength, ratio);
+
+                            /*
+                            **	Lift the move destination from the building and assign
+                            **	it to the unit.
+                            */
+                            if (Target_Legal(arch)) {
+                                unit->Assign_Destination(arch);
+                                unit->Assign_Mission(MISSION_MOVE);
+                            }
+                        } else {
+
+                            /*
+                            **	If, for some strange reason, the MCV could not be placed on the
+                            **	map, then give the player some money to compensate.
+                            */
+                            House->Refund_Money(money);
                         }
                     } else {
-
-                        /*
-                        **	If, for some strange reason, the MCV could not be placed on the
-                        **	map, then give the player some money to compensate.
-                        */
-                        House->Refund_Money(money);
+                        House->Refund_Money(Refund_Amount());
+                        Delete_This();
                     }
-                } else {
-                    House->Refund_Money(Refund_Amount());
-                    Delete_This();
                 }
 
             } else {
@@ -4544,7 +4400,7 @@ int BuildingClass::Mission_Harvest(void)
             /*
             **	Detach harvester and go back into idle state.
             */
-            Exit_Object(Detach_Object());
+            Exit_Object(Remove_From_Cargo());
             Assign_Mission(MISSION_GUARD);
         }
         break;
@@ -5197,7 +5053,7 @@ int BuildingClass::Power_Output(void) const
 {
     Validate();
     if (Class->Power) {
-        return (Fixed_To_Cardinal(Class->Power, Cardinal_To_Fixed(Class->MaxStrength, LastStrength)));
+        return (Fixed_To_Cardinal(Class->Power, Cardinal_To_Fixed(Class->MaxStrength + Mod1, LastStrength)));
     }
     return (0);
 }
@@ -5531,4 +5387,56 @@ bool BuildingClass::Passes_Proximity_Check(CELL homecell)
         }
     }
     return (false);
+}
+
+short const *BuildingClass::Overlap_List(void) const
+{
+	Validate();
+	static short _list[100] = { 0 };
+
+	HouseClass *hptr;
+	int h;
+	int w;
+	int index;
+	short const *l;
+	int width, height;
+	int s;
+
+	if (TechnoUnk1 && (ShowNames == 0 && IsSelected || ShowNames == 1) && Cloak != CLOAKED) {
+		index = 0;
+		l = Class_Of().Overlap_List();
+
+		while(l[index] != REFRESH_EOL) {
+			_list[index] = l[index];
+			index++;
+		}
+
+		if (PlayerNameDrawStyle == 3) {
+			Fancy_Text_Print("", 0, 0, 15, 0, TPF_3POINT | TPF_CENTER | TPF_FULLSHADOW);
+		} else {
+			Fancy_Text_Print("", 0, 0, 15, 0, TPF_8POINT | TPF_CENTER | TPF_FULLSHADOW);
+		}
+
+		hptr = HouseClass::As_Pointer(Owner());
+		w = ((String_Pixel_Width(hptr->Name) + 2) / 24) + 1;
+		h = (FontHeight / 24) + 2;
+
+		//int width, height;
+		Class_Of().Dimensions(width, height);
+		width /= 24;
+		width++;
+
+		int x, y;
+		for (y = 0; y < h; y++) {
+			s = (width - w) / 2 - (y * 128);
+			for (x = 0; x< w; x++) {
+				_list[index] = s + x;
+				index++;
+			}
+		}
+		_list[index] = REFRESH_EOL;
+		return (_list);
+	}
+
+	return(Class_Of().Overlap_List());
 }

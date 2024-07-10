@@ -178,4 +178,18 @@ private:
     */
 };
 
+// Sole macros.
+
+#define DELETE_FACTORY(ptr)				\
+if (ptr->Delete_Allowed()) {			\
+	delete ptr;							\
+}										\
+
+#define DELETE_OR_ABANDON_FACTORY(ptr)	\
+if (ptr->Delete_Allowed()) {			\
+	delete ptr;							\
+} else {								\
+	ptr->Abandon(); 					\
+}	
+
 #endif
