@@ -129,25 +129,25 @@ static BulletTypeClass const ClassAPDS(BULLET_APDS,
 );
 
 static BulletTypeClass const Class120mm(BULLET_HE,
-                                        "120mm",         // NAME:			Text name of this unit type.
-                                        true,            // Flies over tall walls?
-                                        false,           // Homes in on target?
-                                        true,            // Projectile arcs to the target?
-                                        false,           // Is this a dropping bomb-like object?
-                                        false,           // Is this projectile invisible?
-                                        false,           // Will it blow up even if it gets just NEAR to target?
-                                        false,           // Does it have flickering flame animation?
-                                        false,           // Can it run out of fuel?
-                                        true,            // Is there no visual difference between projectile facings?
-                                        true,            // Is projectile inherently inaccurate?
-                                        false,           // Translucent colors are used?
-                                        false,           // Good against aircraft?
-                                        0,               // ARMING:		Time to arm projectile after launch.
-                                        0,               // RANGE:		Inherent override range factor.
-                                        MPH_MEDIUM_FAST, // SPEED:		Miles per hour.
-                                        0,               // ROT:			Rate of turn (degrees per tick).
-                                        WARHEAD_HE,      // WARHEAD:		If fires weapon, warhead type
-                                        ANIM_ART_EXP1    // Explosion to use upon impact.
+                                        "120mm",           // NAME:			Text name of this unit type.
+                                        true,              // Flies over tall walls?
+                                        false,             // Homes in on target?
+                                        true,              // Projectile arcs to the target?
+                                        false,             // Is this a dropping bomb-like object?
+                                        false,             // Is this projectile invisible?
+                                        false,             // Will it blow up even if it gets just NEAR to target?
+                                        false,             // Does it have flickering flame animation?
+                                        false,             // Can it run out of fuel?
+                                        true,              // Is there no visual difference between projectile facings?
+                                        true,              // Is projectile inherently inaccurate?
+                                        false,             // Translucent colors are used?
+                                        false,             // Good against aircraft?
+                                        0,                 // ARMING:		Time to arm projectile after launch.
+                                        0,                 // RANGE:		Inherent override range factor.
+                                        MPH_MEDIUM_FASTER, // SPEED:		Miles per hour.
+                                        0,                 // ROT:			Rate of turn (degrees per tick).
+                                        WARHEAD_HE,        // WARHEAD:		If fires weapon, warhead type
+                                        ANIM_ART_EXP1      // Explosion to use upon impact.
 );
 
 static BulletTypeClass const ClassMissile(BULLET_SSM,
@@ -254,7 +254,7 @@ static BulletTypeClass const ClassFlame(BULLET_FLAME,
                                         false,        // Good against aircraft?
                                         12,           // ARMING:		Time to arm projectile after launch.
                                         12,           // RANGE:		Inherent override range factor.
-                                        MPH_FAST,     // SPEED:		Miles per hour.
+                                        MPH_FASTER,   // SPEED:		Miles per hour.
                                         0,            // ROT:			Rate of turn (degrees per tick).
                                         WARHEAD_FIRE, // WARHEAD:		If fires weapon, warhead type
                                         ANIM_NONE     // Explosion to use upon impact.
@@ -276,7 +276,7 @@ static BulletTypeClass const ClassChem(BULLET_CHEMSPRAY,
                                        false,      // Good against aircraft?
                                        12,         // ARMING:		Time to arm projectile after launch.
                                        12,         // RANGE:		Inherent override range factor.
-                                       MPH_FAST,   // SPEED:		Miles per hour.
+                                       MPH_FASTER, // SPEED:		Miles per hour.
                                        0,          // ROT:			Rate of turn (degrees per tick).
                                        WARHEAD_HE, // WARHEAD:		If fires weapon, warhead type
                                        ANIM_NONE   // Explosion to use upon impact.
@@ -408,7 +408,7 @@ static BulletTypeClass const ClassHonestJohn(BULLET_HONEST_JOHN,
                                              false,        // Good against aircraft?
                                              10,           // ARMING:		Time to arm projectile after launch.
                                              0,            // RANGE:		Inherent override range factor.
-                                             MPH_FAST,     // SPEED:		Miles per hour.
+                                             MPH_FASTER,   // SPEED:		Miles per hour.
                                              10,           // ROT:			Rate of turn (degrees per tick).
                                              WARHEAD_FIRE, // WARHEAD:		If fires weapon, warhead type
                                              ANIM_NAPALM3  // Explosion to use upon impact.

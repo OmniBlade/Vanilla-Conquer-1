@@ -187,7 +187,7 @@ BulletClass::BulletClass(BulletType id)
     IsToAnimate = false;
     Payback = 0;
     Riser = 0;
-    Strength = Class->MaxStrength;
+    Strength = Class->MaxStrength + Mod1;
     TarCom = TARGET_NONE;
 }
 
@@ -294,6 +294,10 @@ void BulletClass::AI(void)
 {
     Validate();
     COORDINATE coord;
+    int rot;
+    int dist1;
+    int dist2;
+    ImpactType impact;
 
     ObjectClass::AI();
 
@@ -347,11 +351,20 @@ void BulletClass::AI(void)
     **	Handle any body rotation at this time. This process must
     **	occur every game fame in order to achieve smooth rotation.
     */
+    rot = Class->ROT;
+	rot = (rot * SpeedScale) / 256;
     if (PrimaryFacing.Is_Rotating()) {
-        PrimaryFacing.Rotation_Adjust(Class->ROT);
+        PrimaryFacing.Rotation_Adjust(rot);
     }
 
-    switch (Physics(coord, PrimaryFacing)) {
+    dist1 = Distance(Fuse_Target());
+	impact = Physics(coord, PrimaryFacing, dist1);
+	dist2 = ::Distance(coord, Fuse_Target());
+	if (dist2 > dist1 && SpeedScale / 2 > dist1) {
+		coord = Fuse_Target();
+	}
+
+    switch (impact) {
 
     /*
     **	When a projectile reaches the edge of the world, it

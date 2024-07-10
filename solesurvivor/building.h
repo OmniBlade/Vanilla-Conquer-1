@@ -122,6 +122,11 @@ public:
     unsigned IsCaptured : 1;
 
     /*
+    ** TODO Sole Addition.
+    */
+    unsigned BuildingUnk : 1;
+
+    /*
     **	Special countdown to destruction value. If the building is destroyed,
     **	it won't actually be removed from the map until this value reaches
     **	zero. This delay is for cosmetic reasons.
@@ -163,7 +168,7 @@ public:
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
     */
-    static void* operator new(size_t size) noexcept;
+    static void* operator new(size_t size, int heap_index = -1) noexcept;
     static void* operator new(size_t, void* ptr)
     {
         return (ptr);
@@ -246,6 +251,7 @@ public:
     */
     virtual void const* Remap_Table(void);
     virtual int Exit_Object(TechnoClass* base);
+    virtual short const* Overlap_List(void) const;
     virtual void Draw_It(int x, int y, WindowNumberType window);
     virtual bool Mark(MarkType mark);
     virtual void Look(bool incremental = false);
@@ -264,9 +270,10 @@ public:
     virtual void Death_Announcement(TechnoClass const* source = 0) const;
     virtual FireErrorType Can_Fire(TARGET, int which) const;
     virtual TARGET Greatest_Threat(ThreatType threat) const;
-    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0);
+    virtual ResultType
+    Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0, bool unk = false);
     virtual TARGET As_Target(void) const;
-    virtual bool Captured(HouseClass* newowner);
+    virtual bool Captured(HouseClass* newowner, bool unk = false);
 
     /*
     **	AI.
@@ -277,7 +284,7 @@ public:
     virtual void Sell_Back(int control);
     virtual RadioMessageType Receive_Message(RadioClass* from, RadioMessageType message, int& param);
     virtual void AI(void);
-    virtual void Assign_Target(TARGET target);
+    virtual void Assign_Target(TARGET target, bool unk = false);
     virtual bool Toggle_Primary(void);
     bool Flush_For_Placement(TechnoClass* techno, CELL cell);
 
@@ -318,14 +325,37 @@ public:
 
 private:
     void Drop_Debris(TARGET source = TARGET_NONE);
-    virtual BulletClass* Fire_At(TARGET target, int which);
+    virtual BulletClass* Fire_At(TARGET target, int which, bool unk = false);
 
     /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
-    *save/load
+    ** save/load
     */
 
     static COORDINATE const CenterOffset[BSIZE_COUNT];
+
+public:
+    static bool New_Allowed()
+    {
+        return IsNewAllowed;
+    }
+    virtual bool Delete_Allowed()
+    {
+        return IsDeleteAllowed;
+    }
+    virtual void Destruct();
+
+    static void Set_New_Allowed(bool allowed)
+    {
+        IsNewAllowed = allowed;
+    }
+    static void Set_Delete_Allowed(bool allowed)
+    {
+        IsDeleteAllowed = allowed;
+    }
+
+    static bool IsNewAllowed;
+    static bool IsDeleteAllowed;
 };
 
 #endif
