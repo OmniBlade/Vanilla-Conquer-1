@@ -148,6 +148,9 @@ public:
     unsigned int Max_Response_Time(void); // gets max response time
     void Reset_Response_Time(void);       // resets computations
 
+    int Grow_Send(int amount);
+    int Grow_Receive(int amount);
+
     /*
     ........................ Debug output routines ........................
     */
