@@ -752,6 +752,98 @@ void CommBufferClass::Reset_Response_Time(void)
 
 } /* end of Reset_Response_Time */
 
+// New Sole Survivor function
+int CommBufferClass::Grow_Send(int amount)
+{
+	int i;
+	int maxsend;
+	SendQueueType *sendqueue;
+	int *sendindex;
+
+	maxsend = MaxSend + amount;
+	sendqueue = new SendQueueType[maxsend];
+	sendindex = new int[maxsend];
+
+	for ( i = 0; i < MaxSend; i++) {
+		sendqueue[i] = SendQueue[i];
+		sendindex[i] = SendIndex[i];
+	}
+
+	for ( i = MaxSend; i < maxsend; i++) {
+		sendqueue[i].Buffer = new char[MaxPacketSize];
+		if (MaxExtraSize > 0) {
+			sendqueue[i].ExtraBuffer = new char[MaxExtraSize];
+		}
+		else {
+			sendqueue[i].ExtraBuffer = NULL;
+		}
+
+		sendqueue[i].IsActive = 0;
+		sendqueue[i].IsACK = 0;
+		sendqueue[i].FirstTime = 0L;
+		sendqueue[i].LastTime = 0L;
+		sendqueue[i].SendCount = 0L;
+		sendqueue[i].BufLen = 0;
+		sendqueue[i].ExtraLen = 0;
+
+		sendindex[i] = 0;
+	}
+
+	delete [] SendQueue;
+	delete [] SendIndex;
+
+	MaxSend = maxsend;
+	SendQueue = sendqueue;
+	SendIndex = sendindex;
+
+	return 1;
+}
+
+// New Sole Survivor function
+int CommBufferClass::Grow_Receive(int amount)
+{
+	int i;
+	int maxreceive;
+	ReceiveQueueType *receivequeue;
+	int *receiveindex;
+
+	maxreceive = MaxReceive + amount;
+	receivequeue = new ReceiveQueueType[maxreceive];
+	receiveindex = new int[maxreceive];
+
+	for ( i = 0; i < MaxReceive; i++) {
+		receivequeue[i] = ReceiveQueue[i];
+		receiveindex[i] = ReceiveIndex[i];
+	}
+
+	for ( i = MaxReceive; i < maxreceive; i++) {
+		receivequeue[i].Buffer = new char[MaxPacketSize];
+		if (MaxExtraSize > 0) {
+			receivequeue[i].ExtraBuffer = new char[MaxExtraSize];
+		}
+		else {
+			receivequeue[i].ExtraBuffer = NULL;
+		}
+
+		receivequeue[i].IsActive = 0;
+		receivequeue[i].IsRead = 0;
+		receivequeue[i].IsACK = 0;
+		receivequeue[i].BufLen = 0;
+		receivequeue[i].ExtraLen = 0;
+
+		receiveindex[i] = 0;
+	}
+
+	delete [] ReceiveQueue;
+	delete [] ReceiveIndex;
+
+	MaxReceive = maxreceive;
+	ReceiveQueue = receivequeue;
+	ReceiveIndex = receiveindex;
+
+	return 1;
+}
+
 /***************************************************************************
  * CommBufferClass::Configure_Debug -- sets up special debug values        *
  *                                                                         *
