@@ -572,23 +572,8 @@ void CellClass::Occupy_Down(ObjectClass* object)
     **	If being placed down on a visible square, then flag this
     **	techno object as being revealed to the player.
     */
-    // Changes for GlyphX multiplayer. ST - 4/17/2019 3:02PM
-    // if (IsVisible || GameToPlay != GAME_NORMAL) {
-    //	object->Revealed(PlayerPtr);
-    //}
-    if (GameToPlay != GAME_GLYPHX_MULTIPLAYER) {
-        if (IsVisible || GameToPlay != GAME_NORMAL) {
-            object->Revealed(PlayerPtr);
-        }
-    } else {
-
-        for (int i = 0; i < MPlayerCount; i++) {
-            HousesType house_type = MPlayerHouses[i];
-            if (Is_Visible(house_type)) {
-                HouseClass* house = HouseClass::As_Pointer(house_type);
-                object->Revealed(house);
-            }
-        }
+    if (IsVisible) {
+        object->Revealed(PlayerPtr);
     }
 
     /*
@@ -932,17 +917,30 @@ void CellClass::Draw_It(int x, int y, int draw_type) const
                              Map.TacPixelY + y + ICON_PIXEL_H - 1,
                              Sim_Random_Pick(1, 254));
         FontXSpacing -= 2;
-        Fancy_Text_Print("%d\r%2X%c\r%02X.%02X",
-                         Map.TacPixelX + x + (ICON_PIXEL_W >> 1),
-                         Map.TacPixelY + y,
-                         WHITE,
-                         TBLACK,
-                         TPF_6POINT | TPF_NOSHADOW | TPF_CENTER,
-                         cell,
-                         Flag.Composite,
-                         (Cell_Occupier() ? '*' : ' '),
-                         Overlay,
-                         OverlayData);
+        if (cell % 2 == 0) {
+            Fancy_Text_Print("%d\r%2X%c\r%02X.%02X",
+                             Map.TacPixelX + x + (ICON_PIXEL_W >> 1),
+                             Map.TacPixelY + y,
+                             WHITE,
+                             TBLACK,
+                             TPF_6POINT | TPF_NOSHADOW | TPF_CENTER,
+                             cell,
+                             Flag.Composite,
+                             (Cell_Occupier() ? '*' : ' '),
+                             Overlay,
+                             OverlayData);
+        } else {
+            Fancy_Text_Print("\r%2X%c\r%02X.%02X",
+                             Map.TacPixelX + x + (ICON_PIXEL_W >> 1),
+                             Map.TacPixelY + y,
+                             WHITE,
+                             TBLACK,
+                             TPF_6POINT | TPF_NOSHADOW | TPF_CENTER,
+                             Flag.Composite,
+                             (Cell_Occupier() ? '*' : ' '),
+                             Overlay,
+                             OverlayData);
+        }
         FontXSpacing += 2;
     } else {
 
@@ -1041,14 +1039,160 @@ void CellClass::Draw_It(int x, int y, int draw_type) const
             if (Overlay != OVERLAY_NONE) {
                 OverlayTypeClass const& otype = OverlayTypeClass::As_Reference(Overlay);
                 IsTheaterShape = (bool)otype.IsTheater;
-                CC_Draw_Shape(otype.Get_Image_Data(),
-                              OverlayData,
-                              (x + (CELL_PIXEL_W >> 1)),
-                              (y + (CELL_PIXEL_H >> 1)),
-                              WINDOW_TACTICAL,
-                              SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST,
-                              NULL,
-                              Map.UnitShadow);
+                if (GameParams.Football && Overlay == OVERLAY_CONCRETE) {
+                    int color = 117;
+
+                    if (Cell_Number() == HouseClass::As_Pointer(HOUSE_BLUE_TEAM)->FlagHome) {
+                        color = 220;
+                    } else if (Cell_Number() == HouseClass::As_Pointer(HOUSE_ORANGE_TEAM)->FlagHome) {
+                        color = 28;
+                    }
+
+                    int conc_clip_x = x;
+                    int conc_clip_y = y;
+                    int conc_clip_w = 24;
+                    int conc_clip_h = 24;
+                    if (Clip_Rect(&conc_clip_x,
+                                  &conc_clip_y,
+                                  &conc_clip_w,
+                                  &conc_clip_h,
+                                  Lepton_To_Pixel(Map.TacLeptonWidth),
+                                  Lepton_To_Pixel(Map.TacLeptonHeight))
+                        >= 0) {
+
+                        if (conc_clip_y == y) {
+                            LogicPage->Draw_Line(Map.TacPixelX + conc_clip_x,
+                                                 Map.TacPixelY + conc_clip_y,
+                                                 Map.TacPixelX + conc_clip_x + conc_clip_w - 1,
+                                                 Map.TacPixelY + conc_clip_y,
+                                                 14);
+                        }
+                        if (conc_clip_x == x) {
+                            LogicPage->Draw_Line(Map.TacPixelX + conc_clip_x,
+                                                 Map.TacPixelY + conc_clip_y,
+                                                 Map.TacPixelX + conc_clip_x,
+                                                 Map.TacPixelY + conc_clip_y + conc_clip_h - 1,
+                                                 14);
+                        }
+                        if (conc_clip_h == 24) {
+                            LogicPage->Draw_Line(Map.TacPixelX + conc_clip_x,
+                                                 Map.TacPixelY + y + conc_clip_h - 1,
+                                                 Map.TacPixelX + conc_clip_x + conc_clip_w - 1,
+                                                 Map.TacPixelY + conc_clip_y + conc_clip_h - 1,
+                                                 50);
+                        }
+                        if (conc_clip_w == 24) {
+                            LogicPage->Draw_Line(Map.TacPixelX + conc_clip_w - 1 + x,
+                                                 Map.TacPixelY + conc_clip_y,
+                                                 Map.TacPixelX + conc_clip_w - 1 + x,
+                                                 Map.TacPixelY + conc_clip_y + conc_clip_h - 1,
+                                                 50);
+                        }
+                    }
+
+                    conc_clip_x = x + 1;
+                    conc_clip_y = y + 1;
+                    conc_clip_w = 22;
+                    conc_clip_h = 22;
+
+                    if (Clip_Rect(&conc_clip_x,
+                                  &conc_clip_y,
+                                  &conc_clip_w,
+                                  &conc_clip_h,
+                                  Lepton_To_Pixel(Map.TacLeptonWidth),
+                                  Lepton_To_Pixel(Map.TacLeptonHeight))
+                        >= 0) {
+                        LogicPage->Fill_Rect(Map.TacPixelX + conc_clip_x,
+                                             Map.TacPixelY + conc_clip_y,
+                                             Map.TacPixelX + conc_clip_x + conc_clip_w - 1,
+                                             Map.TacPixelY + conc_clip_y + conc_clip_h - 1,
+                                             color);
+                    }
+
+                } else if (Overlay == OVERLAY_ROAD1) {
+                    CC_Draw_Shape(otype.Get_Image_Data(),
+                                  OverlayData,
+                                  (x + (CELL_PIXEL_W >> 1)),
+                                  (y + (CELL_PIXEL_H >> 1)),
+                                  WINDOW_TACTICAL,
+                                  SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST,
+                                  NULL,
+                                  Map.UnitShadow);
+
+                    int clip_x = x + 1;
+                    int clip_y = y + 1;
+                    int clip_w = 22;
+                    int clip_h = 22;
+                    if (Clip_Rect(&clip_x,
+                                  &clip_y,
+                                  &clip_w,
+                                  &clip_h,
+                                  Lepton_To_Pixel(Map.TacLeptonWidth),
+                                  Lepton_To_Pixel(Map.TacLeptonHeight))
+                        >= 0) {
+                        LogicPage->Fill_Rect(Map.TacPixelX + clip_x,
+                                             Map.TacPixelY + clip_y,
+                                             Map.TacPixelX + clip_x + clip_w - 1,
+                                             Map.TacPixelY + clip_y + clip_h - 1,
+                                             32);
+                    }
+                    clip_x = x + 2;
+                    clip_y = y + 2;
+                    clip_w = 20;
+                    clip_h = 20;
+                    if (Clip_Rect(&clip_x,
+                                  &clip_y,
+                                  &clip_w,
+                                  &clip_h,
+                                  Lepton_To_Pixel(Map.TacLeptonWidth),
+                                  Lepton_To_Pixel(Map.TacLeptonHeight))
+                        >= 0) {
+                        LogicPage->Fill_Rect(Map.TacPixelX + clip_x,
+                                             Map.TacPixelY + clip_y,
+                                             Map.TacPixelX + clip_x + clip_w - 1,
+                                             Map.TacPixelY + clip_y + clip_h - 1,
+                                             50);
+                    }
+                } else if (Overlay == OVERLAY_FLAG_SPOT) {
+
+                    const void* remap = NULL;
+                    for (HousesType i = HOUSE_FIRST_TEAM; i <= HOUSE_LAST_TEAM; i++) {
+                        HouseClass* hptr = HouseClass::As_Pointer(i);
+                        if (Cell_Number() == hptr->FlagHome) {
+                            remap = hptr->Remap_Table(0, 0);
+                            break;
+                        }
+                    }
+
+                    if (remap) {
+                        CC_Draw_Shape(otype.Get_Image_Data(),
+                                      OverlayData,
+                                      (x + (CELL_PIXEL_W >> 1)),
+                                      (y + (CELL_PIXEL_H >> 1)),
+                                      WINDOW_TACTICAL,
+                                      SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST | SHAPE_FADING,
+                                      remap,
+                                      Map.UnitShadow);
+                    } else {
+                        CC_Draw_Shape(otype.Get_Image_Data(),
+                                      OverlayData,
+                                      (x + (CELL_PIXEL_W >> 1)),
+                                      (y + (CELL_PIXEL_H >> 1)),
+                                      WINDOW_TACTICAL,
+                                      SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST,
+                                      NULL,
+                                      Map.UnitShadow);
+                    }
+                } else {
+                    CC_Draw_Shape(otype.Get_Image_Data(),
+                                  OverlayData,
+                                  (x + (CELL_PIXEL_W >> 1)),
+                                  (y + (CELL_PIXEL_H >> 1)),
+                                  WINDOW_TACTICAL,
+                                  SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST,
+                                  NULL,
+                                  Map.UnitShadow);
+                }
                 IsTheaterShape = false;
             }
 
@@ -1161,6 +1305,16 @@ void CellClass::Draw_It(int x, int y, int draw_type) const
                     }
                 }
 #endif
+            }
+
+            /*
+			**	Draw the flag if there is one located at this cell.
+			*/
+            if (IsFlagged) {
+                //void const * remap = HouseClass::As_Pointer(Owner)->Remap_Table(false, false);
+                //CC_Draw_Shape(MixFileClass::Retrieve("FLAGFLY.SHP"), Frame % 14, x+(ICON_PIXEL_W/2), y+(ICON_PIXEL_H/2), WINDOW_TACTICAL, SHAPE_CENTER|SHAPE_GHOST|SHAPE_FADING, remap, Map.UnitShadow);
+                int h = Owner - HOUSE_FIRST_TEAM;
+                FlagDrawLocation[h] = XY_Coord(x, y);
             }
         }
     }
@@ -1956,6 +2110,10 @@ int CellClass::Tiberium_Adjust(bool pregame)
  *=============================================================================================*/
 bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
 {
+    if (GameToPlay != GAME_NORMAL) {
+        return WDT_Goodie_Check(object);
+    }
+
     Validate();
     enum
     {
@@ -2103,13 +2261,6 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
             }
 
             /*
-            ** Keep track of the number of each type of crate found
-            */
-            if (GameToPlay == GAME_INTERNET) {
-                object->House->TotalCrates.Increment_Unit_Total(what);
-            }
-
-            /*
             **	Update the crate count and when all the crates have been discovered, flag
             **	to generate a new one.
             */
@@ -2226,9 +2377,10 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
                 while (!utp) {
                     UnitType utype = Random_Pick(UNIT_FIRST, (UnitType)(UNIT_COUNT - 1));
                     if (utype != UNIT_MCV || MPlayerBases) {
+                        unsigned short m = 1 << HouseClass::As_Pointer(object->Owner())->ActLike;
                         utp = &UnitTypeClass::As_Reference(utype);
-                        if (utp->IsCrateGoodie && (utp->Ownable & (1 << object->Owner()))
-                            && utp->Level <= BuildLevel + 2)
+
+                        if (utp->IsCrateGoodie && (utp->Ownable & m) && utp->Level <= BuildLevel + 2)
                             break;
                         utp = NULL;
                     }
@@ -2239,7 +2391,12 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
                     if (unit->Unlimbo(Cell_Coord())) {
                         return (false);
                     }
-                    delete unit;
+
+                    if (unit->Delete_Allowed) {
+                        delete unit;
+                    } else {
+                        unit->Destruct();
+                    }
                 }
             } break;
 
@@ -2286,18 +2443,9 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
             case NUKE_MISSILE:
                 new AnimClass(ANIM_CRATE_MISSILE, Cell_Coord());
                 if (object->House->NukeStrike.Enable(true)) {
-                    // Add to Glyphx multiplayer sidebar. ST - 3/22/2019 1:50PM
-                    if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
-                        if (object->House->IsHuman) {
-#ifdef REMASTER_BUILD
-                            Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_NUCLEAR_BOMB, object->House);
-#endif
-                        }
-                    } else {
-                        if (object->IsOwnedByPlayer) {
-                            Map.Add(RTTI_SPECIAL, SPC_NUCLEAR_BOMB);
-                            Map.Column[1].Flag_To_Redraw();
-                        }
+                    if (object->IsOwnedByPlayer) {
+                        Map.Add(RTTI_SPECIAL, SPC_NUCLEAR_BOMB);
+                        Map.Column[1].Flag_To_Redraw();
                     }
                 }
                 break;
@@ -2308,18 +2456,9 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
             case ION_BLAST:
                 new AnimClass(ANIM_CRATE_EARTH, Cell_Coord());
                 if (object->House->IonCannon.Enable(true)) {
-                    // Add to Glyphx multiplayer sidebar. ST - 3/22/2019 1:50PM
-                    if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
-                        if (object->House->IsHuman) {
-#ifdef REMASTER_BUILD
-                            Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_ION_CANNON, object->House);
-#endif
-                        }
-                    } else {
-                        if (object->IsOwnedByPlayer) {
-                            Map.Add(RTTI_SPECIAL, SPC_ION_CANNON);
-                            Map.Column[1].Flag_To_Redraw();
-                        }
+                    if (object->IsOwnedByPlayer) {
+                        Map.Add(RTTI_SPECIAL, SPC_ION_CANNON);
+                        Map.Column[1].Flag_To_Redraw();
                     }
                 }
                 break;
@@ -2330,18 +2469,9 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
             case AIR_STRIKE:
                 new AnimClass(ANIM_CRATE_DEVIATOR, Cell_Coord());
                 if (object->House->AirStrike.Enable(true)) {
-                    // Add to Glyphx multiplayer sidebar. ST - 3/22/2019 1:50PM
-                    if (GameToPlay == GAME_GLYPHX_MULTIPLAYER) {
-                        if (object->House->IsHuman) {
-#ifdef REMASTER_BUILD
-                            Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_AIR_STRIKE, object->House);
-#endif
-                        }
-                    } else {
-                        if (object->IsOwnedByPlayer) {
-                            Map.Add(RTTI_SPECIAL, SPC_AIR_STRIKE);
-                            Map.Column[1].Flag_To_Redraw();
-                        }
+                    if (object->IsOwnedByPlayer) {
+                        Map.Add(RTTI_SPECIAL, SPC_AIR_STRIKE);
+                        Map.Column[1].Flag_To_Redraw();
                     }
                 }
                 break;
@@ -2374,12 +2504,14 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
             **	A visceroid appears and, boy, he's angry!
             */
             case VISCEROID:
-                unit = new UnitClass(UNIT_VICE, HOUSE_JP);
-                if (unit) {
-                    if (unit->Unlimbo(Cell_Coord())) {
-                        return (false);
+                if (UnitClass::New_Allowed()) {
+                    unit = new UnitClass(UNIT_VICE, HOUSE_JP);
+                    if (unit) {
+                        if (unit->Unlimbo(Cell_Coord())) {
+                            return (false);
+                        }
+                        delete unit;
                     }
-                    delete unit;
                 }
                 break;
 
@@ -2406,7 +2538,7 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
                     ObjectClass* obj = Logic[index];
 
                     if (obj && object->Is_Techno() && object->House->Class->House == obj->Owner()) {
-                        obj->Strength = obj->Class_Of().MaxStrength;
+                        obj->Strength = obj->Class_Of().MaxStrengthh + obj->Mod1;
                     }
                 }
                 break;
@@ -2414,6 +2546,196 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
         }
     }
     return (true);
+}
+
+bool CellClass::WDT_Goodie_Check(FootClass* object)
+{
+    PerCellPacketData* data;
+    int crate_shares[16];
+    int pick;
+    int j;
+    int num;
+    TechnoTypeClass* tt;
+    int stats_sum;
+    float v26;
+    int total_upgrade_shares;
+    float v28;
+    int index;
+    int share_count;
+    WDTCrateType crate;
+
+    crate = WDT_CRATE_COUNT;
+    num = 0;
+
+    if (!Overlay_Is_Crate(Overlay) || object == NULL) {
+        return true;
+    }
+
+    if (GameToPlay != GAME_HOST) {
+        return true;
+    }
+
+    for (index = WDT_CRATE_FIRST; index < WDT_CRATE_COUNT; index++) {
+        crate_shares[index] = WDTCrateShares[index];
+        if (index == WDT_CRATE_KILL) {
+
+            if (!GameParams.IonCannon) {
+                crate_shares[index] = 0;
+
+            } else {
+                stats_sum = Sum_Object_Stats(object);
+
+                int v18 = 100 * stats_sum / WDTCrateIonFactor;
+
+                if (v18 > 40) {
+                    total_upgrade_shares = 0;
+
+                    for (j = 0; j <= 4; j++) {
+                        total_upgrade_shares += WDTCrateShares[j];
+                    }
+                    total_upgrade_shares /= 5;
+
+                    if (!total_upgrade_shares) {
+                        total_upgrade_shares = 1;
+                    }
+
+                    v28 = WDTCrateIonFactor / sqrt(total_upgrade_shares);
+                    if (0.0 == v28) {
+                        v28 = 1.0;
+                    }
+
+                    v26 = stats_sum / v28;
+                    v26 = v26 * v26;
+
+                    //wtf
+                    if (*((int*)&v26) > 0x4EFFFFFF) {
+                        *((int*)&v26) = 0x4EFFFFFE;
+                    }
+
+                    if (v26 < 0.0) {
+                        v26 = 0.0;
+                    }
+
+                    if (object->What_Am_I() != RTTI_INFANTRY) {
+                        crate_shares[index] = v26;
+                    } else {
+                        crate_shares[index] = 0;
+                    }
+
+                } else {
+                    crate_shares[index] = 0;
+                }
+            }
+        } else if (index == WDT_CRATE_HEAL && Overlay != OVERLAY_HEALTH_CRATE) {
+
+            if (object->Strength == object->Class_Of().MaxStrength + object->Mod1) {
+                crate_shares[index] = 0;
+            }
+        }
+
+        else if (index == WDT_CRATE_SUPER && Overlay != OVERLAY_SUPER_CRATE) {
+            crate_shares[index] = 0;
+        }
+
+        else if (index == WDT_CRATE_BOMB && Overlay != OVERLAY_HEALTH_CRATE) {
+            crate_shares[index] = 0;
+        }
+
+        else if (index == WDT_CRATE_STEALTH && object == TechnoThatGotStealthCrate) {
+            crate_shares[index] = 0;
+            TechnoThatGotStealthCrate = 0;
+        }
+
+        else if (index == WDT_CRATE_RADAR && (object->House->IsUnk2 || GameParams.FreeRadarForAll)) {
+            crate_shares[index] = 0;
+        }
+
+        else if (GameParams.NoReshroud && (index == WDT_CRATE_RESHOUD || index == WDT_CRATE_UNSHROUD)) {
+            crate_shares[index] = 0;
+        }
+
+        else if (index == WDT_CRATE_RANGE) {
+            tt = (TechnoTypeClass*)&object->Class_Of();
+            if (tt->Primary == WEAPON_FLAMETHROWER || tt->Primary == WEAPON_FLAME_TONGUE
+                || tt->Primary == WEAPON_CHEMSPRAY || tt->Primary == WEAPON_STEG || tt->Primary == WEAPON_TREX) {
+                crate_shares[index] = 0;
+            }
+        }
+
+        if (Overlay == OVERLAY_STEEL_CRATE && index && index != WDT_CRATE_WEAPON && index != WDT_CRATE_SPEED
+            && index != WDT_CRATE_RELOAD && index != WDT_CRATE_RANGE) {
+            crate_shares[index] = 0;
+        }
+
+        if (Overlay == OVERLAY_SUPER_CRATE && index != WDT_CRATE_SUPER) {
+            crate_shares[index] = 0;
+        }
+
+        if (Overlay == OVERLAY_WOOD_CRATE && index == WDT_CRATE_ARMAGEDDON) {
+            crate_shares[index] = 0;
+        }
+
+        if (Overlay == OVERLAY_ARMOR_CRATE && index != WDT_CRATE_ARMAGEDDON) {
+            crate_shares[index] = 0;
+        }
+
+        if (Overlay == OVERLAY_HEALTH_CRATE) {
+
+            if (index == WDT_CRATE_BOMB && object->Strength < object->Class_Of().MaxStrength + object->Mod1) {
+                crate_shares[index] = 0;
+            }
+
+            else if (index == WDT_CRATE_BOMB) {
+                crate_shares[index] = crate_shares[WDT_CRATE_HEAL];
+            }
+
+            else if (index != WDT_CRATE_HEAL) {
+                crate_shares[index] = 0;
+            }
+        }
+    }
+
+    share_count = 0;
+
+    for (index = 0; index < WDT_CRATE_COUNT; index++) {
+        share_count += crate_shares[index];
+    }
+
+    pick = WDT_Random_Pick(0, share_count - 1);
+    share_count = 0;
+    for (index = 0; index < WDT_CRATE_COUNT; index++) {
+        share_count += crate_shares[index];
+        if (pick < share_count) {
+            crate = (WDTCrateType)index;
+            break;
+        }
+    }
+
+    if (crate == WDT_CRATE_COUNT) {
+        crate = WDT_CRATE_HEAL;
+    }
+
+    data = new PerCellPacketData;
+    data->Whom = object->As_Target();
+    data->Owner = object->Owner();
+    data->Cell = Cell_Number();
+    data->Number = crate;
+
+    if (crate == WDT_CRATE_ARMAGEDDON) {
+        WDTNumArmageddonCrates--;
+    }
+
+    data->_IntNumber = num = Process_Crate_Pickup(crate, Cell_Number(), object, object->Owner(), 0xFFFF);
+    PerCellPacketDatas.Add(data);
+
+    CrateCount--;
+    CrateTimer = 1;
+
+    if (crate == WDT_CRATE_STEALTH) {
+        TechnoThatGotStealthCrate = object;
+    }
+
+    return true;
 }
 
 /***********************************************************************************************
@@ -2430,10 +2752,16 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
  * HISTORY:                                                                                    *
  *   05/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool CellClass::Flag_Place(HousesType house)
+bool CellClass::Flag_Place(HousesType house, bool unk)
 {
     Validate();
+    
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return (false);
+    }
+
     if (!IsFlagged && Is_Generally_Clear()) {
+        Map.Radar_Pixel(Cell_Number());
         IsFlagged = true;
         Owner = house;
         Flag_Update();
@@ -2457,10 +2785,16 @@ bool CellClass::Flag_Place(HousesType house)
  * HISTORY:                                                                                    *
  *   05/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool CellClass::Flag_Remove(void)
+bool CellClass::Flag_Remove(bool unk)
 {
     Validate();
+
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return (false);
+    }
+
     if (IsFlagged) {
+        Map.Radar_Pixel(Cell_Number());
         IsFlagged = false;
         Owner = HOUSE_NONE;
         Flag_Update();

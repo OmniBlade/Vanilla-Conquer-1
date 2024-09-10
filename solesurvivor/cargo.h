@@ -36,6 +36,7 @@
 #define CARGO_H
 
 class FootClass;
+class ObjectClass;
 
 /****************************************************************************
 **	This class handles the basic cargo logic.
@@ -73,8 +74,8 @@ public:
         return (CargoHold != 0);
     };
     FootClass* Attached_Object(void) const;
-    FootClass* Detach_Object(void);
-    void Attach(FootClass* object);
+    FootClass* Detach_Object(ObjectClass *unk1, ObjectClass *unk2, bool unk3);
+    void Attach(ObjectClass *unk1, ObjectClass *object, bool unk2);
 
     /*
     **	File I/O.

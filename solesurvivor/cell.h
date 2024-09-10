@@ -248,8 +248,8 @@ public:
     void Occupy_Up(ObjectClass* object);
     void Overlap_Down(ObjectClass* object);
     void Overlap_Up(ObjectClass* object);
-    bool Flag_Place(HousesType house);
-    bool Flag_Remove(void);
+    bool Flag_Place(HousesType house, bool unk);
+    bool Flag_Remove(bool unk);
     void Flag_Update(void);
     void Flag_Create(void);
     void Flag_Destroy(void);
@@ -288,7 +288,7 @@ public:
     };
 
     int Validate(void) const;
-
+    bool WDT_Goodie_Check(FootClass* object);
     /*
     **	Additional per-player functionality is needed for multiplayer. ST - 3/5/2019 3:03PM
     */
@@ -305,13 +305,6 @@ public:
     **	Override land type to fix passability issues on some maps
     */
     void Override_Land_Type(LandType type);
-
-#ifdef USE_RA_AI
-    /*
-    ** Imported from RA for AI. ST - 7/24/2019 5:36PM
-    */
-    bool Is_Clear_To_Move(bool ignoreinfantry, bool ignorevehicles) const;
-#endif
 
 private:
     CellClass(CellClass const&){};

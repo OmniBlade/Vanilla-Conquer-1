@@ -79,7 +79,7 @@ void CargoClass::Debug_Dump(MonoClass* mono) const
  *   04/23/1994 JLB : Created.                                                                 *
  *   10/31/94   JLB : Handles chained objects.                                                 *
  *=============================================================================================*/
-void CargoClass::Attach(FootClass* object)
+void CargoClass::Attach(ObjectClass* unk1, ObjectClass* object, bool unk2)
 {
     /*
     **	If there is no object, then no action is necessary.
@@ -87,6 +87,10 @@ void CargoClass::Attach(FootClass* object)
     if (!object)
         return;
 
+    if (GameToPlay == GAME_CLIENT && !unk2)
+        return;
+
+    ObjectClass* iobject = object;
     object->Limbo();
 
     /*
@@ -110,12 +114,20 @@ void CargoClass::Attach(FootClass* object)
     /*
     **	Finally, assign the object pointer as the first object attached to this cargo hold.
     */
-    CargoHold = object;
+    CargoHold = (FootClass*)object;
     Quantity = 0;
     object = CargoHold;
     while (object) {
         Quantity++;
         object = (FootClass*)object->Next;
+    }
+
+    if (GameToPlay == GAME_HOST) {
+        CargoPacketData* data = new CargoPacketData;
+        data->Whom = iobject->As_Target();
+        data->Cargo = unk1->As_Target();
+        data->State = 1;
+        CargoPacketDatas.Add(data);
     }
 }
 
@@ -137,15 +149,54 @@ void CargoClass::Attach(FootClass* object)
  *   04/23/1994 JLB : Created.                                                                 *
  *   06/07/1994 JLB : Handles generic object types.                                            *
  *=============================================================================================*/
-FootClass* CargoClass::Detach_Object(void)
+FootClass* CargoClass::Detach_Object(ObjectClass* unk1, ObjectClass* unk2, bool unk3)
 {
-    FootClass* unit = Attached_Object();
+    FootClass* i;
+    ObjectClass* ptr;
+    FootClass* unit = NULL;
 
-    if (unit) {
-        CargoHold = (FootClass*)unit->Next;
-        unit->Next = 0;
-        Quantity--;
+    if (GameToPlay == GAME_CLIENT && !unk3) {
+        return NULL;
     }
+
+    if (!unk2 || Attached_Object() == unk2) {
+        i = Attached_Object();
+
+        if (i) {
+            CargoHold = (FootClass*)i->Next;
+            i->Next = NULL;
+            unit = i;
+            Quantity--;
+        }
+    } else {
+        ptr = Attached_Object();
+
+        if (!ptr) {
+            return NULL;
+        }
+
+        i = (FootClass*)ptr->Next;
+        while (i && i != unk2) {
+            ptr = i;
+            i = (FootClass*)ptr->Next;
+        }
+
+        if (i) {
+            ptr->Next = i->Next;
+            i->Next = NULL;
+            unit = i;
+            Quantity--;
+        }
+    }
+
+    if (GameToPlay == GAME_HOST && unit) {
+        CargoPacketData* data = new CargoPacketData;
+        data->Whom = unit->As_Target();
+        data->Cargo = unk1->As_Target();
+        data->State = 0;
+        CargoPacketDatas.Add(data);
+    }
+
     return (unit);
 }
 

@@ -1,4 +1,8 @@
 set(SURVIVOR_SRC
+    comm/comms.cpp
+    comm/listener.cpp
+    comm/reliable.cpp
+    comm/unreliab.cpp
     aadata.cpp
     abstract.cpp
     adata.cpp
