@@ -432,5 +432,6 @@ extern int sole_array[SOLE_ARRAY_COUNT][3];
 extern bool IsServerAdmin;
 extern int ShowNames;
 extern int PlayerNameDrawStyle;
+extern bool OfflineMode;
 
 #endif

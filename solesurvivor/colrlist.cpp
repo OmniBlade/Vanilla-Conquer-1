@@ -208,7 +208,12 @@ void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected
     ** Draw a non-selected item in its color
     */
     if (!selected) {
-        Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+        int e = Map.Color_List_Find_Entry(PlayerPtr->Name);
+        if (index == e) {
+            Conquer_Clip_Text_Print(List[index], x, y, 15, TBLACK, TextFlags, width, Tabs);
+        } else {
+            Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+        }
         return;
     }
 
@@ -225,9 +230,15 @@ void ColorListClass::Draw_Entry(int index, int x, int y, int width, int selected
     /*
     **	NONE: Just print the string in its native color
     */
-    case SELECT_NONE:
-        Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+    case SELECT_NONE: {
+        int e = Map.Color_List_Find_Entry(PlayerPtr->Name);
+        if (index == e) {
+            Conquer_Clip_Text_Print(List[index], x, y, 15, TBLACK, TextFlags, width, Tabs);
+        } else {
+            Conquer_Clip_Text_Print(List[index], x, y, Colors[index], TBLACK, TextFlags, width, Tabs);
+        }
         break;
+    }
 
     /*
     **	HIGHLIGHT: Draw the string in the highlight color (SelectColor must
