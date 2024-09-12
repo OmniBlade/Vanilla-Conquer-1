@@ -69,7 +69,7 @@
 **	the following #define line.
 */
 #ifdef INTERNAL_VERSION
-#define SCENARIO_EDITOR
+//#define SCENARIO_EDITOR
 #endif
 
 /**********************************************************************
@@ -77,7 +77,7 @@
 **	command line options.
 */
 #if defined(INTERNAL_VERSION) || defined(PLAYTEST_VERSION)
-#define CHEAT_KEYS
+//#define CHEAT_KEYS
 #endif
 
 /**********************************************************************
@@ -3058,6 +3058,9 @@ typedef enum
     SDLG_OPTIONS,
     SDLG_SURRENDER,
     SDLG_SPECIAL,
+    SDLG_SECRET_CREDITS,
+    SDLG_4,
+    SDLG_5
 } SpecialDialogType;
 
 typedef enum : unsigned char

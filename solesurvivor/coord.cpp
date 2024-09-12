@@ -150,6 +150,39 @@ short const* Coord_Spillage_List(COORDINATE coord, int maxsize)
     int index = 0;
     int x, y;
 
+    if (maxsize == ICON_PIXEL_W * 11) {
+        static short const _gigundo11[] = {
+            ((8 * -MAP_CELL_W) - 2), ((8 * -MAP_CELL_W) - 1), ((8 * -MAP_CELL_W)),     ((8 * -MAP_CELL_W) + 1),
+            ((8 * -MAP_CELL_W) + 2), ((7 * -MAP_CELL_W) - 2), ((7 * -MAP_CELL_W) - 1), ((7 * -MAP_CELL_W)),
+            ((7 * -MAP_CELL_W) + 1), ((7 * -MAP_CELL_W) + 2), ((6 * -MAP_CELL_W) - 2), ((6 * -MAP_CELL_W) - 1),
+            ((6 * -MAP_CELL_W)),     ((6 * -MAP_CELL_W) + 1), ((6 * -MAP_CELL_W) + 2), ((5 * -MAP_CELL_W) - 2),
+            ((5 * -MAP_CELL_W) - 1), ((5 * -MAP_CELL_W)),     ((5 * -MAP_CELL_W) + 1), ((5 * -MAP_CELL_W) + 2),
+            ((4 * -MAP_CELL_W) - 2), ((4 * -MAP_CELL_W) - 1), ((4 * -MAP_CELL_W)),     ((4 * -MAP_CELL_W) + 1),
+            ((4 * -MAP_CELL_W) + 2), ((3 * -MAP_CELL_W) - 2), ((3 * -MAP_CELL_W) - 1), ((3 * -MAP_CELL_W)),
+            ((3 * -MAP_CELL_W) + 1), ((3 * -MAP_CELL_W) + 2), ((2 * -MAP_CELL_W) - 2), ((2 * -MAP_CELL_W) - 1),
+            ((2 * -MAP_CELL_W)),     ((2 * -MAP_CELL_W) + 1), ((2 * -MAP_CELL_W) + 2), ((1 * -MAP_CELL_W) - 2),
+            ((1 * -MAP_CELL_W) - 1), ((1 * -MAP_CELL_W)),     ((1 * -MAP_CELL_W) + 1), ((1 * -MAP_CELL_W) + 2),
+            ((0 * -MAP_CELL_W) - 2), ((0 * -MAP_CELL_W) - 1), ((0 * -MAP_CELL_W)),     ((0 * -MAP_CELL_W) + 1),
+            ((0 * -MAP_CELL_W) + 2), ((1 * +MAP_CELL_W) - 2), ((1 * +MAP_CELL_W) - 1), ((1 * +MAP_CELL_W)),
+            ((1 * +MAP_CELL_W) + 1), ((1 * +MAP_CELL_W) + 2), ((2 * +MAP_CELL_W) - 2), ((2 * +MAP_CELL_W) - 1),
+            ((2 * +MAP_CELL_W)),     ((2 * +MAP_CELL_W) + 1), ((2 * +MAP_CELL_W) + 2), REFRESH_EOL};
+        return (&_gigundo11[0]);
+    }
+
+    if (maxsize > ICON_PIXEL_W * 3) {
+        static short const _gigundo3[] = {
+            ((2 * -MAP_CELL_W) - 3), ((2 * -MAP_CELL_W) - 2), ((2 * -MAP_CELL_W) - 1), ((2 * -MAP_CELL_W)),
+            ((2 * -MAP_CELL_W) + 1), ((2 * -MAP_CELL_W) + 2), ((2 * -MAP_CELL_W) + 3), ((1 * -MAP_CELL_W) - 3),
+            ((1 * -MAP_CELL_W) - 2), ((1 * -MAP_CELL_W) - 1), ((1 * -MAP_CELL_W)),     ((1 * -MAP_CELL_W) + 1),
+            ((1 * -MAP_CELL_W) + 2), ((1 * -MAP_CELL_W) + 3), ((0 * -MAP_CELL_W) - 3), ((0 * -MAP_CELL_W) - 2),
+            ((0 * -MAP_CELL_W) - 1), ((0 * -MAP_CELL_W)),     ((0 * -MAP_CELL_W) + 1), ((0 * -MAP_CELL_W) + 2),
+            ((0 * -MAP_CELL_W) + 3), ((1 * +MAP_CELL_W) - 3), ((1 * +MAP_CELL_W) - 2), ((1 * +MAP_CELL_W) - 1),
+            ((1 * +MAP_CELL_W)),     ((1 * +MAP_CELL_W) + 1), ((1 * +MAP_CELL_W) + 2), ((1 * +MAP_CELL_W) + 3),
+            ((2 * +MAP_CELL_W) - 3), ((2 * +MAP_CELL_W) - 2), ((2 * +MAP_CELL_W) - 1), ((2 * +MAP_CELL_W)),
+            ((2 * +MAP_CELL_W) + 1), ((2 * +MAP_CELL_W) + 2), ((2 * +MAP_CELL_W) + 3), REFRESH_EOL};
+        return (&_gigundo3[0]);
+    }
+
     /*
     **	For mondo-enourmo-gigundo objects, use a prebuilt mammoth table
     **	that covers a 5x5 square region.
@@ -252,6 +285,19 @@ COORDINATE Coord_Move(COORDINATE start, register DirType dir, unsigned short dis
     return (XY_Coord(x, y));
 }
 
+bool Coord_Legal(COORDINATE coord)
+{
+	CELL cell = Coord_Cell(coord);
+
+	int x = Cell_X(cell);
+	int y = Cell_Y(cell);
+
+	if (x >= 0 && x < MAP_CELL_W && y >= 0 && y < MAP_CELL_H) {
+		return true;
+	}
+	return false;
+}
+
 /***********************************************************************************************
  * Coord_Scatter -- Determines a random coordinate from an anchor point.                       *
  *                                                                                             *
@@ -281,7 +327,7 @@ COORDINATE Coord_Scatter(COORDINATE coord, unsigned distance, bool lock)
     COORDINATE newcoord;
 
     newcoord = Coord_Move(coord, Random_Pick(DIR_N, DIR_MAX), distance);
-    if (newcoord & HIGH_COORD_MASK) {
+    if (!Coord_Legal(newcoord)) {
         newcoord = coord;
     }
 
