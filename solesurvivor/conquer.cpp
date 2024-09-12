@@ -32,7 +32,6 @@
  *   Call_Back -- Main game maintenance callback routine.                                      *
  *   Color_Cycle -- Handle the general palette color cycling.                                  *
  *   Disk_Space_Available -- returns bytes of free disk space              						  *
- *   Do_Record_Playback -- handles saving/loading map pos & current object                     *
  *   Fading_Table_Name -- Builds a theater specific fading table name.                         *
  *   Fetch_Techno_Type -- Convert type and ID into TechnoTypeClass pointer.                    *
  *   Force_CD_Available -- Ensures that specified CD is available.                             *
@@ -69,6 +68,7 @@
 #include "common/vqaloader.h"
 #include "common/settings.h"
 #include "common/winasm.h"
+#include <time.h>
 
 #define SHAPE_TRANS 0x40
 
@@ -91,7 +91,6 @@ void Heap_Dump_Check(const char* string);
 void Dump_Heap_Pointers(void);
 void Error_In_Heap_Pointers(char* string);
 #endif
-static void Do_Record_Playback(void);
 extern void Register_Game_Start_Time(void);
 extern void Register_Game_End_Time(void);
 extern void Send_Statistics_Packet(void);
@@ -138,7 +137,7 @@ void Main_Game(int argc, char* argv[])
         return;
     }
 
-    CCDebugString("C&C95 - Game initialisation complete.\n");
+    CCDebugString("SOLE - Game initialisation complete.\n");
     /*
     **	Game processing loop:
     **	1) Select which game to play, or whether to exit (don't fade the palette
@@ -147,12 +146,11 @@ void Main_Game(int argc, char* argv[])
     **		until they indicate that the user wants to exit the scenario.
     */
     while (Select_Game(fade)) {
-
-        if (RunningAsDLL) {
-            return;
-        }
+        Map.Color_List_Add_Teams();
+        ColorListTimer_5586C0 = 0;
+        CCDebugString("Select_Game() non-zero.\n");
         ScenarioInit = 0; // Kludge.
-                          //		Theme.Queue_Song(THEME_PICK_ANOTHER);
+        // Theme.Queue_Song(THEME_PICK_ANOTHER);
 
         fade = true;
 
@@ -167,22 +165,12 @@ void Main_Game(int argc, char* argv[])
         /*
         ** Only show the mouse if we're not playing back a recording.
         */
-        if (PlaybackGame) {
-            Hide_Mouse();
-        } else {
-            Show_Mouse();
-        }
+        Show_Mouse();
 
         SpecialDialog = SDLG_NONE;
-        // Start_Profiler();
-        if (GameToPlay == GAME_INTERNET) {
-            Register_Game_Start_Time();
-            GameStatisticsPacketSent = false;
-            PacketLater = NULL;
-            ConnectionLost = false;
-        }
 
         InMainLoop = true;
+        IdleTime = time(0);
         Set_Video_Cursor_Clip(true);
 
 #ifdef SCENARIO_EDITOR
@@ -295,6 +283,16 @@ void Main_Game(int argc, char* argv[])
                     Map.Revert_Mouse_Shape();
                     break;
 
+                case SDLG_SECRET_CREDITS:
+                    Map.Help_Text(TXT_NONE);
+                    Map.Override_Mouse_Shape(MOUSE_NORMAL, false);
+                    Secret_Credits_Dialog();
+                    SpecialDialog = SDLG_NONE;
+                    Map.Revert_Mouse_Shape();
+                    break;
+
+                case SDLG_4:
+                case SDLG_5:
                 default:
                     break;
                 }
@@ -306,9 +304,11 @@ void Main_Game(int argc, char* argv[])
         Set_Video_Cursor_Clip(false);
         InMainLoop = false;
 
-        if (!GameStatisticsPacketSent && PacketLater) {
-            Send_Statistics_Packet();
-        }
+        SquadPostAcceptanceState = 0;
+        SquadGameCountdownTimer.Reset(false);
+        SquadGameCountdownTimer.Set(0);
+        SquadAcceptanceState = 0;
+        SquadGamePasswordCountDown = 0;
 
         /*
         **	Scenario is done; fade palette to black
@@ -316,54 +316,31 @@ void Main_Game(int argc, char* argv[])
         Fade_Palette_To(BlackPalette, FADE_PALETTE_SLOW, NULL);
         VisiblePage.Clear();
 
-#ifndef DEMO
-        /*
-        **	Un-initialize whatever needs it, for each game played.
-        **
-        **	Shut down either the modem or network; they'll get re-initialized if
-        **	the user selections those options again in Select_Game().  This
-        **	"re-boots" the modem & network code, which I currently feel is safer
-        **	than just letting it hang around.
-        ** (Skip this step if we're in playback mode; the modem or net won't have
-        ** been initialized in that case.)
-        */
-        if ((RecordGame && !SuperRecord) || PlaybackGame) {
-            RecordFile.Close();
+        if (GameToPlay == GAME_CLIENT) {
+            Client_Disconnect();
+        } else if (GameToPlay == GAME_HOST) {
+            Host_Disconnect();
         }
 
-        if (!PlaybackGame) {
-
-            switch (GameToPlay) {
-            case GAME_NULL_MODEM:
-            case GAME_MODEM:
-                // ST - 1/2/2019 4:04PM
-                // Modem_Signoff();
-                break;
-
-            case GAME_IPX:
-#ifdef NETWORKING
-                Shutdown_Network();
-#endif
-                break;
-
-            case GAME_INTERNET:
-                // Winsock.Close();
-                break;
+        if (GameToPlay == GAME_CLIENT) {
+            if (Get_WChat_Handle()) {
+                Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, 0);
+                VisiblePage.Clear();
+                ShowWindow(MainWindow, 6);
+                Tickle_WChat();
             }
         }
 
         /*
-        **	If we're playing back, the mouse will be hidden; show it.
-        ** Also, set all variables back to normal, to return to the main menu.
-        */
-        if (PlaybackGame) {
-            Show_Mouse();
-            GameToPlay = GAME_NORMAL;
-            PlaybackGame = 0;
-        }
+		** Set all variables back to normal, to return to the main menu.
+		*/
+        GameToPlay = GAME_NORMAL;
 
-#endif // DEMO
+        ColorListTiming = WDTGameTimer.Time() / 60;
+        Map.Color_List_Clear();
     }
+
+    Options.Save_Settings();
 
     if (Is_Demo()) {
         Hide_Mouse();
@@ -406,8 +383,7 @@ void Main_Game(int argc, char* argv[])
 extern int DebugColour;
 void Keyboard_Process(KeyNumType& input)
 {
-    ObjectClass* obj;
-    int index;
+    HousesType house;
 
     /*
     **	Don't do anything if there is not keyboard event.
@@ -416,12 +392,14 @@ void Keyboard_Process(KeyNumType& input)
         return;
     }
 
-#ifndef DEMO
+    int player_count;
+    int index;
+    int admin_count;
     /*
     **	For network & modem, process user input for inter-player messages.
     */
     Message_Input(input);
-#endif
+
     /*
     ** Use WWKEY values because KN values have WWKEY_KN_BIT or'd in with them
     ** and we need WWKEY_KN_BIT to still be set if it is.
@@ -538,19 +516,187 @@ void Keyboard_Process(KeyNumType& input)
     }
 
     /*
+    ** Sole keys, TODO convert to option configurable.
+    */
+    switch (key) {
+    case KN_0:
+    case KN_1:
+    case KN_2:
+    case KN_3:
+    case KN_4:
+    case KN_5:
+    case KN_6:
+    case KN_7:
+    case KN_8:
+    case KN_9:
+        Messages.Add_Team_Message(key - KN_0);
+        input = KN_NONE;
+        break;
+
+    /*
+    **	Drops flag player's unit is carrying.
+    */
+    case VK_D:
+        if (CurrentObject.Count()) {
+            ObjectClass* obj = CurrentObject[0];
+            if (obj) {
+                FootClass* foot = (FootClass*)obj;
+                if (foot && foot->Flagged != HOUSE_NONE && (IsServerAdmin || PlayerPtr->Class->House == obj->Owner())) {
+                    OutList.Add(EventClass(EventClass::DROP_FLAG, foot->As_Target()));
+                    Sound_Effect(VOC_DOWN);
+                }
+            }
+        }
+        input = KN_NONE;
+        break;
+
+    /*
+    **	Toggles viewport tracking of players unit.
+    */
+    case VK_T: {
+        char buf[100];
+        if (IsTrackingCurrentObject) {
+            IsTrackingCurrentObject = false;
+            sprintf(buf, Text_String(TXT_TRACKING_MODE_OFF));
+        } else {
+            IsTrackingCurrentObject = true;
+            sprintf(buf, Text_String(TXT_TRACKING_MODE_ON));
+            IsTrackingRedraw = true;
+        }
+        Messages.Add_Message(buf, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
+        Map.Flag_To_Redraw(true);
+
+        input = KN_NONE;
+        break;
+    }
+
+    /*
+    **	Bumps ally unit from flag.
+    */
+    case VK_B:
+        if (GameToPlay == GAME_CLIENT && GameParams.IsCaptureTheFlag) {
+            if (!IsTrackingCurrentObject) {
+                Update_CTF_Tracking();
+                Map.Flag_To_Redraw(true);
+            } else {
+                Sound_Effect(VOC_SCOLD, VOL_FULL);
+            }
+        }
+        input = KN_NONE;
+        break;
+
+    /*
+    **	Center view on your Flag.
+    */
+    case VK_F:
+        if (GameToPlay == GAME_CLIENT && (GameParams.IsCaptureTheFlag || GameParams.Football)) {
+            if (!IsTrackingCurrentObject) {
+                Update_Tracking();
+                Map.Flag_To_Redraw(true);
+            } else {
+                Sound_Effect(VOC_SCOLD, VOL_FULL);
+            }
+        }
+        input = KN_NONE;
+        break;
+
+    /*
     **	All selected units will attempt to go into guard area mode.
     */
-    if (key != 0 && key == Options.KeyGuard) {
+    case VK_G:
         if (CurrentObject.Count()) {
-            for (index = 0; index < CurrentObject.Count(); index++) {
+            for (int index = 0; index < CurrentObject.Count(); index++) {
                 ObjectClass const* tech = CurrentObject[index];
 
-                if (tech != NULL && tech->Can_Player_Move() && tech->Can_Player_Fire()) {
+                if (tech && tech->Can_Player_Move() && tech->Can_Player_Fire()) {
                     OutList.Add(EventClass(tech->As_Target(), MISSION_GUARD_AREA));
                 }
             }
         }
         input = KN_NONE;
+        break;
+
+    /*
+    **	Flags player list to redraw.
+    */
+    case VK_L:
+        Map.Color_List_Flag_To_Redraw();
+        Map.Flag_To_Redraw();
+        input = KN_NONE;
+        break;
+
+    /*
+    **	Toggles drawing player names in viewport.
+    */
+    case VK_N:
+        if (ShowNames == true) {
+            ShowNames = false;
+        } else {
+            ShowNames = true;
+        }
+        Map.Flag_To_Redraw(true);
+        input = KN_NONE;
+        break;
+
+    /*
+    **	If in server mode toggles crates.
+    */
+    case VK_Q:
+        if (GameToPlay == GAME_HOST && !OfflineMode) {
+            if (CratesDisabled) {
+                Enable_Crates();
+            } else {
+                Disable_Crates();
+                CrateKeepTimer.Set(1, 1);
+            }
+        }
+        input = KN_NONE;
+        break;
+
+    /*
+    **	Prints misc info about the session.
+    */
+    case VK_Y:
+        if (GameToPlay == GAME_HOST && !OfflineMode) {
+            player_count = 0;
+            for (index = 0; index < ActivePlayers.Count(); index++) {
+                house = ActivePlayers[index]->HousePtr->Class->House;
+                if (house != HOUSE_SPECTATOR && house != HOUSE_ADMIN) {
+                    player_count++;
+                }
+            }
+
+            int spec_count = 0;
+            for (index = 0; index < ActivePlayers.Count(); index++) {
+                house = ActivePlayers[index]->HousePtr->Class->House;
+                if (house == HOUSE_SPECTATOR) {
+                    spec_count++;
+                }
+            }
+
+            admin_count = 0;
+            for (index = 0; index < ActivePlayers.Count(); index++) {
+                house = ActivePlayers[index]->HousePtr->Class->House;
+                if (house == HOUSE_ADMIN) {
+                    admin_count++;
+                }
+            }
+            char buf[80];
+            sprintf(buf,
+                    "Players:%d Spectators:%d SuperUsers:%d Admin:%d, Duration:%s",
+                    player_count,
+                    spec_count,
+                    admin_count,
+                    RemoteAdminsComms.Count(),
+                    Get_Game_Duration_As_String());
+            Messages.Add_Message(buf, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
+            Map.Flag_To_Redraw(false);
+        }
+        input = KN_NONE;
+        break;
+
+    default:
+        break;
     }
 
     /*
@@ -574,13 +720,7 @@ void Keyboard_Process(KeyNumType& input)
     **	objects are selected, then fall into the home case.
     */
     if (key != 0 && (key == Options.KeyHome1 || key == Options.KeyHome2)) {
-        if (CurrentObject.Count()) {
-            Map.Center_Map();
-            Map.Flag_To_Redraw(true);
-            input = KN_NONE;
-        } else {
-            input = Options.KeyBase;
-        }
+        input = Options.KeyBase;
     }
 
     /*
@@ -588,37 +728,10 @@ void Keyboard_Process(KeyNumType& input)
     **	if one is present.
     */
     if (key != 0 && key == Options.KeyBase) {
-        Unselect_All();
-        if (PlayerPtr->CurBuildings) {
-            for (index = 0; index < Buildings.Count(); index++) {
-                BuildingClass* building = Buildings.Ptr(index);
-
-                if (building != NULL && !building->IsInLimbo && building->House == PlayerPtr
-                    && *building == STRUCT_CONST) {
-                    Unselect_All();
-                    building->Select();
-                    if (building->IsLeader)
-                        break;
-                }
-            }
-        }
-        if (CurrentObject.Count() == 0 && PlayerPtr->CurUnits) {
-            for (index = 0; index < Units.Count(); index++) {
-                UnitClass* unit = Units.Ptr(index);
-
-                if (unit != NULL && !unit->IsInLimbo && unit->House == PlayerPtr && *unit == UNIT_MCV) {
-                    Unselect_All();
-                    unit->Select();
-                    break;
-                }
-            }
-        }
-        if (CurrentObject.Count()) {
-            Map.Center_Map();
-        } else {
-            if (PlayerPtr->Center != 0) {
-                Map.Center_Map(PlayerPtr->Center);
-            }
+        if (!IsTrackingCurrentObject) {
+            ++ScenarioInit;
+            Map.Compute_Start_Pos();
+            --ScenarioInit;
         }
         Map.Flag_To_Redraw(true);
         input = KN_NONE;
@@ -733,6 +846,7 @@ void Keyboard_Process(KeyNumType& input)
         input = KN_NONE;
     }
 
+#if 0
     /*
     **	Teams are handled by the 10 special team keys. The manual comparison
     **	to the KN numbers is because the Windows keyboard driver can vary
@@ -779,6 +893,7 @@ void Keyboard_Process(KeyNumType& input)
         Handle_Team(9, action);
         input = KN_NONE;
     }
+#endif
 
     /*
     **	Handle the bookmark hotkeys.
@@ -830,275 +945,57 @@ void Keyboard_Process(KeyNumType& input)
  *=============================================================================================*/
 static void Message_Input(KeyNumType& input)
 {
+    char ttxt[300];
+    char txt[300];
     int rc;
-    char txt[MAX_MESSAGE_LENGTH + 12];
-    int id;
-// PG_TO_FIX
-#if (0)
-    SerialPacketType* serial_packet;
-    int i;
-    int message_length;
-    int sent_so_far;
-    unsigned short magic_number;
-    unsigned short crc;
-#endif
-    int factor = (SeenBuff.Get_Width() == 320) ? 1 : 2;
+    int team;
 
-    /*
-    **	Check keyboard input for a request to send a message.
-    **	The 'to' argument for Add_Edit is prefixed to the message buffer; the
-    **	message buffer is big enough for the 'to' field plus MAX_MESSAGE_LENGTH.
-    **	To send the message, calling Get_Edit_Buf retrieves the buffer minus the
-    **	'to' portion.  At the other end, the buffer allocated to display the
-    **	message must be MAX_MESSAGE_LENGTH plus the size of "From: xxx (house)".
-    */
-    if (GameToPlay != GAME_NORMAL && GameToPlay != GAME_SKIRMISH && input >= KN_F1 && input < (KN_F1 + MPlayerMax)
-        && Messages.Get_Edit_Buf() == NULL) {
-        memset(txt, 0, 40);
-
+    if (Messages.Is_Editing()) {
         /*
-        **	For a serial game, send a message on F1 or F4; set 'txt' to the
-        **	"Message:" string & add an editable message to the list.
-        */
-        if (GameToPlay == GAME_NULL_MODEM || GameToPlay == GAME_MODEM) {
-            //|| GameToPlay == GAME_INTERNET) {
-            if (input == KN_F1 || input == (KN_F1 + MPlayerMax - 1)) {
+		**	Process message-system input
+		*/
+        rc = Messages.Input(input);
 
-                strcpy(txt, Text_String(TXT_MESSAGE)); // "Message:"
-
-                Messages.Add_Edit(MPlayerTColors[MPlayerColorIdx],
-                                  TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
-                                  txt,
-                                  180 * factor);
-
-                Map.Flag_To_Redraw(false);
-            }
-        } else {
-#ifdef NETWORKING
-            /*
-            **	For a network game:
-            **	F1-F3 = "To <name> (house):" (only allowed if we're not in ObiWan mode)
-            **	F4 = "To All:"
-            */
-            if (GameToPlay == GAME_IPX || GameToPlay == GAME_INTERNET) {
-                if (input == (KN_F1 + MPlayerMax - 1) && Messages.Get_Edit_Buf() == NULL) {
-
-                    MessageAddress = IPXAddressClass();   // set to broadcast
-                    strcpy(txt, Text_String(TXT_TO_ALL)); // "To All:"
-
-                    Messages.Add_Edit(MPlayerTColors[MPlayerColorIdx],
-                                      TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
-                                      txt,
-                                      180 * factor);
-
-                    Map.Flag_To_Redraw(false);
-                } else {
-                    if (Messages.Get_Edit_Buf() == NULL) {
-                        if ((input - KN_F1) < Ipx.Num_Connections() && !MPlayerObiWan) {
-
-                            id = Ipx.Connection_ID(input - KN_F1);
-                            MessageAddress = (*(Ipx.Connection_Address(id)));
-                            sprintf(txt, Text_String(TXT_TO), Ipx.Connection_Name(id));
-
-                            Messages.Add_Edit(MPlayerTColors[MPlayerColorIdx],
-                                              TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
-                                              txt,
-                                              180 * factor);
-
-                            Map.Flag_To_Redraw(false);
-                        }
-                    }
-                }
-            }
-#endif
+        if (Messages.Is_To_Redraw()) {
+            Map.Flag_To_Redraw(false);
         }
-    }
 
-    /*
-    ** Function key input is meaningless beyond this point
-    */
-    if (input >= KN_F1 && input <= KN_F10)
-        return;
-    if (input >= KN_F11 && input <= KN_F12)
-        return;
+        if (rc != 0) {
 
-    /*
-    **	Process message-system input; send the message out if RETURN is hit.
-    */
-    rc = Messages.Input(input);
+            if (GameToPlay == GAME_CLIENT) {
+                Client_Process_Message();
+            } else if (GameToPlay == GAME_HOST) {
+                Host_Process_Message(0);
+            }
+        }
+//should be from sidebar.h but there's a conflict
+#define BUTTON_COLORLIST 106
+    } else if (input == KA_RETURN || input == (WWKEY_BTN_BIT | BUTTON_COLORLIST)) {
 
-    /*
-    **	If a single character has been added to an edit buffer, update the display.
-    */
-    if (rc == 1) {
+        Sound_Effect(VOC_RELOAD, VOL_FULL);
+        sprintf(txt, "%s ", Text_String(TXT_MESSAGE));
+        Messages.Add_Edit(3, 464, 7, TPF_6PT_GRAD | TPF_NOSHADOW | TPF_BRIGHT_COLOR, txt);
         Map.Flag_To_Redraw(false);
-    }
+        IsTeamMessage = false;
 
-    /*
-    **	If backspace was hit, redraw the map.  This assumes the map is going to
-    **	completely refresh all cells covered by the messages.  Set DisplayClass's
-    **	IsToRedraw to true to tell it to re-compute the cells that it needs to
-    **	redraw.
-    */
-    if (rc == 2) {
-        Map.Flag_To_Redraw(false);
-        Map.DisplayClass::IsToRedraw = true;
-    }
-
-    /*
-    **	Send a message
-    */
-    if (rc == 3 && GameToPlay != GAME_NORMAL && GameToPlay != GAME_SKIRMISH) {
-//
-// PG_TO_FIX
-#if (0)
-        /*.....................................................................
-        Store this message in our LastMessage buffer; the computer may send
-        us a version of it later.
-        .....................................................................*/
-        if (strlen(Messages.Get_Edit_Buf())) {
-            strcpy(LastMessage, Messages.Get_Edit_Buf());
+        if (input == (WWKEY_BTN_BIT | BUTTON_COLORLIST)) {
+            Messages.Make_Message_Private();
         }
 
-        message_length = strlen(Messages.Get_Edit_Buf());
+        input = KN_NONE;
 
-        int actual_message_size;
-        char* the_string;
+    } else if (((WWKey_Type)KA_RETURN | WWKEY_SHIFT_BIT) == input && GameToPlay != GAME_HOST) {
 
-        /*
-        **	Serial game: fill in a SerialPacketType & send it.
-        **	(Note: The size of the SerialPacketType.Command must be the same as
-        **	the EventClass.Type!)
-        */
-        if (GameToPlay == GAME_NULL_MODEM || GameToPlay == GAME_MODEM) {
-            //|| GameToPlay==GAME_INTERNET) {
+        team = PlayerPtr->ActLike - 6;
 
-            sent_so_far = 0;
-            magic_number = MESSAGE_HEAD_MAGIC_NUMBER;
-            crc = (unsigned short)(Calculate_CRC(Messages.Get_Edit_Buf(), message_length) & 0xffff);
-
-            while (sent_so_far < message_length) {
-
-                serial_packet = (SerialPacketType*)NullModem.BuildBuf;
-
-                serial_packet->Command = SERIAL_MESSAGE;
-                strcpy(serial_packet->Name, MPlayerName);
-                memcpy(serial_packet->Message, Messages.Get_Edit_Buf() + sent_so_far, COMPAT_MESSAGE_LENGTH - 5);
-
-                /*
-                ** Steve I's stuff for splitting message on word boundries
-                */
-                actual_message_size = COMPAT_MESSAGE_LENGTH - 5;
-
-                /* Start at the end of the message and find a space with 10 chars. */
-                the_string = serial_packet->Message;
-                while ((COMPAT_MESSAGE_LENGTH - 5) - actual_message_size < 10
-                       && the_string[actual_message_size] != ' ') {
-                    --actual_message_size;
-                }
-                if (the_string[actual_message_size] == ' ') {
-
-                    /* Now delete the extra characters after the space (they musnt print) */
-                    for (int i = 0; i < (COMPAT_MESSAGE_LENGTH - 5) - actual_message_size; i++) {
-                        the_string[i + actual_message_size] = 0xff;
-                    }
-                } else {
-                    actual_message_size = COMPAT_MESSAGE_LENGTH - 5;
-                }
-
-                *(serial_packet->Message + COMPAT_MESSAGE_LENGTH - 5) = 0;
-                /*
-                ** Flag this message segment as either a message head or a message tail.
-                */
-                *((unsigned short*)(serial_packet->Message + COMPAT_MESSAGE_LENGTH - 4)) = magic_number;
-                *((unsigned short*)(serial_packet->Message + COMPAT_MESSAGE_LENGTH - 2)) = crc;
-                serial_packet->ID = MPlayerLocalID;
-
-                NullModem.Send_Message(NullModem.BuildBuf, sizeof(SerialPacketType), 1);
-
-                magic_number++;
-                sent_so_far += actual_message_size; // COMPAT_MESSAGE_LENGTH-5;
-            }
-
-        } else {
-
-            /*
-            **	Network game: fill in a GlobalPacketType & send it.
-            */
-            if (GameToPlay == GAME_IPX || GameToPlay == GAME_INTERNET) {
-
-                sent_so_far = 0;
-                magic_number = MESSAGE_HEAD_MAGIC_NUMBER;
-                crc = (unsigned short)(Calculate_CRC(Messages.Get_Edit_Buf(), message_length) & 0xffff);
-
-                while (sent_so_far < message_length) {
-
-                    GPacket.Command = NET_MESSAGE;
-                    strcpy(GPacket.Name, MPlayerName);
-                    memcpy(GPacket.Message.Buf, Messages.Get_Edit_Buf() + sent_so_far, COMPAT_MESSAGE_LENGTH - 5);
-
-                    /*
-                    ** Steve I's stuff for splitting message on word boundries
-                    */
-                    actual_message_size = COMPAT_MESSAGE_LENGTH - 5;
-
-                    /* Start at the end of the message and find a space with 10 chars. */
-                    the_string = GPacket.Message.Buf;
-                    while ((COMPAT_MESSAGE_LENGTH - 5) - actual_message_size < 10
-                           && the_string[actual_message_size] != ' ') {
-                        --actual_message_size;
-                    }
-                    if (the_string[actual_message_size] == ' ') {
-
-                        /* Now delete the extra characters after the space (they musnt print) */
-                        for (int i = 0; i < (COMPAT_MESSAGE_LENGTH - 5) - actual_message_size; i++) {
-                            the_string[i + actual_message_size] = 0xff;
-                        }
-                    } else {
-                        actual_message_size = COMPAT_MESSAGE_LENGTH - 5;
-                    }
-
-                    *(GPacket.Message.Buf + COMPAT_MESSAGE_LENGTH - 5) = 0;
-                    /*
-                    ** Flag this message segment as either a message head or a message tail.
-                    */
-                    *((unsigned short*)(GPacket.Message.Buf + COMPAT_MESSAGE_LENGTH - 4)) = magic_number;
-                    *((unsigned short*)(GPacket.Message.Buf + COMPAT_MESSAGE_LENGTH - 2)) = crc;
-
-                    GPacket.Message.ID = MPlayerLocalID;
-                    GPacket.Message.NameCRC = Compute_Name_CRC(MPlayerGameName);
-
-                    /*
-                    **	If 'F4' was hit, MessageAddress will be a broadcast address; send
-                    **	the message to every player we have a connection with.
-                    */
-                    if (MessageAddress.Is_Broadcast()) {
-                        for (i = 0; i < Ipx.Num_Connections(); i++) {
-                            Ipx.Send_Global_Message(
-                                &GPacket, sizeof(GlobalPacketType), 1, Ipx.Connection_Address(Ipx.Connection_ID(i)));
-                            Ipx.Service();
-                        }
-                    } else {
-
-                        /*
-                        **	Otherwise, MessageAddress contains the exact address to send to.
-                        **	Send to that address only.
-                        */
-                        Ipx.Send_Global_Message(&GPacket, sizeof(GlobalPacketType), 1, &MessageAddress);
-                        Ipx.Service();
-                    }
-
-                    magic_number++;
-                    sent_so_far += actual_message_size; // COMPAT_MESSAGE_LENGTH-5;
-                }
-            }
+        if (team >= 0 && team <= 3) {
+            Sound_Effect(VOC_RELOAD, VOL_FULL);
+            sprintf(ttxt, "%s ", Text_String(TXT_TEAM_MESSAGE));
+            Messages.Add_Edit(3, 464, MPlayerTColors[team + 2], TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, ttxt);
+            Map.Flag_To_Redraw(false);
+            input = KN_NONE;
+            IsTeamMessage = true;
         }
-
-        /*
-        **	Tell the map to completely update itself, since a message is now missing.
-        */
-        Map.Flag_To_Redraw(true);
-#endif
     }
 }
 #endif
@@ -1208,14 +1105,6 @@ bool Color_Cycle(void)
  *=============================================================================================*/
 void Call_Back(void)
 {
-#ifndef DEMO
-    int i;
-    int id;
-    int color;
-    unsigned short magic_number;
-    unsigned short crc;
-#endif
-
     /*
     **	Score maintenance
     */
@@ -1223,97 +1112,6 @@ void Call_Back(void)
         Theme.AI();
         Speak_AI();
     }
-
-#ifdef NETWORKING
-    /*
-    **	Network maintenance
-    */
-    if (GameToPlay == GAME_IPX || GameToPlay == GAME_INTERNET) {
-
-        Ipx.Service();
-
-        /*
-        ** Read packets only if the game is "closed", so we don't steal global
-        ** messages from the connection dialogs.
-        */
-        if (!NetOpen) {
-            if (Ipx.Get_Global_Message(&GPacket, &GPacketlen, &GAddress, &GProductID)) {
-                if (GProductID == IPXGlobalConnClass::COMMAND_AND_CONQUER) {
-
-                    /*
-                    **	If this is another player signing off, remove the connection &
-                    **	mark that player's house as non-human, so the computer will take
-                    **	it over.
-                    */
-                    if (GPacket.Command == NET_SIGN_OFF) {
-                        for (i = 0; i < Ipx.Num_Connections(); i++) {
-
-                            id = Ipx.Connection_ID(i);
-
-                            if (!strcmp(GPacket.Name, Ipx.Connection_Name(id))
-                                && GAddress == (*Ipx.Connection_Address(id))) {
-
-                                CCDebugString("C&C95 = Destroying connection due to sign off\n");
-                                Destroy_Connection(id, 0);
-                            }
-                        }
-                    } else {
-
-                        /*
-                        **	Process a message from another user.
-                        */
-                        if (GPacket.Command == NET_MESSAGE) {
-                            bool msg_ok = false;
-                            char txt[80];
-
-                            /*
-                            ** If NetProtect is set, make sure this message came from within
-                            ** this game.
-                            */
-                            if (!NetProtect) {
-                                msg_ok = true;
-                            } else {
-                                if (GPacket.Message.NameCRC == Compute_Name_CRC(MPlayerGameName)) {
-                                    msg_ok = true;
-                                } else {
-                                    msg_ok = false;
-                                }
-                            }
-
-                            if (msg_ok) {
-                                sprintf(txt, Text_String(TXT_FROM), GPacket.Name, GPacket.Message.Buf);
-                                magic_number = *((unsigned short*)(GPacket.Message.Buf + COMPAT_MESSAGE_LENGTH - 4));
-                                crc = *((unsigned short*)(GPacket.Message.Buf + COMPAT_MESSAGE_LENGTH - 2));
-                                color = MPlayerID_To_ColorIndex(GPacket.Message.ID);
-                                Messages.Add_Message(txt,
-                                                     MPlayerTColors[color],
-                                                     TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
-                                                     600,
-                                                     magic_number,
-                                                     crc);
-
-                                /*
-                                **	Tell the map to do a partial update (just to force the messages
-                                **	to redraw).
-                                */
-                                Map.Flag_To_Redraw(false);
-
-                                /*
-                                **	Save this message in our last-message buffer
-                                */
-                                if (strlen(GPacket.Message.Buf)) {
-                                    strcpy(LastMessage, GPacket.Message.Buf);
-                                }
-                            }
-                        } else {
-                            Process_Global_Packet(&GPacket, &GAddress);
-                        }
-                    }
-                }
-            }
-        }
-    }
-#endif
 }
 
 /***********************************************************************************************
@@ -1507,6 +1305,11 @@ static void Sync_Delay(void)
         Color_Cycle();
         Call_Back();
 
+        // TODO Unsure if this is needed with frame limiter in place anyhow?
+        // if (!OfflineMode && GameToPlay == GAME_HOST && ShowServerDialog) {
+        // Sleep(4);
+        // }
+
         if (SpecialDialog == SDLG_NONE) {
             WWMouse->Erase_Mouse(&HidPage, true);
             KeyNumType input = KN_NONE;
@@ -1523,6 +1326,32 @@ static void Sync_Delay(void)
     }
     Color_Cycle();
     Call_Back();
+}
+
+void Show_Squad_Game_Prescreen(int time)
+{
+    char str[200];
+    int t3;
+    int t1;
+    int t2;
+
+    if (SpecialDialog == SDLG_NONE) {
+        t1 = time / 60;
+        t3 = time - (t1 * 60);
+        t2 = t3 * (100.0 / 60.0);
+        if (SquadGamePasswordCountDown || GameToPlay == GAME_HOST) {
+            sprintf(str, "Squad Game will start in %d seconds.", t1);
+            Conquer_Clip_Text_Print(
+                str, 240, 190, 15, 0, TPF_CENTER | TPF_6POINT | TPF_FULLSHADOW | TPF_BRIGHT_COLOR, 600, 0);
+            Show_Quote();
+            Map.Redraw_Objects();
+        } else {
+            sprintf(str, Text_String(TXT_ENTER_THE_PASSWORD), t1, t2);
+            Conquer_Clip_Text_Print(
+                str, 240, 190, 5, 0, TPF_CENTER | TPF_6POINT | TPF_FULLSHADOW | TPF_BRIGHT_COLOR, 600, 0);
+            Map.Redraw_Objects();
+        }
+    }
 }
 
 /***********************************************************************************************
@@ -1547,9 +1376,14 @@ bool Main_Loop()
     KeyNumType input; // Player input.
     int x;
     int y;
-    int framedelay;
+    // int framedelay;
 
     //	InMainLoop = true;
+
+    if (GameToPlay == GAME_CLIENT && ClientEvent1_BattleState_Was_2) {
+        GameActive = false;
+        ClientEvent1_BattleState_Was_2 = 0;
+    }
 
     /*
     ** I think I'm gonna cry if this makes it work
@@ -1561,6 +1395,8 @@ bool Main_Loop()
     ** Call the focus loss handler
     */
     Check_For_Focus_Loss();
+
+    Windows_Message_Loop();
 
     /*
     ** Allocate extra memory for uncompressed shapes as needed
@@ -1577,13 +1413,7 @@ bool Main_Loop()
     //
     // Initialize our AI processing timer
     //
-    ProcessTimer.Set(0, true);
-
-#if 1
-    if (TrapCheckHeap) {
-        Debug_Trap_Check_Heap = true;
-    }
-#endif
+    // ProcessTimer.Set(0, true);
 
 #ifdef CHEAT_KEYS
     Heap_Dump_Check("After Trap");
@@ -1605,35 +1435,53 @@ bool Main_Loop()
     /*
     **	Setup the timer so that the Main_Loop function processes at the correct rate.
     */
-    if (GameToPlay != GAME_NORMAL && GameToPlay != GAME_SKIRMISH && CommProtocol == COMM_PROTOCOL_MULTI_E_COMP) {
-        framedelay = 60 / DesiredFrameRate;
-        FrameTimer.Set(framedelay);
-    } else {
-        FrameTimer.Set(Options.GameSpeed);
+
+    FrameTimer.Set(Options.GameSpeed);
+
+    ColorListTimer_5586C0++;
+    if (ColorListTimer_5586C0 == 2) {
+        Map.Timer1.Set(0, 1);
+    }
+
+    static int StatTiming1;
+    static int StatTiming2;
+
+    if (GameParams.TimeLimit > 0) {
+        int stat_time2;
+        int stat_time1;
+        stat_time1 = GameParams.TimeLimit * 3600 - WDTGameTimer.Time();
+        stat_time2 = stat_time1 / 3600;
+
+        if (stat_time2 > 0) {
+            if (stat_time2 != StatTiming1) {
+                StatTiming1 = stat_time2;
+                StatPanel.Enable();
+                Map.Flag_To_Redraw(false);
+            }
+        } else {
+            int stat_sec = stat_time1 / 60;
+
+            if (stat_sec != StatTiming2) {
+                StatTiming2 = stat_sec;
+                StatPanel.Enable();
+                Map.Flag_To_Redraw(false);
+            }
+        }
     }
 
     /*
     **	Update the display, unless we're inside a dialog.
     */
-    if (!PlaybackGame) {
-        if (SpecialDialog == SDLG_NONE && GameInFocus) {
+    if (SpecialDialog == SDLG_NONE && GameInFocus) {
 
-            WWMouse->Erase_Mouse(&HidPage, true);
-            Map.Input(input, x, y);
-            if (input) {
-                Keyboard_Process(input);
-            }
-            //			HidPage.Lock();
-            Map.Render();
-            //			HidPage.Unlock();
+        WWMouse->Erase_Mouse(&HidPage, true);
+        Map.Input(input, x, y);
+        if (input) {
+            Keyboard_Process(input);
         }
-    }
-
-    /*
-    ** Save map's position & selected objects, if we're recording the game.
-    */
-    if (RecordGame || PlaybackGame) {
-        Do_Record_Playback();
+        //			HidPage.Lock();
+        Map.Render();
+        //			HidPage.Unlock();
     }
 
     /*
@@ -1647,6 +1495,10 @@ bool Main_Loop()
 
     //	Heap_Dump_Check( "Before Logic.AI" );
 
+    if (GameToPlay == GAME_HOST) {
+        Host_Timer_Check_Loop(&GameParams);
+    }
+
     /*
     **	AI logic operations are performed here.
     */
@@ -1659,15 +1511,9 @@ bool Main_Loop()
     **	a message has expired & been removed, and the entire map must be updated.
     */
     if (Messages.Manage()) {
-        HiddenPage.Clear();
-        Map.Flag_To_Redraw(true);
+        // HiddenPage.Clear();
+        Map.Flag_To_Redraw(false);
     }
-
-    //
-    // Measure how long it took to process the AI
-    //
-    ProcessTicks += ProcessTimer.Time();
-    ProcessFrames++;
 
     //	Heap_Dump_Check( "Before Queue_AI" );
 
@@ -1690,20 +1536,18 @@ bool Main_Loop()
     /*
     **	Perform any win/lose code as indicated by the global control flags.
     */
-    if (EndCountDown)
+    if (EndCountDown) {
         EndCountDown--;
+    }
 
+    if (GameToPlay == GAME_HOST) {
+        Read_Server_Stats();
+    }
     /*
     **	Check for player wins or loses according to global event flag.
     */
 
     if (PlayerWins) {
-
-        if (GameToPlay == GAME_INTERNET && !GameStatisticsPacketSent) {
-            Register_Game_End_Time();
-            Send_Statistics_Packet();
-        }
-
         WWMouse->Erase_Mouse(&HidPage, true);
         PlayerLoses = false;
         PlayerWins = false;
@@ -1714,12 +1558,6 @@ bool Main_Loop()
         Set_Video_Cursor_Clip(true);
     }
     if (PlayerLoses) {
-
-        if (GameToPlay == GAME_INTERNET && !GameStatisticsPacketSent) {
-            Register_Game_End_Time();
-            Send_Statistics_Packet();
-        }
-
         WWMouse->Erase_Mouse(&HidPage, true);
         PlayerWins = false;
         PlayerLoses = false;
@@ -1747,28 +1585,37 @@ bool Main_Loop()
     Frame++;
 
     /*
-    ** Very rarely, the human players will get a message from the computer.
-    */
-    if (GameToPlay == GAME_SKIRMISH && MPlayerGhosts && Random_Pick(0, 10000) == 1) {
-        Computer_Message();
-    }
-
-    /*
     ** Is there a memory trasher altering the map??
     */
     if (Debug_Check_Map) {
         if (!Map.Validate()) {
-#ifdef GERMAN
-            if (WWMessageBox().Process("Kartenfehler!", "Halt", "Weiter") == 0)
-#else
-#ifdef FRENCH
-            if (WWMessageBox().Process("Erreur de carte!", "Stop", "Continuer") == 0)
-#else
-            if (WWMessageBox().Process("Map Error!", "Stop", "Continue") == 0)
-#endif
-#endif
+            if (CCMessageBox().Process(
+                    Text_String(TXT_MAP_ERROR), Text_String(TXT_MAP_ERROR_STOP), Text_String(TXT_MAP_ERROR_CONTINUE))
+                == 0) {
                 GameActive = false;
+            }
             Map.Validate(); // give debugger a chance to catch it
+        }
+    }
+
+    if (GameParams.IsSquadChannel) {
+        if (GameToPlay == GAME_CLIENT) {
+            int st = SquadGameCountdownTimer.Time();
+
+            if (st <= 0) {
+                if (!st) {
+                    if (SquadAcceptanceState == 1) {
+                        GameActive = 0;
+                    } else if (SquadAcceptanceState == 2 && !SquadPostAcceptanceState) {
+                        SquadPostAcceptanceState = 1;
+                    }
+                }
+            }
+        } else if (GameToPlay == GAME_HOST && !OfflineMode && SquadAcceptanceState == 1
+                   && !SquadGameCountdownTimer.Time()) {
+            Host_Process_Accepted_List();
+            Host_Send_Scenario_Change_Packet();
+            SquadAcceptanceState = 2;
         }
     }
 
@@ -2125,16 +1972,12 @@ extern void Resume_Audio_Thread(void);
 // Play
 extern void Play_Movie_GlyphX(const char* movie_name, ThemeType theme);
 
-void Play_Movie(char const* name, ThemeType theme, bool clrscrn)
+void Play_Movie(char const* name, ThemeType theme, bool clrscrn, bool unk)
 {
-#if REMASTER_BUILD
-    if (strcmp(name, "x") == 0 || strcmp(name, "X") == 0) {
+    if (Options.NoMovies) {
         return;
     }
-
-    Play_Movie_GlyphX(name, theme);
-    return;
-#else
+    
     /*
     ** Don't play movies in editor mode
     */
@@ -2166,7 +2009,7 @@ void Play_Movie(char const* name, ThemeType theme, bool clrscrn)
         /*
         **	Reset the anim control structure.
         */
-        Anim_Init();
+        Anim_Init(unk);
         VQPaletteChange = false;
 
         /*
@@ -2275,7 +2118,6 @@ void Play_Movie(char const* name, ThemeType theme, bool clrscrn)
         }
         Show_Mouse();
     }
-#endif
 }
 
 /***********************************************************************************************
@@ -2934,7 +2776,6 @@ void Check_VQ_Palette_Set(void);
 
 int VQ_Call_Back(unsigned char*, int)
 {
-#ifndef REMASTER_BUILD
     int key = 0;
     if (Keyboard->Check()) {
         key = Keyboard->Get();
@@ -2943,7 +2784,12 @@ int VQ_Call_Back(unsigned char*, int)
 
     Check_VQ_Palette_Set();
 
-    Interpolate_2X_Scale(&SysMemPage, &SeenBuff, NULL, Settings.Video.InterpolationMode);
+    if (AnimControl.ImageHeight == 240) {
+		Interpolate_2X_Scale(&SysMemPage, &UnknownViewport1, NULL, 1);
+	} else {
+		Interpolate_2X_Scale(&SysMemPage, &UnknownViewport1, NULL, 0);
+	}
+
     Frame_Limiter();
 
     if ((BreakoutAllowed || Debug_Flag) && key == KN_ESC) {
@@ -2959,7 +2805,6 @@ int VQ_Call_Back(unsigned char*, int)
             Check_For_Focus_Loss();
         }
     }
-#endif
     return (false);
 }
 
@@ -3465,9 +3310,7 @@ typedef enum
 {
     CD_LOCAL = -2,
     CD_ANY = -1,
-    CD_GDI = 0,
-    CD_NOD,
-    CD_COVERTOPS,
+    CD_SOLE = 0,
     CD_DATADIR,
     CD_COUNT
 } CD_VOLUME;
@@ -3507,7 +3350,7 @@ static bool Change_Local_Dir(int cd)
 {
     static bool _initialised = false;
     static unsigned _detected = 0;
-    static const char* _vol_labels[CD_COUNT] = {"gdi", "nod", "covertops", "."};
+    static const char* _vol_labels[CD_COUNT] = {"sole", "."};
     std::string paths[3] = {Paths.User_Path(), Paths.Data_Path(), Paths.Program_Path()};
 
     // Detect which if any of the discs have had their data copied to an appropriate local folder.
@@ -3615,68 +3458,6 @@ static bool Change_Local_Dir(int cd)
  *=============================================================================================*/
 bool Force_CD_Available(int cd)
 {
-
-#ifdef REMASTER_BUILD
-
-    static int _last = -1;
-
-    if (_last != cd) {
-
-        _last = cd;
-
-        Theme.Stop();
-
-        if (MoviesMix) {
-            delete MoviesMix;
-            MoviesMix = 0;
-        }
-        if (GeneralMix) {
-            delete GeneralMix;
-            GeneralMix = 0;
-        }
-        if (ScoreMix) {
-            delete ScoreMix;
-            ScoreMix = 0;
-        }
-
-        MoviesMix = new MFCD("MOVIES.MIX");
-        GeneralMix = new MFCD("GENERAL.MIX");
-        ScoreMix = new MFCD("SCORES.MIX");
-#if (0)
-        switch (cd) {
-        case -1:
-        default:
-            MoviesMix = new MFCD("MOVIES.MIX");
-            GeneralMix = new MFCD("GENERAL.MIX");
-            ScoreMix = new MFCD("SCORES.MIX");
-            break;
-
-        case 0:
-            MoviesMix = new MFCD("GDIMOVIES.MIX");
-            GeneralMix = new MFCD("GENERAL.MIX");
-            ScoreMix = new MFCD("GDISCORES.MIX");
-            break;
-
-        case 1:
-            MoviesMix = new MFCD("NODMOVIES.MIX");
-            GeneralMix = new MFCD("GENERAL.MIX");
-            ScoreMix = new MFCD("NODSCORES.MIX");
-            break;
-
-        case 2:
-            MoviesMix = new MFCD("COVERTMOVIES.MIX");
-            GeneralMix = new MFCD("GENERAL.MIX");
-            ScoreMix = new MFCD("COVERTSCORES.MIX");
-            break;
-        }
-#endif
-        ThemeClass::Scan();
-    }
-
-    return true;
-
-#else
-
 #ifndef DEMO
     int open_failed;
     int file;
@@ -3684,7 +3465,7 @@ bool Force_CD_Available(int cd)
     static char _palette[768];
     static char _hold[256];
     static void* font;
-    static const char* _volid[] = {"GDI", "NOD", "COVERT"};
+    static const char* _volid[] = {"CNC_SOLE_CD"};
 
     int drive;
 
@@ -3717,7 +3498,6 @@ bool Force_CD_Available(int cd)
     }
 
     return (false);
-#endif
 }
 
 /***************************************************************************
@@ -3776,135 +3556,6 @@ void Validate_Error(const char* name)
 #endif
 }
 
-/***********************************************************************************************
- * Do_Record_Playback -- handles saving/loading map pos & current object                       *
- *                                                                                             *
- * INPUT:                                                                                      *
- *		none. *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *		none. *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *		none. *
- *                                                                                              *
- * HISTORY:                                                                                    *
- *   08/15/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-static void Do_Record_Playback(void)
-{
-    int count;
-    TARGET tgt;
-    int i;
-    COORDINATE coord;
-    ObjectClass* obj;
-    unsigned int sum;
-    unsigned int sum2;
-    unsigned int ltgt;
-
-    /*------------------------------------------------------------------------
-    Record a game
-    ------------------------------------------------------------------------*/
-    if (RecordGame) {
-
-        /*.....................................................................
-        For 'SuperRecord', we'll open & close the file with every entry.
-        .....................................................................*/
-        if (SuperRecord) {
-            RecordFile.Open(READ | WRITE);
-            RecordFile.Seek(0, SEEK_END);
-        }
-
-        /*.....................................................................
-        Save the map's location
-        .....................................................................*/
-        RecordFile.Write(&Map.DesiredTacticalCoord, sizeof(Map.DesiredTacticalCoord));
-
-        /*.....................................................................
-        Save the current object list count
-        .....................................................................*/
-        count = CurrentObject.Count();
-        RecordFile.Write(&count, sizeof(count));
-
-        /*.....................................................................
-        Save a CRC of the selected-object list.
-        .....................................................................*/
-        sum = 0;
-        for (i = 0; i < count; i++) {
-            ltgt = (unsigned int)(CurrentObject[i]->As_Target());
-            sum += ltgt;
-        }
-        RecordFile.Write(&sum, sizeof(sum));
-
-        /*.....................................................................
-        Save all selected objects.
-        .....................................................................*/
-        for (i = 0; i < count; i++) {
-            tgt = CurrentObject[i]->As_Target();
-            RecordFile.Write(&tgt, sizeof(tgt));
-        }
-
-        /*.....................................................................
-        If 'SuperRecord', close the file now.
-        .....................................................................*/
-        if (SuperRecord) {
-            RecordFile.Close();
-        }
-    }
-
-    /*------------------------------------------------------------------------
-    Play back a game ("attract" mode)
-    ------------------------------------------------------------------------*/
-    if (PlaybackGame) {
-
-        /*.....................................................................
-        Read & set the map's location.
-        .....................................................................*/
-        if (RecordFile.Read(&coord, sizeof(coord)) == sizeof(coord)) {
-            if (coord != Map.DesiredTacticalCoord) {
-                Map.Set_Tactical_Position(coord);
-            }
-        }
-
-        if (RecordFile.Read(&count, sizeof(count)) == sizeof(count)) {
-            /*..................................................................
-            Compute a CRC of the current object-selection list.
-            ..................................................................*/
-            sum = 0;
-            for (i = 0; i < CurrentObject.Count(); i++) {
-                ltgt = (unsigned int)(CurrentObject[i]->As_Target());
-                sum += ltgt;
-            }
-
-            /*..................................................................
-            Load the CRC of the objects on disk; if it doesn't match, select
-            all objects as they're loaded.
-            ..................................................................*/
-            RecordFile.Read(&sum2, sizeof(sum2));
-            if (sum2 != sum)
-                Unselect_All();
-
-            AllowVoice = true;
-
-            for (i = 0; i < count; i++) {
-                if (RecordFile.Read(&tgt, sizeof(tgt)) == sizeof(tgt)) {
-                    obj = As_Object(tgt);
-                    if (obj && (sum2 != sum)) {
-                        obj->Select();
-                        AllowVoice = false;
-                    }
-                }
-            }
-
-            AllowVoice = true;
-        }
-
-        /*.....................................................................
-        The map isn't drawn in playback mode, so draw it here.
-        .....................................................................*/
-        Map.Render();
-    }
-}
 /***************************************************************************
  * HIRES_RETRIEVE -- retrieves a resolution dependant file						*
  *                                                                         *
@@ -3926,9 +3577,89 @@ void const* Hires_Retrieve(const char* name)
     }
     return (MFCD::Retrieve(filename));
 }
+
 int Get_Resolution_Factor(void)
 {
     return ((SeenBuff.Get_Width() == 320) ? 0 : 1);
+}
+/***********************************************************************************************
+ * Shake_The_Screen -- Dispatcher that shakes the screen.                                      *
+ *                                                                                             *
+ *    This routine will shake the game screen the number of shakes requested.                  *
+ *                                                                                             *
+ * INPUT:   shakes   -- The number of shakes to shake the screen.                              *
+ *          house    -- House to perform the shake for (or HOUSE_NONE if all players).         *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   09/04/1996 BWG : Created.                                                                 *
+ *=============================================================================================*/
+void cdecl Shake_The_Screen(/*int shakes*/)
+{
+#if 0
+	for (char h = HOUSE_FIRST; h < HOUSE_COUNT; ++h) {
+		if ((house != HOUSE_NONE) && (h != house)) {
+			continue;
+		}
+		HouseClass* hptr = HouseClass::As_Pointer((HousesType)h);
+		if ((hptr != nullptr) && hptr->IsActive && hptr->IsHuman) {
+			hptr->ScreenShakeTime = hptr->ScreenShakeTime + shakes + shakes;
+		}
+	}
+#endif
+}
+
+
+
+void Get_Or_Set_Current_Directory(bool get)
+{
+	static char _path[260];
+	static unsigned int _dnum;
+	static char _buffer[264];
+
+	unsigned num;
+
+// TODO cross platform if needed?
+#if 0
+	if (get) {
+		_dos_getdrive(&_dnum);
+		getcwd(_path, sizeof(_path));
+	} else {
+		_dos_setdrive(_dnum, &num);
+		chdir(_path);
+		getcwd(_buffer, sizeof(_path));
+	}
+#endif
+}
+
+unsigned char Scale_Value_Down(int div, int mult)
+{
+	if (div== 0) {
+		return 0;
+	}
+
+	unsigned char r = 255 * mult / div;
+	return r;
+}
+
+int Scale_Value_Up(int value, unsigned char mult)
+{
+	if (value == 0) {
+		return 0;
+	}
+
+	int r = value * mult / 255;
+	return r;
+}
+
+void Clear_Team_Scores()
+{
+	for (int i = 0; i < 4; i++) {
+		TeamScores[i] = 0;
+	}
 }
 
 /**************************************************************************************************

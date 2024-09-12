@@ -66,7 +66,7 @@ COORDINATE const StoppingCoordAbs[5] = {
 **
 **	bullet type				dmg,	rof,	range,	sound
 */
-WeaponTypeClass const Weapons[WEAPON_COUNT] = {
+WeaponTypeClass Weapons[WEAPON_COUNT] = {
     {BULLET_SNIPER, 125, 40, 0x0580, VOC_SNIPER, ANIM_NONE},        //	WEAPON_RIFLE
     {BULLET_SPREADFIRE, 25, 50, 0x0400, VOC_MINI, ANIM_GUN_N},      //	WEAPON_CHAIN_GUN
     {BULLET_BULLET, 1, 7, 0x01C0, VOC_RIFLE, ANIM_NONE},            //	WEAPON_PISTOL
@@ -402,4 +402,22 @@ unsigned char const RemapNone[256] = {
     208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, // 208..223
     224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, // 224..239
     240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255  // 240..255
+};
+
+int sole_array[SOLE_ARRAY_COUNT][3] =
+{
+	{ 100,  400,  800 }, // Strength
+	{  30,  120,  240 }, // Damage
+	{  20,   80,  160 }, // Speed
+	{  25,  100,  200 }, // ROF
+	{ 384, 1536, 3072 }, // Range
+};
+
+int sole_array2[SOLE_ARRAY_COUNT] = 
+{ 
+	850,	// Strength
+	155,	// Damage
+	53,		// Speed
+	25,		// ROF
+	1920,	// Range
 };
