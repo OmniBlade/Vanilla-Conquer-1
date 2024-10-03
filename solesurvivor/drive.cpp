@@ -78,6 +78,12 @@ DriveClass::DriveClass(void)
 void DriveClass::Do_Turn(DirType dir)
 {
     if (dir != PrimaryFacing) {
+        if (GameToPlay == GAME_HOST) {
+            DoTurnPacketData* data = new DoTurnPacketData;
+            data->Whom = As_Target();
+            data->Dir = dir;
+            DoTurnPacketDatas.Add(data);
+        }
 
         /*
         **	Special rotation track is needed for units that
@@ -95,7 +101,9 @@ void DriveClass::Do_Turn(DirType dir)
                 IsOnShortTrack = true;
                 Force_Track(face * FACING_COUNT + (face + facediff), Coord);
 
-                Path[0] = FACING_NONE;
+                if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                    Path[0] = FACING_NONE;
+                }
                 Set_Speed(0xFF); // Full speed.
             }
         } else {
@@ -181,7 +189,7 @@ void DriveClass::Approach_Target(void)
     **	Only if there is a legal target should the approach check occur.
     */
     if (!House->IsHuman && Target_Legal(TarCom) && !Target_Legal(NavCom)) {
-
+#if 0
         /*
         **	Special case:
         **	If this is for a unit that can crush infantry, and the target is
@@ -194,6 +202,7 @@ void DriveClass::Approach_Target(void)
             Assign_Destination(TarCom);
             return;
         }
+#endif
     }
 
     /*
@@ -249,11 +258,20 @@ void DriveClass::Overrun_Square(CELL cell, bool threaten)
             ObjectClass* object = cellptr->Cell_Occupier();
             int crushed = false;
             while (object) {
-                if (object->Class_Of().IsCrushable && !House->Is_Ally(object)
-                    && Distance(object->Center_Coord()) < 0x80) {
+                if (object->Class_Of().IsCrushable && !House->Is_Ally(object) && Distance(object->Center_Coord()) < 0x80
+                    && GameToPlay != GAME_CLIENT) {
                     ObjectClass* next = object->Next;
                     crushed = true;
 
+// TODO cut post Sole 1.00, determine when
+#if 0
+					if (GameToPlay == GAME_HOST) {
+						SquishPacketData *data = new SquishPacketData;
+						data->field_0 = object->As_Target();
+						data->field_4 = object->As_Target();
+						SquishPacketDatas.Add(data);
+					}
+#endif
                     /*
                     ** Record credit for the kill(s)
                     */
@@ -313,7 +331,7 @@ DriveClass::DriveClass(UnitType classid, HousesType house)
     TrackIndex = 0;
     SpeedAccum = 0;
     Tiberium = 0;
-    Strength = Class->MaxStrength;
+    Strength = Class->MaxStrength + Mod1;
 }
 
 #ifdef CHEAT_KEYS
@@ -462,7 +480,7 @@ COORDINATE DriveClass::Smooth_Turn(COORDINATE adj, DirType* dir)
  *   09/07/1992 JLB : Created.                                                                 *
  *   04/15/1994 JLB : Converted to member function.                                            *
  *=============================================================================================*/
-void DriveClass::Assign_Destination(TARGET target)
+void DriveClass::Assign_Destination(TARGET target, int unk)
 {
 
     /*
@@ -539,7 +557,9 @@ void DriveClass::Assign_Destination(TARGET target)
                 if (Ground[Map[cell].Land_Type()].Cost[Class->Speed]) {
                     if (Transmit_Message(RADIO_DOCKING) == RADIO_ROGER) {
                         FootClass::Assign_Destination(target);
-                        Path[0] = FACING_NONE;
+                        if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                            Path[0] = FACING_NONE;
+                        }
                         return;
                     }
 
@@ -557,7 +577,9 @@ void DriveClass::Assign_Destination(TARGET target)
     **	Set the unit's navigation computer.
     */
     FootClass::Assign_Destination(target);
-    Path[0] = FACING_NONE; // Force recalculation of path.
+    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+        Path[0] = FACING_NONE; // Force recalculation of path.
+    }
     if (!IsDriving) {
         Start_Of_Move();
     }
@@ -583,6 +605,7 @@ void DriveClass::Assign_Destination(TARGET target)
 bool DriveClass::While_Moving(void)
 {
     int actual; // Working movement addition value.
+    COORDINATE c2;
 
     /*
     **	Perform quick legality checks.
@@ -597,7 +620,9 @@ bool DriveClass::While_Moving(void)
     **	visibly move on the map, then process accordingly.
     ** Slow the unit down if he's carrying a flag.
     */
-    MPHType maxspeed = MPHType(min((int)(Class->MaxSpeed * House->GroundspeedBias), (int)MPH_LIGHT_SPEED));
+    int maxspeed = Class->MaxSpeed;
+    maxspeed = ((maxspeed * SpeedScale) / 256) + Mod2;
+    // MPHType maxspeed = MPHType(min((int)(maxspeed * House->GroundspeedBias), (int)MPH_LIGHT_SPEED));
     if (((UnitClass*)this)->Flagged != HOUSE_NONE) {
         actual = SpeedAccum + Fixed_To_Cardinal(maxspeed / 2, Speed);
     } else {
@@ -688,15 +713,28 @@ bool DriveClass::While_Moving(void)
                             TrackIndex = RawTracks[tracknum - 1].Entry - 1; // Anticipate increment.
                             ptr = RawTracks[tracknum - 1].Track;
                             adj = false;
-
+                            if (Head_To_Coord()) {
+                                c2 = Head_To_Coord();
+                            } else {
+                                c2 = Coord;
+                            }
                             Stop_Driver();
+                            if (!IsActive) {
+                                return false;
+                            }
                             Per_Cell_Process(true);
                             if (Start_Driver(c)) {
+                                if (!IsActive) {
+                                    return false;
+                                }
+                                Add_Movement_Packet(Coord_Cell(c2), Path[0]);
                                 Set_Speed(oldspeed);
                                 memcpy(&Path[0], &Path[1], CONQUER_PATH_MAX - 1);
                                 Path[CONQUER_PATH_MAX - 1] = FACING_NONE;
                             } else {
-                                Path[0] = FACING_NONE;
+                                if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                                    Path[0] = FACING_NONE;
+                                }
                                 TrackNumber = -1;
                                 actual = 0;
                             }
@@ -730,6 +768,9 @@ bool DriveClass::While_Moving(void)
                 **	Perform "per cell" activities.
                 */
                 Per_Cell_Process(true);
+                if (!IsActive) {
+                    return false;
+                }
 
                 break;
             }
@@ -856,6 +897,15 @@ void DriveClass::Per_Cell_Process(bool center)
     Lay_Track();
 
     FootClass::Per_Cell_Process(center);
+    if (center && GameToPlay == GAME_HOST && Map[cell].Overlay == OVERLAY_ROAD1) {
+        PerCellPacketData* data = new PerCellPacketData;
+        data->Whom = As_Target();
+        data->Owner = Owner();
+        data->Cell = cell;
+        data->Number = WDT_CRATE_TELEPORT;
+        data->_IntNumber = Process_Crate_Pickup(WDT_CRATE_TELEPORT, cell, this, Owner(), 0xFFFF);
+        PerCellPacketDatas.Add(data);
+    }
 }
 
 /***********************************************************************************************
@@ -929,8 +979,11 @@ bool DriveClass::Start_Of_Move(void)
             //				!As_Techno(NavCom)->Techno_Type_Class()->IsCrushable ||
             //				!Class->IsCrusher) {
 
-            if (dist < CONQUER_PATH_MAX) {
+            if (dist < CONQUER_PATH_MAX / 2) {
                 Path[dist] = FACING_NONE;
+                if (GameToPlay != GAME_CLIENT && Path[dist] != FACING_NONE) {
+                    Path[dist] = FACING_NONE;
+                }
                 facing = Path[0]; // Maybe needed.
             }
             //			}
@@ -954,6 +1007,9 @@ bool DriveClass::Start_Of_Move(void)
         if (!Basic_Path()) {
             if (Distance(NavCom) < 0x0280 && (Mission == MISSION_MOVE || Mission == MISSION_GUARD_AREA)) {
                 Assign_Destination(TARGET_NONE);
+                if (!IsActive) {
+                    return false;
+                }
             } else {
 
                 /*
@@ -987,8 +1043,12 @@ bool DriveClass::Start_Of_Move(void)
                     TryTryAgain--;
                 } else {
                     Assign_Destination(TARGET_NONE);
-                    if (IsNewNavCom)
+                    if (!IsActive) {
+                        return false;
+                    }
+                    if (IsNewNavCom) {
                         Sound_Effect(VOC_SCOLD);
+                    }
                     IsNewNavCom = false;
                 }
             }
@@ -1072,6 +1132,9 @@ bool DriveClass::Start_Of_Move(void)
 
             if (Mission == MISSION_MOVE && House->IsHuman && Distance(NavCom) < 0x0200) {
                 Assign_Destination(TARGET_NONE);
+                if (!IsActive) {
+                    return false;
+                }
             }
 
             /*
@@ -1094,7 +1157,9 @@ bool DriveClass::Start_Of_Move(void)
 
             Stop_Driver();
             if (cando != MOVE_MOVING_BLOCK) {
-                Path[0] = FACING_NONE; // Path is blocked!
+                if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                    Path[0] = FACING_NONE; // Path is blocked!
+                }
             }
 
             /*
@@ -1143,7 +1208,7 @@ bool DriveClass::Start_Of_Move(void)
         /*
         **	A damaged unit has a reduced speed.
         */
-        if ((Class->MaxStrength >> 1) > Strength) {
+        if ((Class->MaxStrength + Mod1 >> 1) > Strength) {
             speed -= (speed >> 2); // Three quarters speed.
         }
         if ((speed != Speed) /* || !SpeedAdd*/) {
@@ -1168,7 +1233,9 @@ bool DriveClass::Start_Of_Move(void)
         **	occupied AS this unit is moving into it.
         */
         if (cando != MOVE_OK) {
-            Path[0] = FACING_NONE; // Path is blocked!
+            if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                Path[0] = FACING_NONE; // Path is blocked!
+            }
             TrackNumber = -1;
             dest = 0;
         } else {
@@ -1185,7 +1252,9 @@ bool DriveClass::Start_Of_Move(void)
             IsOnShortTrack = false;
             TrackNumber = facing * FACING_COUNT + nextface;
             if (TrackControl[TrackNumber].Track == 0) {
-                Path[0] = FACING_NONE;
+                if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                    Path[0] = FACING_NONE;
+                }
                 TrackNumber = -1;
                 return (true);
             } else {
@@ -1196,8 +1265,13 @@ bool DriveClass::Start_Of_Move(void)
                     */
                     if (!Map[destcell].Goodie_Check(this)) {
                         cando = MOVE_NO;
+                        if (!IsActive) {
+                            return false;
+                        }
                     } else {
-
+                        if (!IsActive) {
+                            return false;
+                        }
                         dest = Adjacent_Cell(dest, nextface);
                         destcell = Coord_Cell(dest);
                         cando = Can_Enter_Cell(destcell);
@@ -1223,7 +1297,9 @@ bool DriveClass::Start_Of_Move(void)
                             Map[destcell].Shimmer();
                         }
 
-                        Path[0] = FACING_NONE; // Path is blocked!
+                        if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                            Path[0] = FACING_NONE; // Path is blocked!
+                        }
                         TrackNumber = -1;
                         dest = 0;
                         if (cando == MOVE_DESTROYABLE) {
@@ -1244,11 +1320,27 @@ bool DriveClass::Start_Of_Move(void)
                             return (true);
                         }
                     } else {
+                        CELL c;
+                        CELL ac;
+                        if (Head_To_Coord()) {
+                            c = Coord_Cell(Head_To_Coord());
+                            ac = Adjacent_Cell(c, Path[0]);
+                        } else {
+                            c = Coord_Cell(Coord);
+                            ac = Adjacent_Cell(c, Path[0]);
+                        }
+                        FootClass::Add_Movement_Packet(c, Path[0]);
+                        FootClass::Add_Movement_Packet(ac, Path[1]);
                         memmove(&Path[0], &Path[2], CONQUER_PATH_MAX - 2);
                         Path[CONQUER_PATH_MAX - 2] = FACING_NONE;
                         IsPlanningToLook = true;
                     }
                 } else {
+                    if (FootClass::Head_To_Coord()) {
+                        Add_Movement_Packet(Coord_Cell(Head_To_Coord()), Path[0]);
+                    } else {
+                        Add_Movement_Packet(Coord_Cell(Coord), Path[0]);
+                    }
                     memmove(&Path[0], &Path[1], CONQUER_PATH_MAX - 1);
                 }
                 Path[CONQUER_PATH_MAX - 1] = FACING_NONE;
@@ -1258,9 +1350,18 @@ bool DriveClass::Start_Of_Move(void)
         IsNewNavCom = false;
         TrackIndex = 0;
         if (!Start_Driver(dest)) {
+            if (!IsActive) {
+                return false;
+            }
             TrackNumber = -1;
             Path[0] = FACING_NONE;
+            if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                Path[0] = FACING_NONE;
+            }
             Set_Speed(0);
+        }
+        if (!IsActive) {
+            return false;
         }
     }
     return (false);
@@ -1293,7 +1394,9 @@ bool DriveClass::Start_Of_Move(void)
 void DriveClass::AI(void)
 {
     FootClass::AI();
-
+    if (!IsActive) {
+        return;
+    }
     /*
     **	If the unit is following a track, then continue
     **	to do so -- mindlessly.
@@ -1304,13 +1407,18 @@ void DriveClass::AI(void)
         **	Perform the movement accumulation.
         */
         While_Moving();
-        if (!IsActive)
+        if (!IsActive) {
             return;
+        }
         if (TrackNumber == -1 && (Target_Legal(NavCom) || Path[0] != FACING_NONE)) {
             Start_Of_Move();
-            While_Moving();
-            if (!IsActive)
+            if (!IsActive) {
                 return;
+            }
+            While_Moving();
+            if (!IsActive) {
+                return;
+            }
         }
 
     } else {
@@ -1321,13 +1429,15 @@ void DriveClass::AI(void)
         if ((Class->Speed == SPEED_FLOAT || Class->Speed == SPEED_HOVER || Class->Speed == SPEED_TRACK
              || (Class->Speed == SPEED_WHEEL && !Special.IsThreePoint))
             && PrimaryFacing.Is_Rotating()) {
-            if (PrimaryFacing.Rotation_Adjust((int)Class->ROT * House->GroundspeedBias)) {
+            int rot = ((Class->ROT * SpeedScale) / 256) + Mod2;
+            if (PrimaryFacing.Rotation_Adjust(rot)) {
                 Mark(MARK_CHANGE);
             }
             if (!IsRotating) {
                 Per_Cell_Process(true);
-                if (!IsActive)
+                if (!IsActive) {
                     return;
+                }
             }
 
         } else {
@@ -1340,9 +1450,13 @@ void DriveClass::AI(void)
             if (Mission != MISSION_GUARD || NavCom != TARGET_NONE) {
                 if (Target_Legal(NavCom) || Path[0] != FACING_NONE) {
                     Start_Of_Move();
-                    While_Moving();
-                    if (!IsActive)
+                    if (!IsActive) {
                         return;
+                    }
+                    While_Moving();
+                    if (!IsActive) {
+                        return;
+                    }
                 } else {
                     Stop_Driver();
                 }

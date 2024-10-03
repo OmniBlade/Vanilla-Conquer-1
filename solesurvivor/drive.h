@@ -115,7 +115,7 @@ public:
     virtual void Approach_Target(void);
     virtual ObjectTypeClass const& Class_Of(void) const;
     virtual void Overrun_Square(CELL cell, bool threaten = true);
-    virtual void Assign_Destination(TARGET target);
+    virtual void Assign_Destination(TARGET target, int unk = 0);
     virtual void Per_Cell_Process(bool center);
     virtual bool Ok_To_Move(DirType) const;
     virtual void AI(void);
@@ -127,6 +127,11 @@ public:
 
     void Exit_Map(void);
     void Mark_Track(COORDINATE headto, MarkType type);
+    void Reset_Track(void)
+    {
+        TrackNumber = -1;
+        TrackIndex = 0;
+    }
     /*
     **	File I/O.
     */
@@ -186,7 +191,7 @@ private:
     **	convert them into pixel "steps" that are then translated through
     **	the currently running track so that the unit will move.
     */
-    unsigned char SpeedAccum;
+    unsigned int SpeedAccum;
 
     /*
     **	This the track control logic (used for ground vehicles only). The 'Track'
