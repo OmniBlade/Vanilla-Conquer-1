@@ -112,6 +112,7 @@ public:
     static unsigned char FadingGreen[256];
     static unsigned char FadingYellow[256];
     static unsigned char FadingRed[256];
+    static unsigned char SomeNEWRemapTable[256]; // Sole addition
     static unsigned char TranslucentTable[(MAGIC_COL_COUNT + 1) * 256];
     static unsigned char WhiteTranslucentTable[(1 + 1) * 256];
     static unsigned char MouseTranslucentTable[(4 + 1) * 256];
@@ -217,6 +218,13 @@ public:
     virtual void Code_Pointers(void);
     virtual void Decode_Pointers(void);
 
+    /*
+    **	Sole additions
+    */
+    void Redraw_Objects(void);
+    void Shake_The_Screen(int shakes);
+    void Shake_Screen_AI(void);
+
 protected:
     virtual void Mouse_Right_Press(void);
     virtual void Mouse_Left_Press(int x, int y);
@@ -320,6 +328,8 @@ private:
     int BandX, BandY;
     int NewX, NewY;
 
+    int ShakeCount;
+    
     static void const* ShadowShapes;
     static unsigned char ShadowTrans[(SHADOW_COL_COUNT + 1) * 256];
 

@@ -95,6 +95,7 @@ unsigned char DisplayClass::RemapTables[HOUSE_COUNT][3][256];
 unsigned char DisplayClass::FadingGreen[256];
 unsigned char DisplayClass::FadingYellow[256];
 unsigned char DisplayClass::FadingRed[256];
+unsigned char DisplayClass::SomeNEWRemapTable[256]; // Sole
 unsigned char DisplayClass::TranslucentTable[(MAGIC_COL_COUNT + 1) * 256];
 unsigned char DisplayClass::WhiteTranslucentTable[(1 + 1) * 256];
 unsigned char DisplayClass::MouseTranslucentTable[(4 + 1) * 256];
@@ -173,6 +174,8 @@ DisplayClass::DisplayClass(void)
     IsRubberBand = false;
     IsTentative = false;
     IsSellMode = false;
+    MapBinaryVersion = 0;
+    ShakeCount = 0;
 }
 
 /***********************************************************************************************
@@ -287,6 +290,10 @@ void DisplayClass::Init_Clear(void)
     for (LayerType layer = LAYER_FIRST; layer < LAYER_COUNT; layer++) {
         Layer[layer].Init();
     }
+
+    for (int index = 0; index < WAYPT_COUNT; index++) {
+        Scen.Waypoint[index] = -1;
+    }
 }
 
 /***********************************************************************************************
@@ -384,7 +391,7 @@ void DisplayClass::Init_Theater(TheaterType theater)
     /*
     ** Register the hi-res icons mix file now since it is theater specific
     */
-    sprintf(fullname, "%s.MIX", Theaters[Theater].Root);
+    //sprintf(fullname, "%s.MIX", Theaters[Theater].Root);
     strcpy(iconname, fullname);
     strcpy(&iconname[4], "ICNH.MIX");
     if (Theater != LastTheater) {
@@ -498,7 +505,9 @@ void DisplayClass::Init_Theater(TheaterType theater)
         SpecialGhost[index] = 0;
     }
 
+    memset(GamePalette + 96, 0, 117 - 96);
     Build_Fading_Table(GamePalette, FadingBrighten, WHITE, 25);
+    Build_Fading_Table(GamePalette, SomeNEWRemapTable, WHITE, 64);
 
 #ifndef _RETRIEVE
     /*
@@ -1153,6 +1162,58 @@ void DisplayClass::Cursor_Mark(CELL pos, bool on)
  *=============================================================================================*/
 void DisplayClass::AI(KeyNumType& input, int x, int y)
 {
+    int tx;
+    int ty;
+    int x1;
+    int x2;
+    int y1;
+    int y2;
+    int ox;
+    int oy;
+    COORDINATE new_coord;
+
+    if (IsTrackingCurrentObject && CurrentObject.Count() == 1
+        && (CurrentObject[0]->What_Am_I() == RTTI_UNIT || CurrentObject[0]->What_Am_I() == RTTI_INFANTRY)
+        && !Keyboard->Down(KN_LSHIFT) && !Keyboard->Down(KN_RSHIFT)) {
+
+        tx = Coord_X(DesiredTacticalCoord) + (TacLeptonWidth / 2);
+        ty = Coord_Y(DesiredTacticalCoord) + (TacLeptonHeight / 2);
+
+        x1 = tx - 512;
+        x2 = tx + 512;
+
+        y1 = ty - 512;
+        y2 = ty + 512;
+
+        ox = Coord_X(CurrentObject[0]->Coord);
+        oy = Coord_Y(CurrentObject[0]->Coord);
+
+        if (ox < x1) {
+            tx -= (x1)-ox;
+        } else if (ox > x2) {
+            tx += ox - (x2);
+        }
+        if (oy < y1) {
+            ty -= (y1)-oy;
+        } else if (oy > y2) {
+            ty += oy - (y2);
+        }
+
+        tx -= TacLeptonWidth / 2;
+        ty -= TacLeptonHeight / 2;
+
+        new_coord = XY_Coord(tx, ty);
+        if (new_coord != DesiredTacticalCoord) {
+            Set_Tactical_Position(new_coord);
+            if (IsTrackingRedraw) {
+                Map.Flag_To_Redraw(true);
+                IsTrackingRedraw = false;
+            }
+        }
+    }
+
+    Shake_Screen_AI();
+
     if (IsRubberBand
         && (Get_Mouse_X() < TacPixelX || Get_Mouse_Y() < TacPixelY
             || Get_Mouse_X() >= (TacPixelX + Lepton_To_Pixel(TacLeptonWidth))
@@ -1644,11 +1705,12 @@ int DisplayClass::Cell_Shadow(CELL cell, HouseClass* house)
     **	problem of accessing cells off the bounds of map and into
     **	who-knows-what memory.
     */
-    if ((unsigned)(Cell_X(cell) - 1) >= MAP_CELL_W - 2)
+    int x = Cell_X(cell);
+    int y = Cell_Y(cell);
+    if (x < 1 || x >= MAP_CELL_W - 1 || y < 1 || y >= MAP_CELL_H - 1)
         return (-2);
-    if ((unsigned)(Cell_Y(cell) - 1) >= MAP_CELL_H - 2)
-        return (-2); // Changed > to >= per Red Alert to fix out of bounds crash. ST - 3/25/2020 11:02PM
 
+    CELL c = cell;
     cellptr = &(*this)[cell];
     if (!cellptr->Is_Mapped(house)) {
 
@@ -1657,18 +1719,37 @@ int DisplayClass::Cell_Shadow(CELL cell, HouseClass* house)
         **	in a solution or the flag to check the diagonals.
         */
         index = 0;
+        c--;
         cellptr--;
-        if (cellptr->Is_Mapped(house))
-            index |= 0x08;
+        if (In_Radar(c)) {
+            if (cellptr->IsMapped) {
+                index |= 0x08;
+            }
+        }
+
+        c += MAP_CELL_W + 1;
         cellptr += MAP_CELL_W + 1;
-        if (cellptr->Is_Mapped(house))
-            index |= 0x04;
+        if (In_Radar(c)) {
+            if (cellptr->IsMapped) {
+                index |= 0x04;
+            }
+        }
+
+        c -= MAP_CELL_W - 1;
         cellptr -= MAP_CELL_W - 1;
-        if (cellptr->Is_Mapped(house))
-            index |= 0x02;
+        if (In_Radar(c)) {
+            if (cellptr->IsMapped) {
+                index |= 0x02;
+            }
+        }
+
+        c -= MAP_CELL_W + 1;
         cellptr -= MAP_CELL_W + 1;
-        if (cellptr->Is_Mapped(house))
-            index |= 0x01;
+        if (In_Radar(c)) {
+            if (cellptr->IsMapped) {
+                index |= 0x01;
+            }
+        }
         value = CardShadow[index];
 
         /*
@@ -1677,18 +1758,34 @@ int DisplayClass::Cell_Shadow(CELL cell, HouseClass* house)
         */
         if (value == -2) {
             index = 0;
+            c--;
             cellptr--;
-            if (cellptr->Is_Mapped(house))
-                index |= 0x08;
+            if (In_Radar(c)) {
+                if (cellptr->IsMapped) {
+                    index |= 0x08;
+                }
+            }
+            c += MAP_CELL_W * 2;
             cellptr += MAP_CELL_W * 2;
-            if (cellptr->Is_Mapped(house))
-                index |= 0x04;
+            if (In_Radar(c)) {
+                if (cellptr->IsMapped) {
+                    index |= 0x04;
+                }
+            }
+            c += 2;
             cellptr += 2;
-            if (cellptr->Is_Mapped(house))
-                index |= 0x02;
+            if (In_Radar(c)) {
+                if (cellptr->IsMapped) {
+                    index |= 0x02;
+                }
+            }
+            c -= MAP_CELL_W * 2;
             cellptr -= MAP_CELL_W * 2;
-            if (cellptr->Is_Mapped(house))
-                index |= 0x01;
+            if (In_Radar(c)) {
+                if (cellptr->IsMapped) {
+                    index |= 0x01;
+                }
+            }
             value = DiagShadow[index];
         }
 
@@ -1808,32 +1905,14 @@ int DisplayClass::Cell_Shadow(CELL cell)
  *=============================================================================================*/
 bool DisplayClass::Map_Cell(CELL cell, HouseClass* house, bool and_for_allies)
 {
-    // It's OK to do this if the house isn't the local player. ST - 3/6/2019 11:06AM
-    // if (house != PlayerPtr || cell >= (CELL)Size) return(false);
-    if (house == NULL || cell >= (CELL)Size)
+    if ((house != PlayerPtr && !PlayerPtr->Is_Ally(house)) || cell >= (CELL)Size)
         return (false);
-#ifdef REMASTER_BUILD
-    if (!house->IsHuman) {
-        if (!ShareAllyVisibility || !and_for_allies) {
-            return false;
-        }
-    }
 
-    /*
-    ** Maybe also recurse to map for allies
-    */
-    if (ShareAllyVisibility && and_for_allies) {
-        HousesType first_house = (GameToPlay == GAME_NORMAL) ? HOUSE_FIRST : HOUSE_MULTI1;
-        for (HousesType house_type = first_house; house_type < HOUSE_COUNT; house_type++) {
-            HouseClass* hptr = HouseClass::As_Pointer(house_type);
-            if (hptr && hptr->IsActive) {
-                if (hptr != house && house->Is_Ally(hptr)) {
-                    Map_Cell(cell, hptr, false);
-                }
-            }
-        }
-    }
-#endif
+    int x = Cell_X(cell);
+    int y = Cell_Y(cell);
+    if (x == 0 || x == MAP_CELL_W - 1 || y == 0 || y == MAP_CELL_H - 1)
+        return (false);
+
     /*
     **	Don't bother remapping this cell if it is already mapped.
     */
@@ -2090,6 +2169,10 @@ void DisplayClass::Draw_It(bool forced)
 {
     int x, y; // Working cell index values.
 
+    for (int i = 0; i < 4; i++) {
+        FlagDrawLocation[i] = XY_Coord(-1, -1);
+    }
+
     MapClass::Draw_It(forced);
 
     if (IsToRedraw || forced) {
@@ -2101,6 +2184,7 @@ void DisplayClass::Draw_It(bool forced)
         */
         Refresh_Band();
 
+#if 0
         /*
         ** If the multiplayer message system is displaying one or more messages,
         ** flag all cells covered by the messages to redraw.  This will prevent
@@ -2141,6 +2225,7 @@ void DisplayClass::Draw_It(bool forced)
                 }
             }
         }
+#endif
 
         /*
         **	Check for a movement of the tactical map. If there has been some
@@ -2373,10 +2458,31 @@ void DisplayClass::Draw_It(bool forced)
             // Redraw_Icons(CELL_DRAW_ONLY);
 
             /*
-            **	Redraw the game objects layer by layer. The layer drawing occurs on the ground layer
-            **	first and then followed by all the layers in increasing altituded.
-            */
-            for (LayerType layer = LAYER_GROUND; layer < LAYER_COUNT; layer++) {
+			**	Redraw the game objects at ground layer.
+			*/
+            for (int oidx = 0; oidx < Layer[LAYER_GROUND].Count(); oidx++) {
+                Layer[LAYER_GROUND][oidx]->Render(forced);
+            }
+
+            for (int house = 0; house < 4; house++) {
+                if (Coord_X(FlagDrawLocation[house]) != -1) {
+                    void const* flag_remap =
+                        HouseClass::As_Pointer((HousesType)(house + 6))->Remap_Table(false, REMAP_YELLOW);
+                    CC_Draw_Shape(MFCD::Retrieve("FLAGFLY.SHP"),
+                                  Frame % 14,
+                                  Coord_X(FlagDrawLocation[house]) + (ICON_PIXEL_W / 2),
+                                  Coord_Y(FlagDrawLocation[house]) + (ICON_PIXEL_H / 2),
+                                  WINDOW_TACTICAL,
+                                  SHAPE_CENTER | SHAPE_GHOST | SHAPE_FADING,
+                                  flag_remap,
+                                  DisplayClass::UnitShadow);
+                }
+            }
+
+            /*
+			**	Redraw the game objects at layers that are above ground.
+			*/
+            for (LayerType layer = LAYER_AIR; layer < LAYER_COUNT; layer++) {
                 for (int index = 0; index < Layer[layer].Count(); index++) {
                     Layer[layer][index]->Render(forced);
                 }
@@ -3039,7 +3145,8 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
             && (!obj->Is_Techno() || !((TechnoClass*)obj)->Is_Cloaked(PlayerPtr)) && x >= x1 && x <= x2 && y >= y1
             && y <= y2) {
             bool old_allow_voice = AllowVoice;
-            bool is_player_controlled = obj->Owner() == PlayerPtr->Class->House;
+            bool is_player_controlled = obj->Owner() == PlayerPtr->Class->House || (IsServerAdmin && !OfflineMode)
+                                        || PlayerPtr->Class->House == HOUSE_SPECTATOR;
             AllowVoice &= is_player_controlled;
             if (obj->Select(true)) {
                 if (is_player_controlled) {
@@ -3066,7 +3173,8 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
         if (aircraft->Class_Of().IsSelectable && !aircraft->Is_Cloaked(PlayerPtr) && !aircraft->Is_Selected_By_Player()
             && x >= x1 && x <= x2 && y >= y1 && y <= y2) {
             bool old_allow_voice = AllowVoice;
-            bool is_player_controlled = aircraft->Owner() == PlayerPtr->Class->House;
+            bool is_player_controlled = aircraft->Owner() == PlayerPtr->Class->House || (IsServerAdmin && !OfflineMode)
+                                        || PlayerPtr->Class->House == HOUSE_SPECTATOR;
             AllowVoice &= is_player_controlled;
             if (aircraft->Select(true)) {
                 if (is_player_controlled) {
@@ -3578,7 +3686,7 @@ void DisplayClass::Mouse_Right_Press(void)
             } else {
                 if (IsTargettingMode) {
                     IsTargettingMode = false;
-                } else {
+                } else if (IsServerAdmin && !OfflineMode || PlayerPtr->Class->House == HOUSE_SPECTATOR) {
                     Unselect_All();
                 }
             }
@@ -3865,7 +3973,9 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
 
         if (IsRubberBand) {
             Refresh_Band();
-            Select_These(XYPixel_Coord(BandX, BandY), XYPixel_Coord(x, y));
+            if ((IsServerAdmin && !OfflineMode) || PlayerPtr->Class->House == HOUSE_SPECTATOR) {
+                Select_These(XYPixel_Coord(BandX, BandY), XYPixel_Coord(x, y));
+            }
 
             Set_Default_Mouse(MOUSE_NORMAL, wwsmall);
 #ifdef NEVER
@@ -3886,6 +3996,10 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
             Map.Flag_To_Redraw(false);
 
         } else {
+            if ((!IsServerAdmin || OfflineMode) && PlayerPtr->Class->House != HOUSE_SPECTATOR
+                && (action == ACTION_SELECT || action == ACTION_TOGGLE_SELECT)) {
+                action = ACTION_NONE;
+            }
 
             /*
             **	Toggle the select state of the object.
@@ -3906,8 +4020,9 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
             **	Selection of other object action.
             */
             if (action == ACTION_SELECT
-                || (action == ACTION_NONE && object && object->Class_Of().IsSelectable
-                    && !object->Is_Selected_By_Player())) {
+                || ((action == ACTION_NONE && object && object->Class_Of().IsSelectable
+                    && !object->Is_Selected_By_Player())
+                       && ((IsServerAdmin && !OfflineMode) || PlayerPtr->Class->House == HOUSE_SPECTATOR))) {
                 if (object->Is_Selected_By_Player()) {
                     object->Unselect();
                 }
@@ -4095,23 +4210,11 @@ void DisplayClass::Set_Tactical_Position(COORDINATE coord)
     /*
     **	Bound the desired location to fit the legal map edges.
     */
-#ifdef REMASTER_BUILD
-    int xx = 0; // Coord_X(coord) - Cell_To_Lepton(MapCellX);
-    int yy = 0; // Coord_Y(coord) - Cell_To_Lepton(MapCellY);
-
-    Confine_Rect(&xx,
-                 &yy,
-                 TacLeptonWidth,
-                 TacLeptonHeight,
-                 Cell_To_Lepton(MapCellWidth) + GlyphXClientSidebarWidthInLeptons,
-                 Cell_To_Lepton(MapCellHeight)); // Needed to accomodate Glyphx client sidebar. ST - 4/12/2019 5:29PM
-#else
     int xx = Coord_X(coord) - Cell_To_Lepton(MapCellX);
     int yy = Coord_Y(coord) - Cell_To_Lepton(MapCellY);
 
     Confine_Rect(
         &xx, &yy, TacLeptonWidth, TacLeptonHeight, Cell_To_Lepton(MapCellWidth), Cell_To_Lepton(MapCellHeight));
-#endif
     coord = XY_Coord(xx + Cell_To_Lepton(MapCellX), yy + Cell_To_Lepton(MapCellY));
 
     if (ScenarioInit) {
@@ -4409,6 +4512,88 @@ COORDINATE DisplayClass::Center_Map(COORDINATE center)
     }
 
     return 0;
+}
+
+void DisplayClass::Redraw_Objects(void)
+{
+	CELL cell;
+	int x;
+	int xx;
+	int y;
+	int yy;
+	int xxx;
+	int yyy;
+
+	x = Cell_X(Coord_Cell(TacticalCoord));
+	y = Cell_Y(Coord_Cell(TacticalCoord));
+
+	if (x < 0) {
+		x = 0;
+	}
+
+	if (y < 0) {
+		y = 0;
+	}
+
+	xx = x + (TacLeptonWidth / 256);
+	yy = y + (TacLeptonHeight / 256);
+
+	if ( xx > 127 ) {
+		xx = 127;
+	}
+
+	if ( yy > 127 ) {
+		yy = 127;
+	}
+
+	for (xxx = x; xxx <= xx; xxx++) {
+		for (yyy = y; yyy <= yy; yyy++) {
+			cell = XY_Cell(xxx, yyy);
+			(*this)[cell].Redraw_Objects();
+		}
+	}
+}
+
+void DisplayClass::Shake_The_Screen(int shakes)
+{
+	if (shakes > ShakeCount) {
+		ShakeCount = shakes;
+	}
+}
+
+void DisplayClass::Shake_Screen_AI(void)
+{
+	static int last_rand_x;
+	static int last_rand_y;
+
+	if (ShakeCount > 0) {
+		int x = Coord_X(DesiredTacticalCoord);
+		int y = Coord_Y(DesiredTacticalCoord);
+
+		int rand_x = ((Random_Pick(0, 15) + 20) > ShakeCount) ? ShakeCount : Random_Pick(0, 15) + 20;
+		if (Random_Pick(0, 1)) {
+			//rand_x = -rand_x;
+			rand_x = rand_x * -1;//what why does ida think its -val..  imul    eax, [ebp+var_14], 0FFh
+		}
+		int rand_y = ((Random_Pick(0, 15) + 25) > ShakeCount) ? ShakeCount : Random_Pick(0, 15) + 25;
+		if (ShakeCount % 2) {
+			//rand_y = -rand_y;
+			rand_y = rand_y * -1;//what why does ida think its -val..  imul    eax, [ebp+var_10], 0FFh
+		}
+		x -= last_rand_x;
+		y -= last_rand_y;
+		x += rand_x;
+		y += rand_y;
+		last_rand_x = rand_x;
+		last_rand_y = rand_y;
+		COORDINATE coord = XY_Coord(x, y);
+
+		if (coord != DesiredTacticalCoord) {
+			Set_Tactical_Position(coord);
+		}
+
+		--ShakeCount;
+	}
 }
 
 static ActionType _priority_actions[] =
