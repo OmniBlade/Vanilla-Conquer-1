@@ -112,6 +112,7 @@ extern bool SlowPalette;
 extern char VersionText[64];
 extern bool ScoresPresent;
 extern int CrateCount;
+extern int WDTNumArmageddonCrates;
 extern TCountDownTimerClass CrateTimer;
 extern bool CrateMaker;
 extern bool AllowVoice;
@@ -234,25 +235,6 @@ extern GameType GameToPlay;
 
 extern CommProtocolType CommProtocol;
 
-extern CCFileClass RecordFile;
-extern int RecordGame;
-extern int SuperRecord;
-extern int PlaybackGame;
-extern int AllowAttract;
-
-/*
-** Modem globals
-*/
-extern bool ModemService;
-// extern NullModemClass 								NullModem;
-// extern DynamicVectorClass<PhoneEntryClass *>	PhoneBook;
-extern int CurPhoneIdx;
-extern DynamicVectorClass<char*> InitStrings;
-extern SerialSettingsType SerialDefaults;
-extern ModemGameType ModemGameToPlay;
-extern char* DialMethodCheck[DIAL_METHODS];
-extern char* CallWaitStrings[CALL_WAIT_STRINGS_NUM];
-
 /*
 ** Network/Modem globals
 */
@@ -288,7 +270,7 @@ extern MessageListClass Messages;
 #ifdef NETWORKING
 extern IPXAddressClass MessageAddress;
 #endif
-extern char LastMessage[MAX_MESSAGE_LENGTH];
+//extern char LastMessage[MAX_MESSAGE_LENGTH];
 extern int MPlayerBlitz;
 extern int MPlayerObiWan;
 extern MPlayerScoreType MPlayerScore[MAX_MULTI_NAMES];
@@ -325,33 +307,9 @@ extern void* TrapThis;
 extern CellClass* TrapCell;
 extern int TrapCheckHeap;
 
-/*
-** Network (IPX) globals
-*/
-#ifdef NETWORKING
-extern IPXManagerClass Ipx;
-#endif
-extern bool NetMaster;
-extern bool NetStealth;
-extern bool NetProtect;
-extern bool NetOpen;
-extern char MPlayerGameName[MPLAYER_NAME_MAX];
-extern GlobalPacketType GPacket;
-extern int GPacketlen;
-#ifdef NETWORKING
-extern IPXAddressClass GAddress;
-#endif
-extern unsigned short GProductID;
-extern char* MetaPacket;
-extern int MetaSize;
-extern DynamicVectorClass<NodeNameType*> Games;
-extern DynamicVectorClass<NodeNameType*> Players;
-
 extern int Seed;
 extern int* RandSeedPtr;
 extern int CustomSeed;
-extern int NewMaxAheadFrame1;
-extern int NewMaxAheadFrame2;
 
 /*
 **	Constant externs (data is not modified during game play).
@@ -380,8 +338,10 @@ extern int SoundOn;
 extern GraphicBufferClass VisiblePage;
 extern GraphicBufferClass HiddenPage;
 extern GraphicViewPortClass SeenBuff;
+extern GraphicViewPortClass UnknownViewport1;
 extern GraphicBufferClass ModeXBuff;
 extern GraphicViewPortClass HidPage;
+extern GraphicViewPortClass	UnknownViewport2;
 extern GraphicBufferClass LoResHidPage;
 extern GraphicBufferClass SysMemPage;
 extern int MenuList[][8];
@@ -399,7 +359,6 @@ extern char* DebugFname; // for stoopid debugging purposes
 extern int DebugLine;    // for stoopid debugging purposes
 extern int RequiredCD;
 extern int MouseInstalled;
-extern int AreThingiesEnabled;
 
 extern int In_Debugger;
 extern WWMouseClass* WWMouse;
@@ -434,5 +393,53 @@ extern bool IsServerAdmin;
 extern int ShowNames;
 extern int PlayerNameDrawStyle;
 extern bool OfflineMode;
+
+#include "voicethemes.h"
+extern DynamicVectorClass <VoiceThemeClass *> VoiceThemes;
+
+extern bool IsTeamMessage;
+
+class ProtocolClass;
+class ListenerClass;
+class ReliableCommClass;
+class ReliableProtocolClass;
+struct PlayerNameTag;
+
+extern DynamicVectorClass<PlayerNameTag *> ActivePlayers;
+
+extern DynamicVectorClass<ReliableCommClass *> ReliableComms;
+extern DynamicVectorClass<ReliableProtocolClass *> ReliableProtocols;
+extern DynamicVectorClass<ReliableCommClass *> RemoteAdminsComms;
+extern DynamicVectorClass<ReliableProtocolClass *> RemoteAdminsProtocols;
+
+extern char Host[40];
+extern char ResultHost[128];
+extern char TempPacketBuffer[100000];
+
+extern DynamicVectorClass<NewDeletePacketData *> NewDeletePacketDatas;
+extern DynamicVectorClass<HealthPacketData *> HealthPacketDatas;
+extern DynamicVectorClass<DamagePacketData *> DamagePacketDatas;
+extern DynamicVectorClass<SquishPacketData *> SquishPacketDatas;
+extern DynamicVectorClass<CapturePacketData *> CapturePacketDatas;
+extern DynamicVectorClass<CargoPacketData *> CargoPacketDatas;
+extern DynamicVectorClass<FlagPacketData *> FlagPacketDatas;
+extern DynamicVectorClass<CTFPacketData *> CTFPacketDatas;
+extern DynamicVectorClass<MovePacketData *> MovePacketDatas;
+extern DynamicVectorClass<TargetPacketData *> TargetPacketDatas;
+extern DynamicVectorClass<FireAtPacketData *> FireAtPacketDatas;
+extern DynamicVectorClass<DoTurnPacketData *> DoTurnPacketDatas;
+extern DynamicVectorClass<CratePacketData *> CratePacketDatas;
+extern DynamicVectorClass<PerCellPacketData *> PerCellPacketDatas;
+extern DynamicVectorClass<TechnoPacketData *> TechnoPacketDatas;
+
+extern StatsPanelClass StatPanel;
+extern DynamicVectorClass<char *> BannedPlayers;
+extern CELL FlagHomes[4];
+extern CELL FootballCells[2];
+extern int OfflinePoints;
+extern bool CratesDisabled;
+extern int WDTCrateSteel;
+extern int WDTCrateGreen;
+extern int WDTCrateOrange;
 
 #endif

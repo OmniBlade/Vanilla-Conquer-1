@@ -71,6 +71,7 @@ public:
         REPAIR,        // Repair specified object.
         SELL,          //	Sell specified object.
         SPECIAL,       // Special options control.
+        DROP_FLAG,
 
         // Private events.
         FRAMESYNC,     // Game-connection packet; includes Scenario CRC & sender's frame #
@@ -83,9 +84,9 @@ public:
         FRAMEINFO,     // Game-heartbeat packet; includes Game CRC & command count
                        // All packets sent for a frame are prefixed with one of these
         ARCHIVE,       // Updates archive target on specified object.
-        TIMING,        // new timing values for all systems to use
-        PROCESS_TIME,  // a system's average processing time, in ticks per frame
-        LAST_EVENT,    // one past the last event
+        ADMIN_TOGGLE,
+        BAN_USER,
+        LAST_EVENT, // one past the last event
     } EventType;
 
     EventType Type; // Type of queue command object.
@@ -95,12 +96,12 @@ public:
     ** 27 bits gives over 25 days of playing time without wrapping,
     ** at 30 frames per second, so it should be plenty!
     */
-    unsigned Frame : 27;
+    //unsigned Frame : 27;
 
     /*
     ** House index of the player originating this event
     */
-    unsigned ID : 4;
+    unsigned char ID;
 
     /*
     ** This bit tells us if we've already executed this event.
@@ -112,7 +113,7 @@ public:
     ** High nybble: the color index of this player.
     ** Low nybble: the HousesType this player is "acting like" (GDI/NOD)
     */
-    unsigned char MPlayerID;
+    //unsigned char MPlayerID;
 
     /*
     **	This union contains the specific data that the event requires.
@@ -144,6 +145,7 @@ public:
             MissionType Mission; // What mission to apply.
             TARGET Target;       // Target to assign.
             TARGET Destination;  // Destination to assign.
+            unsigned Bitfield : 1;
         } MegaMission;
         struct
         {
@@ -229,6 +231,7 @@ public:
     EventClass(EventType type, RTTIType object, CELL cell);
     EventClass(EventType type, int id, CELL cell);
     EventClass(AnimType anim, HousesType owner, COORDINATE coord, int visible = -1);
+    EventClass(EventType type, char *string);
 
     // Process the event.
     void Execute(void);
