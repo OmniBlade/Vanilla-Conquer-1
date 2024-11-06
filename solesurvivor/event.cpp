@@ -50,33 +50,33 @@
 ** events.  This table must be kept current with the EventType enum.
 */
 unsigned char EventClass::EventLength[EventClass::LAST_EVENT] = {
-    0,                                         // EMPTY
-    size_of(EventClass, Data.General),         // ALLY
-    size_of(EventClass, Data.MegaMission),     // MEGAMISSION
-    size_of(EventClass, Data.Target),          // IDLE
-    size_of(EventClass, Data.Target),          // SCATTER
-    0,                                         // DESTRUCT
-    0,                                         // DEPLOY
-    size_of(EventClass, Data.Place),           // PLACE
-    0,                                         // OPTIONS
-    size_of(EventClass, Data.General),         // GAMESPEED
-    size_of(EventClass, Data.Specific),        // PRODUCE
-    size_of(EventClass, Data.Specific.Type),   // SUSPEND
-    size_of(EventClass, Data.Specific.Type),   // ABANDON
-    size_of(EventClass, Data.Target),          // PRIMARY
-    size_of(EventClass, Data.Special),         // SPECIAL_PLACE
-    0,                                         // EXIT
-    size_of(EventClass, Data.Anim),            // ANIMATION
-    size_of(EventClass, Data.Target),          // REPAIR
-    size_of(EventClass, Data.Target),          // SELL
-    size_of(EventClass, Data.Options),         // SPECIAL
-    0,                                         // FRAMESYNC
-    0,                                         //	MESSAGE
-    size_of(EventClass, Data.FrameInfo.Delay), // RESPONSE_TIME
-    size_of(EventClass, Data.FrameInfo),       // FRAMEINFO
-    size_of(EventClass, Data.NavCom),          // ARCHIVE
-    size_of(EventClass, Data.Timing),          // TIMING
-    size_of(EventClass, Data.ProcessTime),     // PROCESS_TIME
+    0,                                       // EMPTY
+    size_of(EventClass, Data.General),       // ALLY
+    size_of(EventClass, Data.MegaMission),   // MEGAMISSION
+    size_of(EventClass, Data.Target),        // IDLE
+    size_of(EventClass, Data.Target),        // SCATTER
+    0,                                       // DESTRUCT
+    0,                                       // DEPLOY
+    size_of(EventClass, Data.Place),         // PLACE
+    0,                                       // OPTIONS
+    size_of(EventClass, Data.General),       // GAMESPEED
+    size_of(EventClass, Data.Specific),      // PRODUCE
+    size_of(EventClass, Data.Specific.Type), // SUSPEND
+    size_of(EventClass, Data.Specific.Type), // ABANDON
+    size_of(EventClass, Data.Target),        // PRIMARY
+    size_of(EventClass, Data.Special),       // SPECIAL_PLACE
+    0,                                       // EXIT
+    size_of(EventClass, Data.Anim),          // ANIMATION
+    size_of(EventClass, Data.Target),        // REPAIR
+    size_of(EventClass, Data.Target),        // SELL
+    size_of(EventClass, Data.Options),       // SPECIAL
+    4,                                       // DROP_FLAG
+    0,                                       // FRAMESYNC
+    0,                                       //	MESSAGE
+    0,                                       // RESPONSE_TIME
+    1,                                       // FRAMEINFO
+    1,                                       // ADMIN_TOGGLE
+    12,                                      // BAN_USER
 };
 
 const char* EventClass::EventNames[EventClass::LAST_EVENT] = {
@@ -102,9 +102,9 @@ const char* EventClass::EventNames[EventClass::LAST_EVENT] = {
  *=============================================================================================*/
 EventClass::EventClass(SpecialClass data)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = SPECIAL;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.Options.Data = data;
 }
 
@@ -127,9 +127,9 @@ EventClass::EventClass(SpecialClass data)
  *=============================================================================================*/
 EventClass::EventClass(EventType type, TargetClass target)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = type;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.Target.Whom = target;
 }
 
@@ -150,9 +150,9 @@ EventClass::EventClass(EventType type, TargetClass target)
  *=============================================================================================*/
 EventClass::EventClass(EventType type)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = type;
-    Frame = ::Frame;
+    //Frame = ::Frame;
 }
 
 /***********************************************************************************************
@@ -170,10 +170,10 @@ EventClass::EventClass(EventType type)
  *=============================================================================================*/
 EventClass::EventClass(EventType type, int val)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = type;
     Data.General.Value = val;
-    Frame = ::Frame;
+    //Frame = ::Frame;
 }
 
 /***********************************************************************************************
@@ -197,9 +197,9 @@ EventClass::EventClass(EventType type, int val)
  *=============================================================================================*/
 EventClass::EventClass(EventType type, TARGET src, TARGET dest)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = type;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.NavCom.Whom = src;
     Data.NavCom.Where = dest;
 }
@@ -222,9 +222,9 @@ EventClass::EventClass(EventType type, TARGET src, TARGET dest)
  *=============================================================================================*/
 EventClass::EventClass(AnimType anim, HousesType owner, COORDINATE coord, int visible)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = ANIMATION;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.Anim.What = anim;
     Data.Anim.Owner = owner;
     Data.Anim.Where = coord;
@@ -254,9 +254,9 @@ EventClass::EventClass(AnimType anim, HousesType owner, COORDINATE coord, int vi
  *=============================================================================================*/
 EventClass::EventClass(TARGET src, MissionType mission, TARGET target, TARGET destination)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = MEGAMISSION;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.MegaMission.Whom = src;
     Data.MegaMission.Mission = mission;
     Data.MegaMission.Target = target;
@@ -284,9 +284,9 @@ EventClass::EventClass(TARGET src, MissionType mission, TARGET target, TARGET de
  *=============================================================================================*/
 EventClass::EventClass(EventType type, RTTIType object, int id)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = type;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.Specific.Type = object;
     Data.Specific.ID = id;
 }
@@ -313,9 +313,9 @@ EventClass::EventClass(EventType type, RTTIType object, int id)
  *=============================================================================================*/
 EventClass::EventClass(EventType type, RTTIType object, CELL cell)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = type;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.Place.Type = object;
     Data.Place.Cell = cell;
 }
@@ -340,11 +340,17 @@ EventClass::EventClass(EventType type, RTTIType object, CELL cell)
  *=============================================================================================*/
 EventClass::EventClass(EventType type, int id, CELL cell)
 {
-    ID = Houses.ID(PlayerPtr);
+    ID = PlayerPtr->Class->House;
     Type = type;
-    Frame = ::Frame;
+    //Frame = ::Frame;
     Data.Special.ID = id;
     Data.Special.Cell = cell;
+}
+
+//probably for BAN_USER or ADMIN_TOGGLE
+EventClass::EventClass(EventType type, char* string)
+{
+    //blank in all known binaries
 }
 
 /***********************************************************************************************
@@ -367,6 +373,9 @@ void EventClass::Execute(void)
     TechnoClass* techno;
     AnimClass* anim = 0;
     HouseClass* house = 0;
+    HouseClass* hptr = 0;
+    TechnoClass* techno;
+#if 0
     char txt[80];
     int i;
     //#if (0)
@@ -384,8 +393,9 @@ void EventClass::Execute(void)
         sprintf(tempbuf, "	MPlayer ID = %d\n", MPlayerID);
         CCDebugString(tempbuf);
     }
-    //#endif	//(0)
+#endif //(0)
 
+    hptr = HouseClass::As_Pointer((HousesType)ID);
     switch (Type) {
     /*
     **	Update the archive target for this building.
@@ -402,10 +412,10 @@ void EventClass::Execute(void)
     */
     case ALLY:
         house = Houses.Raw_Ptr(Data.General.Value);
-        if (Houses.Raw_Ptr(ID)->Is_Ally(house)) {
-            Houses.Raw_Ptr(ID)->Make_Enemy((HousesType)Data.General.Value);
+        if (hptr->Is_Ally(house)) {
+            hptr->Make_Enemy((HousesType)Data.General.Value);
         } else {
-            Houses.Raw_Ptr(ID)->Make_Ally((HousesType)Data.General.Value);
+            hptr->Make_Ally((HousesType)Data.General.Value);
         }
         break;
 
@@ -413,9 +423,7 @@ void EventClass::Execute(void)
     **	Special self destruct action requested. This is active in the multiplayer mode.
     */
     case DESTRUCT:
-        CCDebugString("C&C95 - Resignation packet received\n");
-        Houses.Raw_Ptr(ID)->Flag_To_Die();
-        Houses.Raw_Ptr(ID)->Resigned = true;
+        hptr->Flag_To_Die();
         break;
 
     /*
@@ -424,14 +432,22 @@ void EventClass::Execute(void)
     **	game play, then all players are informed that options have changed.
     */
     case SPECIAL: {
+        char txt[80];
         Special = Data.Options.Data;
-        HouseClass* house = Houses.Raw_Ptr(ID);
+        HouseClass* house = hptr;
 
         sprintf(txt, Text_String(TXT_SPECIAL_WARNING), house->Name);
-        Messages.Add_Message(
-            txt, MPlayerTColors[house->RemapColor], TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW, 1200, 0, 0);
+        Messages.Add_Message(txt, MPlayerTColors[house->RemapColor], TPF_8POINT | TPF_FULLSHADOW, 1200, 0, 0);
         Map.Flag_To_Redraw(false);
     } break;
+
+    case DROP_FLAG: {
+        FootClass* f = (FootClass*)As_Techno(Data.Target.Whom);
+        if (f && f->IsActive && !f->IsInLimbo && !f->IsTethered && f->Flagged != HOUSE_NONE) {
+            HouseClass::As_Pointer(f->Flagged)->Flag_Attach(Coord_Cell(f->Coord));
+        }
+        break;
+    }
 
     /*
     **	Starts or stops repair on the specified object. This event is triggered by the
@@ -452,11 +468,11 @@ void EventClass::Execute(void)
     case SELL:
         CCDebugString("C&C95 - Sell packet received\n");
         techno = As_Techno(Data.Target.Whom);
-        if (techno && techno->IsActive && techno->House == Houses.Raw_Ptr(ID)) {
+        if (techno && techno->IsActive && techno->House == hptr) {
             techno->Sell_Back(-1);
         } else {
             if (Is_Target_Cell(Data.Target.Whom)) {
-                Houses.Raw_Ptr(ID)->Sell_Wall(As_Cell(Data.Target.Whom));
+                hptr->Sell_Wall(As_Cell(Data.Target.Whom));
             }
         }
         break;
@@ -501,7 +517,7 @@ void EventClass::Execute(void)
     */
     case PLACE:
         CCDebugString("C&C95 - Place packet received\n");
-        Houses.Raw_Ptr(ID)->Place_Object(Data.Place.Type, Data.Place.Cell);
+        hptr->Place_Object(Data.Place.Type, Data.Place.Cell);
         break;
 
     /*
@@ -511,7 +527,7 @@ void EventClass::Execute(void)
     */
     case PRODUCE:
         CCDebugString("C&C95 - Produce packet received\n");
-        Houses.Raw_Ptr(ID)->Begin_Production(Data.Specific.Type, Data.Specific.ID);
+        hptr->Begin_Production(Data.Specific.Type, Data.Specific.ID);
         break;
 
     /*
@@ -520,7 +536,7 @@ void EventClass::Execute(void)
     */
     case SUSPEND:
         CCDebugString("C&C95 - Suspend packet received\n");
-        Houses.Raw_Ptr(ID)->Suspend_Production(Data.Specific.Type);
+        hptr->Suspend_Production(Data.Specific.Type);
         break;
 
     /*
@@ -529,7 +545,7 @@ void EventClass::Execute(void)
     */
     case ABANDON:
         CCDebugString("C&C95 - Abandon packet received\n");
-        Houses.Raw_Ptr(ID)->Abandon_Production(Data.Specific.Type);
+        hptr->Abandon_Production(Data.Specific.Type);
         break;
 
     /*
@@ -549,74 +565,72 @@ void EventClass::Execute(void)
     **	and NavCom to the values specified.
     */
     case MEGAMISSION:
-        techno = As_Techno(Data.MegaMission.Whom);
-        if (techno && techno->IsActive) {
+        if (Data.MegaMission.Bitfield == GameOptionsBitfield) {
+            techno = As_Techno(Data.MegaMission.Whom);
+            if (techno && techno->IsActive) {
 
-            /*
-            **	Fetch a pointer to the object of the mission.
-            */
-            ObjectClass* object;
-            if (Target_Legal(Data.MegaMission.Target)) {
-                object = As_Object(Data.MegaMission.Target);
-            } else {
-                object = As_Object(Data.MegaMission.Destination);
-            }
-
-            /*
-            **	Break any existing team contact, since it is now invalid.
-            */
-            if (!techno->IsTethered) {
-                techno->Transmit_Message(RADIO_OVER_OUT);
-            }
-            switch (techno->What_Am_I()) {
-            case RTTI_INFANTRY:
-            case RTTI_UNIT:
-                if (((FootClass*)techno)->Team) {
-                    ((FootClass*)techno)->Team->Remove((FootClass*)techno);
+                /*
+                **	Fetch a pointer to the object of the mission.
+                */
+                ObjectClass* object;
+                if (Target_Legal(Data.MegaMission.Target)) {
+                    object = As_Object(Data.MegaMission.Target);
+                    if (object) {
+                        if (!object->IsActive) {
+                            object = As_Object(Data.MegaMission.Destination);
+                        }
+                    }
+                } else {
+                    object = As_Object(Data.MegaMission.Destination);
                 }
-                break;
-            }
 
-            if (object) {
-
-                // 2019/09/20 JAS - Added record of who clicked on the object
-                HouseClass* house = Houses.Raw_Ptr(ID);
-                bool is_allied = house != nullptr && house->Is_Ally(techno);
-                if (is_allied || Special.IsVisibleTarget) {
-                    object->Clicked_As_Target((HousesType)ID);
+                /*
+                **	Break any existing team contact, since it is now invalid.
+                */
+                if (!techno->IsTethered) {
+                    techno->Transmit_Message(RADIO_OVER_OUT);
                 }
-            }
-            techno->Assign_Mission(Data.MegaMission.Mission);
+                switch (techno->What_Am_I()) {
+                case RTTI_INFANTRY:
+                case RTTI_UNIT:
+                    if (((FootClass*)techno)->Team) {
+                        ((FootClass*)techno)->Team->Remove((FootClass*)techno);
+                    }
+                    break;
+                }
 
-            /*
-            **	Guard area mode is handled with care. The specified target is actually
-            **	assigned as the location that should be guarded. In addition, the
-            **	movement destination is immediately set to this new location.
-            */
-            if (Data.MegaMission.Mission == MISSION_GUARD_AREA &&
-                //					Target_Legal(Data.MegaMission.Target) &&
-                (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT
-                 || techno->What_Am_I() == RTTI_AIRCRAFT)) {
+                if (object && object->IsActive) {
+                    if (PlayerPtr->Is_Ally(techno) || Special.IsVisibleTarget) {
+                        object->Clicked_As_Target();
+                    }
+                }
+                techno->Assign_Mission(Data.MegaMission.Mission);
 
-                techno->ArchiveTarget = Data.MegaMission.Target;
-                techno->Assign_Target(TARGET_NONE);
-                techno->Assign_Destination(Data.MegaMission.Target);
-            } else if (Data.MegaMission.Mission == MISSION_ENTER && object != NULL
-                       && object->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)object) == STRUCT_REFINERY) {
-                techno->Transmit_Message(RADIO_HELLO, (BuildingClass*)object);
-                techno->Assign_Destination(TARGET_NONE);
-            } else {
-                techno->Assign_Target(Data.MegaMission.Target);
-                techno->Assign_Destination(Data.MegaMission.Destination);
-            }
+                /*
+                **	Guard area mode is handled with care. The specified target is actually
+                **	assigned as the location that should be guarded. In addition, the
+                **	movement destination is immediately set to this new location.
+                */
+                if (Data.MegaMission.Mission == MISSION_GUARD_AREA &&
+                    //						Target_Legal(Data.MegaMission.Target) &&
+                    (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT
+                     || techno->What_Am_I() == RTTI_AIRCRAFT)) {
+                    ((FootClass*)techno)->ArchiveTarget = Data.MegaMission.Target;
+                    techno->Assign_Target(TARGET_NONE);
+                    techno->Assign_Destination(Data.MegaMission.Target);
+                } else {
+                    techno->Assign_Target(Data.MegaMission.Target);
+                    techno->Assign_Destination(Data.MegaMission.Destination);
+                }
 
 #ifdef NEVER
-            if ((techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_INFANTRY)
-                && Data.MegaMission.Mission == MISSION_GUARD_AREA) {
+                if ((techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_INFANTRY)
+                    && Data.MegaMission.Mission == MISSION_GUARD_AREA) {
 
-                techno->ArchiveTarget = Data.MegaMission.Destination;
-            }
+                    ((FootClass*)techno)->ArchiveTarget = Data.MegaMission.Destination;
+                }
 #endif
+            }
         }
         break;
 
@@ -648,7 +662,7 @@ void EventClass::Execute(void)
     */
     case SPECIAL_PLACE:
         CCDebugString("C&C95 - Special blast packet received\n");
-        Houses.Raw_Ptr(ID)->Place_Special_Blast((SpecialWeaponType)Data.Special.ID, Data.Special.Cell);
+        hptr->Place_Special_Blast((SpecialWeaponType)Data.Special.ID, Data.Special.Cell);
         break;
 
     /*
@@ -659,9 +673,11 @@ void EventClass::Execute(void)
         CCDebugString("C&C95 - Exit game packet received\n");
         Theme.Queue_Song(THEME_NONE);
         Stop_Speaking();
-        Speak(VOX_CONTROL_EXIT);
-        while (Is_Speaking()) {
-            Call_Back();
+        if (!Debug_Quiet) {
+            Speak(VOX_CONTROL_EXIT);
+            while (Is_Speaking()) {
+                Call_Back();
+            }
         }
         GameActive = false;
         break;
@@ -685,12 +701,15 @@ void EventClass::Execute(void)
     **	Adjust connection timing for multiplayer games
     */
     case RESPONSE_TIME:
+#if 0
         char flip[128];
         sprintf(flip, "C&C95 - Changing MaxAhead to %d frames\n", Data.FrameInfo.Delay);
         CCDebugString(flip);
         MPlayerMaxAhead = Data.FrameInfo.Delay;
+#endif
         break;
 
+#if 0
     //
     // This event tells all systems to use new timing values.  It's like
     // RESPONSE_TIME, only it works.  It's only used with the
@@ -714,11 +733,12 @@ void EventClass::Execute(void)
 
         DesiredFrameRate = Data.Timing.DesiredFrameRate;
         MPlayerMaxAhead = Data.Timing.MaxAhead;
-
+#if 0
         sprintf(flip, "C&C95 -  Timing packet: DesiredFrameRate = %d\n", Data.Timing.DesiredFrameRate);
         CCDebugString(flip);
         sprintf(flip, "C&C95 -  Timing packet: MaxAhead = %d\n", Data.Timing.MaxAhead);
         CCDebugString(flip);
+#endif
         break;
 
     //
@@ -737,6 +757,12 @@ void EventClass::Execute(void)
 
                 break;
             }
+        }
+        break;
+#endif
+    case BAN_USER:
+        if (IsServerAdmin && !OfflineMode) {
+            Host_Ban_Player((char*)&Data.General); //FIXME
         }
         break;
 
