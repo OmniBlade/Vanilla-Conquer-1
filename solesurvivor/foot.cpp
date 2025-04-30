@@ -94,6 +94,7 @@
 FootClass::FootClass(void)
     : Speed(0)
 {
+    Flagged = HOUSE_NONE;
     IsDriving = false;
     IsInitiated = false;
     IsPlanningToLook = false;
@@ -156,6 +157,7 @@ FootClass::FootClass(HousesType house)
     : TechnoClass(house)
     , Speed(0)
 {
+    Flagged = HOUSE_NONE;
     Member = 0;
     Team = 0;
     Path[0] = FACING_NONE;
@@ -353,7 +355,11 @@ bool FootClass::Basic_Path(void)
     CELL cell;
     int skip_path = false;
 
-    Path[0] = FACING_NONE;
+    memset(Path, FACING_NONE, sizeof(Path));
+
+    if (GameToPlay == GAME_CLIENT) {
+        return false;
+    }
 
     if (Target_Legal(NavCom)) {
         cell = As_Cell(NavCom);
@@ -501,6 +507,7 @@ bool FootClass::Basic_Path(void)
             if (found1) {
                 Fixup_Path(&path1);
                 memcpy(&Path[0], &workpath1[0], MIN(path->Length, (int)sizeof(Path)));
+                // TODO SOLE original code does something funky here, probably don't need it but leaving comment for future reference.
             }
 
             Mark(MARK_DOWN);
@@ -669,67 +676,6 @@ int FootClass::Mission_Hunt(void)
 }
 
 /***********************************************************************************************
- * FootClass::Mission_Timed_Hunt -- This is the AI process for multiplayer computer units.     *
- *                                                                                             *
- * For multiplayer games, the computer AI can't just blitz the human players; the humans       *
- * need a little time to set up their base, or whatever.  This state just waits for            *
- * a certain period of time, then goes into hunt mode.                                         *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  Returns with the delay before calling this routine again.                          *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/18/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
-int FootClass::Mission_Timed_Hunt(void)
-{
-    int rndmax;
-    int changed = 0; // has the unit changed into Hunt mode?
-
-    if (!House->IsHuman) {
-
-        /*
-        ** Jump into HUNT mode if we're supposed to Blitz, and the EndCountDown
-        ** has expired, or if our owning house has lost more than 1/4 of its units
-        ** (it gets mad at you)
-        */
-        if ((MPlayerBlitz && House->BlitzTime == 0) || House->CurUnits < ((House->MaxUnit * 4) / 5)) {
-            Assign_Mission(MISSION_HUNT);
-            changed = 1;
-        }
-
-        /*
-        ** Jump into HUNT mode on a random die roll; the computer units will periodically
-        ** "snap out" of their daze, and begin hunting.  Try to time it so that all
-        ** units will be hunting within 10 minutes (600 calls to this routine).
-        */
-        if (MPlayerBases) {
-            rndmax = 5000;
-        } else {
-            rndmax = 1000;
-        }
-
-        if (Random_Pick(0, rndmax) == 1) {
-            Assign_Mission(MISSION_HUNT);
-            changed = 1;
-        }
-
-        /*
-        ** If this unit is still just sitting in Timed Hunt mode, call Guard Area
-        ** so it doesn't just sit there stupidly.
-        */
-        if (!changed) {
-            Mission_Guard_Area();
-        }
-    }
-
-    return (TICKS_PER_SECOND + Random_Pick(0, 4)); // call me back in 1 second.
-}
-
-/***********************************************************************************************
  * FootClass::Stop_Driver -- This routine clears the driving state of the object.              *
  *                                                                                             *
  *    This is the counterpart routine to the Start_Driver function. It clears the driving      *
@@ -784,6 +730,10 @@ bool FootClass::Start_Driver(COORDINATE& headto)
         **	Check for crate goodie finder here.
         */
         if (Map[Coord_Cell(headto)].Goodie_Check(this)) {
+            if (!IsActive) {
+                return (false);
+            }
+
             return (true);
         }
 
@@ -841,8 +791,17 @@ COORDINATE FootClass::Sort_Y(void) const
  *=============================================================================================*/
 void FootClass::Stun(void)
 {
+    if (Flagged != HOUSE_NONE) {
+        HouseClass::As_Pointer(Flagged)->Flag_Attach(Coord_Cell(Coord));
+    }
+
     Assign_Destination(TARGET_NONE);
     Path[0] = FACING_NONE;
+
+    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+        Path[0] = FACING_NONE;
+    }
+
     Stop_Driver();
     TechnoClass::Stun();
 }
@@ -1058,7 +1017,7 @@ bool FootClass::Unlimbo(COORDINATE coord, DirType dir)
         /*
         **	Start in a still (non-moving) state.
         */
-        Path[0] = FACING_NONE;
+        memset(Path, FACING_NONE, sizeof(Path));
         return (true);
     }
     return (false);
@@ -1082,7 +1041,9 @@ bool FootClass::Unlimbo(COORDINATE coord, DirType dir)
 void FootClass::Assign_Mission(MissionType order)
 {
     if (What_Am_I() != RTTI_UNIT || *(UnitClass*)this != UNIT_GUNBOAT) {
-        Path[0] = FACING_NONE;
+        if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+            Path[0] = FACING_NONE;
+        }
     }
     TechnoClass::Assign_Mission(order);
 }
@@ -1135,9 +1096,13 @@ bool FootClass::Limbo(void)
  * HISTORY:                                                                                    *
  *   12/30/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType FootClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType FootClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
-    ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source);
+    ResultType result = TechnoClass::Take_Damage(damage, distance, warhead, source, unk);
+
+    if (!House->IsHuman && result == RESULT_HALF && Mission != MISSION_FIND_CRATE) {
+        Assign_Mission(MISSION_FIND_CRATE);
+    }
 
     if (result != RESULT_NONE && Team) {
 
@@ -1155,7 +1120,9 @@ ResultType FootClass::Take_Damage(int& damage, int distance, WarheadType warhead
             */
             WeaponType weap = WEAPON_NONE;
             if (As_Techno(TarCom)) {
-                weap = As_Techno(TarCom)->Techno_Type_Class()->Primary;
+                if (As_Techno(TarCom)->IsActive) {
+                    weap = As_Techno(TarCom)->Techno_Type_Class()->Primary;
+                }
             }
             bool tweap = (weap != WEAPON_NONE && weap != WEAPON_NIKE);
 
@@ -1179,7 +1146,7 @@ ResultType FootClass::Take_Damage(int& damage, int distance, WarheadType warhead
                 &&
                 //				!Target_Legal(NavCom) &&
                 (Mission == MISSION_AMBUSH || Mission == MISSION_GUARD || Mission == MISSION_RESCUE
-                 || Mission == MISSION_GUARD_AREA || Mission == MISSION_ATTACK || Mission == MISSION_TIMED_HUNT)) {
+                 || Mission == MISSION_GUARD_AREA || Mission == MISSION_ATTACK)) {
 
                 /*
                 **	Assign the source of the damage as the new target. This occurs for the computer
@@ -1193,11 +1160,11 @@ ResultType FootClass::Take_Damage(int& damage, int distance, WarheadType warhead
                     ** mode, "snap out of it" into HUNT mode; otherwise, assign
                     ** HUNT as the next mission through the normal mission queue.
                     */
-                    if (Mission == MISSION_TIMED_HUNT) {
-                        Set_Mission(MISSION_HUNT);
-                    } else {
-                        Assign_Mission(MISSION_HUNT);
-                    }
+                    //if (Mission == MISSION_TIMED_HUNT) {
+                    //    Set_Mission(MISSION_HUNT);
+                    //} else {
+                    Assign_Mission(MISSION_HUNT);
+                    //}
                     Assign_Target(source->As_Target());
                 } else {
                     if (In_Range(source)) {
@@ -1370,6 +1337,8 @@ void FootClass::Active_Click_With(ActionType action, CELL cell)
 void FootClass::Per_Cell_Process(bool center)
 {
     //	if (center) {
+    DamagePacketData* ddp;
+    CELL cell = Coord_Cell(Coord);
 
     /*
     **	Clear any unloading flag if necessary.
@@ -1415,7 +1384,9 @@ void FootClass::Per_Cell_Process(bool center)
                 || Mission == MISSION_HUNT)
             && inrange) {
             Assign_Destination(TARGET_NONE);
-            Path[0] = FACING_NONE;
+            if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                Path[0] = FACING_NONE;
+            }
         }
     }
 
@@ -1428,9 +1399,264 @@ void FootClass::Per_Cell_Process(bool center)
     }
     //	}
 
-    Map[Coord_Cell(Coord)].Goodie_Check(this, true);
+    if (center && Flagged == HOUSE_NONE) {
+        HousesType owner = Owner();
+        HousesType team = HouseClass::As_Pointer(owner)->ActLike;
+        if (Map[cell].IsFlagged
+            && ((GameParams.IsCaptureTheFlag && Map[cell].Owner != team)
+                || (GameParams.Football
+                    && ((GameParams.FootballNumFlags == 2 && Map[cell].Owner == team)
+                        || (GameParams.FootballNumFlags == 1 && Map[cell].Owner == HOUSE_GREEN_TEAM))))) {
+            HouseClass::As_Pointer(Map[cell].Owner)->Flag_Attach(this);
+
+            if (GameToPlay == GAME_HOST) {
+                /*
+				** Loose cloak power up once you pick up a flag.
+				*/
+                if (IsCloakable) {
+                    Do_Uncloak();
+                    IsCloakable = false;
+                }
+
+                /*
+				** Loose all powerups if server option enabled.
+				*/
+                if (GameParams.LosePowerups && GameParams.IsCrates) {
+                    Mod3 = 0;
+                    Mod2 = 0;
+                    Mod4 = 0;
+                    Make_Techno_Packet_Data(TECHNO_PACKET_DATA_DAMAGE, 0);
+                    Make_Techno_Packet_Data(TECHNO_PACKET_DATA_SPEED, 0);
+                    Make_Techno_Packet_Data(TECHNO_PACKET_DATA_ROF, 0);
+                }
+
+                Timer1.Set(0);
+                TechnoUnk2 = false;
+                TechnoUnk3 = false;
+                Make_Techno_Packet_Data(TECHNO_PACKET_DATA_CLOAKABLE, 0);
+                Make_Techno_Packet_Data(TECHNO_PACKET_DATA_0, 0);
+                Make_Techno_Packet_Data(TECHNO_PACKET_DATA_1, 0);
+                Mark(MARK_CHANGE);
+                Map.Redraw_Tab();
+            }
+        }
+    }
+
+    if (Flagged != HOUSE_NONE) {
+        HousesType owner = Owner();
+        if (!IsOwnedByPlayer && !HouseClass::As_Pointer(owner)->Is_Ally(PlayerPtr->Class->House)) {
+            Map.Sight_From(Coord_Cell(Coord), Techno_Type_Class()->SightRange + Mod5 / 256, true);
+        }
+
+        if (GameParams.IsCaptureTheFlag && center && GameToPlay == GAME_HOST) {
+            HousesType ctf_owner = Owner();
+            HousesType ctf_team = HouseClass::As_Pointer(ctf_owner)->ActLike;
+
+            if (cell == HouseClass::As_Pointer(ctf_team)->FlagHome && !HouseClass::As_Pointer(ctf_team)->IsActive
+                && (ctf_team == HOUSE_BLUE_TEAM || ctf_team == HOUSE_ORANGE_TEAM || ctf_team == HOUSE_GREEN_TEAM
+                    || ctf_team == HOUSE_GREY_TEAM)) {
+                HousesType flag_house = Flagged;
+                HouseClass* flag_hptr = HouseClass::As_Pointer(flag_house);
+                flag_hptr->Flag_To_Die();
+                flag_hptr->Flag_Attach(flag_hptr->FlagHome, false);
+                flag_hptr->IsUnk1 = true;
+
+                if (!GameParams.ResetTeamsInCTF) {
+                    flag_hptr->Timer1.Set(60);
+                }
+
+                Announce_Goal(ctf_owner, ctf_team, flag_house);
+                int points = Calculate_Points(ctf_owner);
+
+                for (HousesType mp_house = HOUSE_MULTI1; mp_house < HOUSE_MULTI100; mp_house++) {
+                    HouseClass* mp_hptr = HouseClass::As_Pointer(mp_house);
+
+                    if (GameParams.ResetTeamsInCTF && (mp_hptr->Is_Ally(flag_house) || mp_hptr->Is_Ally(ctf_owner))
+                        && mp_hptr->IsHuman) {
+                        mp_hptr->Flag_To_Die();
+                        mp_hptr->Int3++;
+                    }
+
+                    if (mp_hptr->Is_Ally(ctf_owner) && mp_hptr->IsHuman && mp_hptr->IsActive
+                        && stricmp(mp_hptr->Name, Text_String(TXT_HUNTER)) != 0) {
+                        mp_hptr->Int2 += 6 * points;
+                        Map.Color_List_Update_Points(mp_hptr->Name, mp_hptr->Int2);
+                        TeamPoints[ctf_team] += 6 * points;
+                        Map.Color_List_Draw_Points(ctf_team - 6);
+                        Map.Flag_To_Redraw();
+
+                        if (DebugLogTeams) {
+                            char msg[300];
+                            sprintf(msg,
+                                    "*Added %d to Team %d for player %s (flag cap)\n",
+                                    6 * points,
+                                    ctf_team - 6,
+                                    mp_hptr->Name);
+                            CCDebugString(msg);
+                        }
+                    }
+
+                    if (mp_house == ctf_owner && stricmp(mp_hptr->Name, Text_String(TXT_HUNTER)) != 0) {
+                        mp_hptr->Int2 += 3 * points;
+                        Map.Color_List_Update_Points(mp_hptr->Name, mp_hptr->Int2);
+                        TeamPoints[ctf_team] += 3 * points;
+                        Map.Color_List_Draw_Points(ctf_team - 6);
+                        Map.Flag_To_Redraw();
+
+                        if (DebugLogTeams) {
+                            char msg[300];
+                            sprintf(msg,
+                                    "*Added %d to Team %d for player %s (hero cap)\n",
+                                    3 * points,
+                                    ctf_team - 6,
+                                    mp_hptr->Name);
+                            CCDebugString(msg);
+                        }
+                    }
+                }
+
+                ddp = new DamagePacketData;
+                ddp->Whom = Build_Target(KIND_TEAM, flag_house - 6);
+                ddp->Source = Build_Target(KIND_TEAM, ctf_owner);
+                ddp->Warhead = WARHEAD_NONE;
+                DamagePacketDatas.Add(ddp);
+            }
+        } else if (GameParams.Football && center && GameToPlay == GAME_HOST) {
+            HousesType fb_owner = Owner();
+            HousesType fb_team = HouseClass::As_Pointer(fb_owner)->ActLike;
+            CellClass& map_cell = Map[cell];
+            if (map_cell.Overlay == OVERLAY_CONCRETE && ::Distance(cell, HouseClass::As_Pointer(fb_team)->FlagHome) < 3
+                && !HouseClass::As_Pointer(fb_team)->IsToDie
+                && (fb_team == HOUSE_BLUE_TEAM || fb_team == HOUSE_ORANGE_TEAM || fb_team == HOUSE_GREEN_TEAM
+                    || fb_team == HOUSE_GREY_TEAM)) {
+                HouseClass* fb_hptr = HouseClass::As_Pointer(fb_team);
+                int fb_index = fb_team - 6;
+                fb_hptr->Make_CTF_Packet_Picked_Up(FootballCells[fb_index]);
+
+                if (FootballCells[fb_index] == FlagHomes[fb_index] + fb_index) {
+                    FootballCells[fb_index] = FlagHomes[fb_index == 0] + fb_index;
+                } else {
+                    FootballCells[fb_index] = FlagHomes[fb_index] + fb_index;
+                }
+
+                fb_hptr->Make_CTF_Packet_Dropped(FootballCells[fb_index]);
+                Announce_Goal(fb_owner, fb_team, HOUSE_NONE);
+                int fb_points = Calculate_Points(fb_owner);
+
+                if (fb_points > 0) {
+                    for (HousesType mp_house2 = HOUSE_MULTI1; mp_house2 < HOUSE_MULTI100; mp_house2++) {
+                        HouseClass* mp_hptr2 = HouseClass::As_Pointer(mp_house2);
+
+                        if (mp_hptr2->Is_Ally(fb_owner) && mp_hptr2->IsHuman && mp_hptr2->IsActive
+                            && stricmp(mp_hptr2->Name, Text_String(TXT_HUNTER)) != 0) {
+                            mp_hptr2->Int2 += 3 * fb_points;
+                            Map.Color_List_Update_Points(mp_hptr2->Name, mp_hptr2->Int2);
+                            TeamPoints[fb_team] += 3 * fb_points;
+                            Map.Color_List_Draw_Points(fb_team - 6);
+                            Map.Flag_To_Redraw();
+
+                            if (DebugLogTeams) {
+                                char msg[300];
+                                sprintf(msg,
+                                        "*Added %d to Team %d for player %s (goal)\n",
+                                        3 * fb_points,
+                                        fb_team - 6,
+                                        mp_hptr2->Name);
+                                CCDebugString(msg);
+                            }
+                        }
+
+                        if (mp_house2 == fb_owner && stricmp(mp_hptr2->Name, Text_String(TXT_HUNTER)) != 0) {
+                            mp_hptr2->Int2 += fb_points;
+                            Map.Color_List_Update_Points(mp_hptr2->Name, mp_hptr2->Int2);
+                            TeamPoints[fb_team] += fb_points;
+                            Map.Color_List_Draw_Points(fb_team - 6);
+                            Map.Flag_To_Redraw();
+
+                            if (DebugLogTeams) {
+                                char msg[300];
+                                sprintf(msg,
+                                        "*Added %d to Team %d for player %s (hero goal)\n",
+                                        fb_points,
+                                        fb_team - 6,
+                                        mp_hptr2->Name);
+                                CCDebugString(msg);
+                            }
+                        }
+                    }
+
+                    ddp = new DamagePacketData;
+                    ddp->Whom = Build_Target(KIND_TEAM, fb_team - 6);
+                    ddp->Source = Build_Target(KIND_TEAM, fb_owner);
+                    ddp->Warhead = WARHEAD_NONE;
+                    DamagePacketDatas.Add(ddp);
+                }
+            }
+        }
+    }
+
+    // Not in original?
+    // Map[Coord_Cell(Coord)].Goodie_Check(this, true);
 
     TechnoClass::Per_Cell_Process(center);
+}
+
+/***********************************************************************************************
+ * FootClass::Flag_Attach -- Attaches a house flag to this unit.                               *
+ *                                                                                             *
+ *    This routine will attach a house flag to this unit.                                      *
+ *                                                                                             *
+ * INPUT:   house -- The house that is having its flag attached to it.                         *
+ *                                                                                             *
+ * OUTPUT:  Was the house flag successfully attached to this unit?                             *
+ *                                                                                             *
+ * WARNINGS:   A unit can only carry one flag at a time. This might be a reason for failure    *
+ *             of this routine.                                                                *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *=============================================================================================*/
+bool FootClass::Flag_Attach(HousesType house, bool unk)
+{
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return (false);
+    }
+
+    if (house != HOUSE_NONE && Flagged == HOUSE_NONE) {
+        Flagged = house;
+        Mark(MARK_CHANGE);
+        return (true);
+    }
+
+    return (false);
+}
+
+/***********************************************************************************************
+ * FootClass::Flag_Remove -- Removes the house flag from this unit.                            *
+ *                                                                                             *
+ *    This routine will remove the house flag that is attached to this unit.                   *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  Was the flag successfully removed?                                                 *
+ *                                                                                             *
+ * WARNINGS:   This routine doesn't put the flag into a new location. That operation must      *
+ *             be performed or else the house flag will cease to exist.                        *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *=============================================================================================*/
+bool FootClass::Flag_Remove(bool unk)
+{
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return (false);
+    }
+
+    if (Flagged != HOUSE_NONE) {
+        Flagged = HOUSE_NONE;
+        Mark(MARK_CHANGE);
+        return (true);
+    }
+
+    return (false);
 }
 
 /***************************************************************************
@@ -1672,7 +1898,7 @@ z * FootClass::Assign_Destination -- Assigns specified destination to NavCom.   
  * HISTORY:                                                                                    *
  *   07/08/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void FootClass::Assign_Destination(TARGET target)
+void FootClass::Assign_Destination(TARGET target, int unk)
 {
     NavCom = target;
 }
@@ -1821,7 +2047,7 @@ void FootClass::Death_Announcement(TechnoClass const* source) const
                         || Options.IsDeathAnnounce) {   // ST
                         if (!Options.IsDeathAnnounce) { // MBL 02.06.2020
                             // Speak(VOX_UNIT_LOST);
-                            Speak(VOX_UNIT_LOST, House, Center_Coord());
+                            // Speak(VOX_UNIT_LOST, House, Center_Coord());
                         } else {
                             switch (House->ActLike) {
                             case HOUSE_GOOD:
@@ -1922,7 +2148,9 @@ void FootClass::Detach(TARGET target, bool all)
     */
     if (NavCom == target) {
         NavCom = TARGET_NONE;
-        Path[0] = FACING_NONE;
+        if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+			Path[0] = FACING_NONE;
+		}
         Restore_Mission();
     }
 
@@ -1931,7 +2159,9 @@ void FootClass::Detach(TARGET target, bool all)
     **	toward the target to get within range, then abort the path.
     */
     if (TarCom == target && House->IsHuman) {
-        Path[0] = FACING_NONE;
+        if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+			Path[0] = FACING_NONE;
+		}
     }
 }
 
@@ -2068,4 +2298,138 @@ COORDINATE FootClass::Likely_Coord(void) const
         return (Head_To_Coord());
     }
     return (Target_Coord());
+}
+
+void FootClass::Add_Movement_Packet(CELL cell, FacingType facing)
+{
+	MovePacketData *data = NULL;
+	if (GameToPlay == GAME_HOST) {
+		data = new MovePacketData;
+		data->Whom = As_Target();
+		data->Cell = cell;
+		data->Facing = facing;
+		MovePacketDatas.Add(data);
+	}
+}
+
+CELL FootClass::Find_Crate(bool unk)
+{
+	int xx;
+	int x_offset[] = { 1, 0, -1, 0 };
+	int y_offset[] = { 0, 1, 0, -1 };
+	int x;
+	int y;
+	int j = 0;
+	int yy;
+	int i;
+	CELL crate_cell;
+	CELL start_cell;
+	int k;
+	CellClass *cptr;
+
+
+	start_cell = Coord_Cell(Coord);
+	x = Cell_X(start_cell);
+	y = Cell_Y(start_cell);
+
+	for (i = 1; i < 40; i++) {
+
+		xx = x - i;
+		yy = y - i;
+
+		for (j = 0; j <= 3; j++) {
+			for (k = 0; 2 * i > k; k++) {
+				crate_cell = XY_Cell(xx, yy);
+				if (Map.In_Radar(crate_cell)) {
+					cptr = &Map[crate_cell];
+					if (Overlay_Is_Crate_Alt(cptr->Overlay, unk)) {
+						return crate_cell;
+					}
+				}
+
+				xx += x_offset[j];
+				if (Map.MapCellX + Map.MapCellWidth - 1 < xx) {
+					xx = Map.MapCellX + Map.MapCellWidth - 1;
+				}
+
+				if (xx < Map.MapCellX) {
+					xx = Map.MapCellX;
+				}
+
+				yy += y_offset[j];
+				if (Map.MapCellY + Map.MapCellHeight - 1 < yy) {
+					yy = Map.MapCellY + Map.MapCellHeight - 1;
+				}
+
+				if (yy < Map.MapCellY) {
+					yy = Map.MapCellY;
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int FootClass::Mission_Find_Crate(void)
+{
+	CELL cell;
+	if (House->IsHuman) {
+		Assign_Mission(MISSION_GUARD);
+	}
+
+	if (!Target_Legal(NavCom) && !IsDriving) {
+		bool full_strength = Health_Ratio() == 256 ? true : false;
+		if (!full_strength || Sum_Object_Stats(this) < 2 * WDTCrateIonFactor / 3) {
+			cell = Find_Crate(full_strength);
+			if (cell != 0) {
+				Assign_Destination(::As_Target(cell));
+			} else {
+				Assign_Mission(MISSION_HUNT);
+			}
+		} else {
+			Assign_Mission(MISSION_HUNT);
+		}
+	}
+
+	return (TICKS_PER_SECOND * 5);
+}
+
+void Announce_Goal(HousesType house, HousesType team, HousesType opponent)
+{
+	char str[500];
+	HouseClass *hptr;
+	char team2str[100];
+	char team1str[100];
+
+	if (team == HOUSE_BLUE_TEAM) {
+		strcpy(team1str, Text_String(TXT_BLUE_TEAM));
+	} else if (team == HOUSE_ORANGE_TEAM) {
+		strcpy(team1str, Text_String(TXT_ORANGE_TEAM));
+	} else if (team == HOUSE_GREEN_TEAM) {
+		strcpy(team1str, Text_String(TXT_GREEN_TEAM));
+	} else if (team == HOUSE_GREY_TEAM) {
+		strcpy(team1str, Text_String(TXT_GREY_TEAM));
+	}
+
+	if (opponent == HOUSE_BLUE_TEAM) {
+		strcpy(team2str, Text_String(TXT_BLUE_TEAM));
+	} else if (opponent == HOUSE_ORANGE_TEAM) {
+		strcpy(team2str, Text_String(TXT_ORANGE_TEAM));
+	} else if (opponent == HOUSE_GREEN_TEAM) {
+		strcpy(team2str, Text_String(TXT_GREEN_TEAM));
+	} else if (opponent == HOUSE_GREY_TEAM) {
+		strcpy(team2str, Text_String(TXT_GREY_TEAM));
+	}
+
+	hptr = HouseClass::As_Pointer(house);
+
+	if ( GameParams.IsCaptureTheFlag ) {
+		sprintf(str, Text_String(TXT_CAPTURED_FLAG), hptr->Name, team1str, team2str);
+	} else {
+		sprintf(str, Text_String(TXT_SCORES_GOAL), hptr->Name, team1str);
+	}
+
+	Sound_Effect(VOC_BLEEP);
+	Messages.Add_Message(str, 5, TPF_6POINT | TPF_FULLSHADOW | TPF_BRIGHT_COLOR, 0);
 }

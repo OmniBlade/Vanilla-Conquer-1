@@ -44,7 +44,7 @@ class FactoryClass : private StageClass
 public:
     FactoryClass(void);
     FactoryClass(NoInitClass const& x)
-        : StageClass(x){};
+        : StageClass(x) {};
     ~FactoryClass(void);
     static void* operator new(size_t size) noexcept;
     static void* operator new(size_t, void* ptr)
@@ -72,7 +72,7 @@ public:
     {
         return (Fetch_Rate() != 0);
     };
-    bool Set(TechnoTypeClass const& object, HouseClass& house);
+    bool Set(TechnoTypeClass const& object, HouseClass& house, bool unk);
     bool Set(int const& type, HouseClass& house);
     bool Start(void);
     bool Suspend(void);
@@ -176,20 +176,25 @@ private:
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
+public:
+    bool Delete_Allowed()
+    {
+        return true;
+    }
 };
 
 // Sole macros.
 
-#define DELETE_FACTORY(ptr)				\
-if (ptr->Delete_Allowed()) {			\
-	delete ptr;							\
-}										\
+#define DELETE_FACTORY(ptr)                                                                                            \
+    if (ptr->Delete_Allowed()) {                                                                                       \
+        delete ptr;                                                                                                    \
+    }
 
-#define DELETE_OR_ABANDON_FACTORY(ptr)	\
-if (ptr->Delete_Allowed()) {			\
-	delete ptr;							\
-} else {								\
-	ptr->Abandon(); 					\
-}	
+#define DELETE_OR_ABANDON_FACTORY(ptr)                                                                                 \
+    if (ptr->Delete_Allowed()) {                                                                                       \
+        delete ptr;                                                                                                    \
+    } else {                                                                                                           \
+        ptr->Abandon();                                                                                                \
+    }
 
 #endif

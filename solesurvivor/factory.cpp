@@ -363,7 +363,7 @@ bool FactoryClass::Has_Changed(void)
  * HISTORY:                                                                                    *
  *   12/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool FactoryClass::Set(TechnoTypeClass const& object, HouseClass& house)
+bool FactoryClass::Set(TechnoTypeClass const& object, HouseClass& house, bool unk)
 {
     Validate();
     /*
@@ -379,10 +379,12 @@ bool FactoryClass::Set(TechnoTypeClass const& object, HouseClass& house)
     Set_Rate(0);
     Set_Stage(0);
 
-    /*
-    **	Create an object of the type requested.
-    */
-    Object = (TechnoClass*)object.Create_One_Of(&house);
+    if (!unk) {
+        /*
+		**	Create an object of the type requested.
+		*/
+        Object = (TechnoClass*)object.Create_One_Of(&house);
+    }
 
     if (Object) {
         House = Object->House;

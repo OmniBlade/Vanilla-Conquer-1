@@ -62,7 +62,7 @@ public:
     **	Member function prototypes.
     */
     void Fly_Speed(int speed, MPHType maximum);
-    ImpactType Physics(COORDINATE& coord, DirType facing);
+    ImpactType Physics(COORDINATE& coord, DirType facing, int distance);
     MPHType Get_Speed(void) const
     {
         return (SpeedAdd);

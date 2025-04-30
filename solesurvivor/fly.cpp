@@ -55,7 +55,7 @@
  *   04/24/1994 JLB : Created.                                                                 *
  *   06/05/1995 JLB : Simplified to just do movement.                                          *
  *=============================================================================================*/
-ImpactType FlyClass::Physics(COORDINATE& coord, DirType facing)
+ImpactType FlyClass::Physics(COORDINATE& coord, DirType facing, int distance)
 {
     if (SpeedAdd != MPH_IMMOBILE) {
         int actual = (int)SpeedAdd + SpeedAccum;
@@ -63,6 +63,14 @@ ImpactType FlyClass::Physics(COORDINATE& coord, DirType facing)
         SpeedAccum = result.rem;
         actual -= result.rem;
         COORDINATE old = coord;
+
+        if (distance <= 0) {
+			distance = 10;
+		}
+		actual = (actual * SpeedScale) / 256;
+		if (actual > distance) {
+			actual = distance;
+		}
 
         /*
         **	If movement occurred that is at least one
@@ -91,7 +99,7 @@ ImpactType FlyClass::Physics(COORDINATE& coord, DirType facing)
             **	If the new coordinate is off the edge of the world, then report
             **	this.
             */
-            if (newcoord & HIGH_COORD_MASK /*|| !Map.In_Radar(Coord_Cell(newcoord))*/) {
+            if (!Coord_Legal(newcoord) /*|| !Map.In_Radar(Coord_Cell(newcoord))*/) {
                 coord = old;
                 return (IMPACT_EDGE);
             }

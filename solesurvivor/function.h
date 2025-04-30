@@ -235,7 +235,6 @@ inline CELL Coord_YCell(COORDINATE coord)
 #include "event.h"
 #include "base.h" // defines the AI's pre-built base
 #include "scenario.h"
-#include "ipxmgr.h"
 #include "combuf.h"
 #include "connect.h"
 #include "connmgr.h"
@@ -244,6 +243,7 @@ inline CELL Coord_YCell(COORDINATE coord)
 #include "ipxaddr.h"
 #include "common/miscasm.h"
 #include "common/face.h"
+#include "wdt.h"
 /****************************************************************************
 **	This is a "node", used for the lists of available games & players.  The
 **	'Game' structure is used for games; the 'Player' structure for players.
@@ -291,6 +291,10 @@ void Speak_AI(void);
 void Stop_Speaking(void);
 void Sound_Effect(VocType voc, COORDINATE coord = 0, int variation = 1);
 bool Is_Speaking(void);
+// Sole additions
+void Play_Wave(char* filename, bool is_special);
+int Priority_Sound_Effect(VocType voc, VolType volume, int variation = 1, signed short panvalue = 0);
+int Priority_Sound_Effect(VocType voc);
 
 /*
 **	COMBAT.CPP
@@ -309,7 +313,7 @@ TechnoTypeClass const* Fetch_Techno_Type(RTTIType type, int id);
 char const* Fading_Table_Name(char const* base, TheaterType theater);
 void Unselect_All(void);
 void Unselect_All_Except(ObjectClass* object);
-void Play_Movie(char const* name, ThemeType theme = THEME_NONE, bool clrscrn = true);
+void Play_Movie(char const* name, ThemeType theme = THEME_NONE, bool clrscrn = true, bool unk = false);
 bool Main_Loop();
 TheaterType Theater_From_Name(char const* name);
 // DirType Rotation_Calc(DirType current, DirType desired, int rate);
@@ -408,6 +412,7 @@ DirType Direction8(COORDINATE coord1, COORDINATE coord2);
 int Distance(CELL coord1, CELL coord2);
 int Distance(COORDINATE coord1, COORDINATE coord2);
 short const* Coord_Spillage_List(COORDINATE coord, int maxsize);
+bool Coord_Legal(COORDINATE coord);
 // void Move_Point(unsigned short &x, unsigned short &y, DirType dir, unsigned short distance);
 
 /*
@@ -503,6 +508,9 @@ int Version_Number(void);
 void Save_Recording_Values(void);
 void Load_Recording_Values(void);
 
+int Calculate_String_CRC(char* buffer, int lengh);
+void Add_CRC(unsigned int* crc, unsigned int val);
+
 /*
 ** JSHELL.CPP
 */
@@ -570,7 +578,7 @@ bool Init_Network(void);
 void Shutdown_Network(void);
 bool Remote_Connect(void);
 void Destroy_Connection(int id, int error);
-bool Process_Global_Packet(GlobalPacketType* packet, IPXAddressClass* address);
+//bool Process_Global_Packet(GlobalPacketType* packet, IPXAddressClass* address);
 uint32_t Compute_Name_CRC(char* name);
 void Net_Reconnect_Dialog(int reconn, int fresh, int oldest_index, unsigned int timeval);
 
@@ -601,7 +609,7 @@ bool Queue_Mission(TARGET whom, MissionType mission, TARGET target, TARGET desti
 bool Queue_Options(void);
 bool Queue_Exit(void);
 void Queue_AI(void);
-void Add_CRC(uint32_t* crc, uint32_t val);
+void OLD_Add_CRC(uint32_t* crc, uint32_t val);
 
 /*
 **	REINF.CPP
@@ -690,7 +698,7 @@ void Remove_From_List(void** list, int* index, void* ptr);
 void* Conquer_Build_Fading_Table(void const* palette, void* dest, int color, int frac);
 void Fat_Put_Pixel(int x, int y, int color, int size, GraphicViewPortClass&);
 void strtrim(char* buffer);
-long Get_EAX(void);
+int Get_EAX(void);
 
 /*
 **	TARCOM.CPP
@@ -724,7 +732,8 @@ int Terrain_Cost(CELL cell, FacingType facing);
 /*
 **	Inline miscellaneous functions.
 */
-#define XYP_COORD(x, y) (unsigned)(((x)*ICON_LEPTON_W) / CELL_PIXEL_W + ((((y)*ICON_LEPTON_H) / CELL_PIXEL_H) << 16))
+#define XYP_COORD(x, y)                                                                                                \
+    (unsigned)(((x) * ICON_LEPTON_W) / CELL_PIXEL_W + ((((y) * ICON_LEPTON_H) / CELL_PIXEL_H) << 16))
 
 inline int Cell_To_Lepton(int cell)
 {
@@ -1107,6 +1116,10 @@ inline CELL CellClass::Cell_Number(void) const
 
 void WWDOS_Shutdown(void);
 
+inline CELL Cell_Mid(CELL cell1, CELL cell2)
+{
+    return Coord_Cell(Coord_Mid(Cell_Coord(cell1), Cell_Coord(cell2)));
+}
 #endif
 
 #ifdef REMASTER_BUILD
@@ -1123,7 +1136,6 @@ void On_Achievement_Event(const HouseClass* player_ptr, const char* achievement_
 
 /* Holds the title filename. On 320x200, set to TITLE.CPS, else HTITLE.PCX. */
 extern char* TitlePicture;
-
 
 // Sole stuff
 void Get_Or_Set_Current_Directory(bool get);

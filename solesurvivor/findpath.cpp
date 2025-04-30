@@ -900,6 +900,7 @@ end_of_list:
     }
     if (Debug_Find_Path && DrawPath) {
         Map.Flag_To_Redraw(true);
+        Map.IsToDrawUnknown = true;
     }
 /*
 **	Optimize the move list but only necessary if

@@ -35,7 +35,7 @@
 #ifndef FOOT_H
 #define FOOT_H
 
-#include "target.h"
+//#include "target.h"
 #include "type.h"
 #include "techno.h"
 #include "ftimer.h"
@@ -50,6 +50,11 @@ class BuildingClass;
 class FootClass : public TechnoClass
 {
 public:
+    /*
+    **  This records the house flag that this object is currently carrying.
+    */
+    HousesType Flagged;
+
     /*
     **	If this unit has officially joined the team's group, then this flag is
     **	true. A newly assigned unit to a team is not considered part of the
@@ -190,7 +195,7 @@ public:
         : TechnoClass(x)
         , PathDelay(x)
         , Speed(this->Speed)
-        , BaseAttackTimer(x){};
+        , BaseAttackTimer(x) {};
     virtual ~FootClass(void);
     FootClass(HousesType house);
 
@@ -219,7 +224,7 @@ public:
     };
     virtual bool Start_Driver(COORDINATE& headto);
     virtual bool Stop_Driver(void);
-    virtual void Assign_Destination(TARGET target);
+    virtual void Assign_Destination(TARGET target, int unk = 0);
 
     /*
     **	Display and rendering support functionality. Supports imagery and how
@@ -239,7 +244,7 @@ public:
     **	Combat related.
     */
     virtual void Stun(void);
-    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0);
+    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0, bool unk = false);
     virtual void Death_Announcement(TechnoClass const* source = 0) const;
 
     /*
@@ -257,8 +262,9 @@ public:
     virtual int Mission_Attack(void);
     virtual int Mission_Guard(void);
     virtual int Mission_Hunt(void);
-    virtual int Mission_Timed_Hunt(void);
+    // virtual int Mission_Timed_Hunt(void);
     virtual int Mission_Guard_Area(void);
+    virtual int Mission_Find_Crate(void);
 
 /*
 **	Scenario and debug support.
@@ -271,14 +277,18 @@ public:
     **	Movement and animation.
     */
     virtual void Per_Cell_Process(bool center);
+    virtual CELL Find_Crate(bool unk);
     virtual void Approach_Target(void);
-    virtual void Fixup_Path(PathType*){};
+    virtual void Fixup_Path(PathType*) {};
     virtual void Set_Speed(int speed);
     virtual MoveType Can_Enter_Cell(CELL, FacingType = FACING_NONE) const;
     int Optimize_Moves(PathType* path, MoveType threshhold);
     virtual void Override_Mission(MissionType mission, TARGET tarcom, TARGET navcom);
     virtual bool Restore_Mission(void);
 
+    bool Flag_Attach(HousesType house, bool unk);
+    bool Flag_Remove(bool unk);
+    
     /*
     **	File I/O.
     */
@@ -288,6 +298,8 @@ public:
     CELL Safety_Point(CELL src, CELL dst, int start, int max);
     int Rescue_Mission(TARGET tarcom);
 
+    void Add_Movement_Packet(CELL cell, FacingType facing);
+    
 private:
     int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold);
     PathType* Find_Path(CELL dest, FacingType* final_moves, int maxlen, MoveType threshhold);
