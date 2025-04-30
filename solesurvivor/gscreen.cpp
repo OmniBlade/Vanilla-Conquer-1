@@ -49,6 +49,10 @@
 #include "common/filepcx.h"
 
 GadgetClass* GScreenClass::Buttons = 0;
+const void* MsgLeftShape;
+const void* MsgMidShape;
+const void* MsgRtShape;
+const void* StatDispShape;
 
 /***********************************************************************************************
  * GScreenClass::GScreenClass -- Default constructor for GScreenClass.                         *
@@ -69,6 +73,7 @@ GScreenClass::GScreenClass(void)
 {
     IsToUpdate = true;
     IsToRedraw = true;
+    IsToDrawUnknown = true;
 }
 
 /***********************************************************************************************
@@ -99,6 +104,11 @@ void GScreenClass::One_Time(void)
 {
     Buttons = 0;
     HiddenPage.Clear();
+
+    MsgLeftShape = MFCD::Retrieve("MSGLEFT.SHP");
+    MsgMidShape = MFCD::Retrieve("MSGMID.SHP");
+    MsgRtShape = MFCD::Retrieve("MSGRT.SHP");
+    StatDispShape = MFCD::Retrieve("STATDISP.SHP");
 }
 
 /***********************************************************************************************
@@ -386,10 +396,64 @@ void GScreenClass::Render(void)
         ** Draw the multiplayer message system to the Hidpage at this point.
         ** This way, they'll Blit along with the rest of the map.
         */
-        if (Messages.Num_Messages() > 0) {
-            Messages.Set_Width(Lepton_To_Cell(Map.TacLeptonWidth) * ICON_PIXEL_W);
+        if (Messages.Is_To_Redraw() || IsToRedraw) {
+            GraphicViewPortClass* ol = Set_Logic_Page(UnknownViewport2);
+
+            WindowList[WINDOW_EDITOR][0] = 0;
+            WindowList[WINDOW_EDITOR][1] = 0;
+            WindowList[WINDOW_EDITOR][2] = 80;
+            WindowList[WINDOW_EDITOR][3] = 480;
+
+            Change_Window(WINDOW_EDITOR);
+
+            CC_Draw_Shape(MsgLeftShape, 0, 0, 400, WINDOW_EDITOR, SHAPE_NORMAL);
+            CC_Draw_Shape(MsgMidShape, 0, 160, 400, WINDOW_EDITOR, SHAPE_NORMAL);
+            CC_Draw_Shape(MsgRtShape, 0, 320, 400, WINDOW_EDITOR, SHAPE_NORMAL);
+
+            Messages.Flag_To_Redraw();
+            Messages.Draw(UnknownViewport2);
+
+            Set_Logic_Page(ol);
         }
-        Messages.Draw();
+
+        if (StatPanel.Is_Enabled() || IsToRedraw) {
+            GraphicViewPortClass* ol = Set_Logic_Page(UnknownViewport2);
+            WindowList[WINDOW_EDITOR][0] = 0;
+            WindowList[WINDOW_EDITOR][1] = 0;
+            WindowList[WINDOW_EDITOR][2] = 80;
+            WindowList[WINDOW_EDITOR][3] = 480;
+
+            Change_Window(WINDOW_EDITOR);
+
+            CC_Draw_Shape(StatDispShape, 0, 480, 400, WINDOW_EDITOR, SHAPE_NORMAL);
+
+            StatPanel.Enable();
+            StatPanel.Render();
+
+            Set_Logic_Page(ol);
+        }
+
+        if (ShowHelpText) {
+            Show_Key_Commands();
+        } else if (ShowGameParams) {
+            Show_Game_Parms();
+        } else if (ShowKeyCommands) {
+            Show_Keyboard_Commands();
+        } else if (ShowThanksToTesters) {
+            Thanks_to_Testers();
+        }
+
+        if (GameToPlay == GAME_CLIENT && GameParams.IsSquadChannel) {
+            int v8 = SquadGameCountdownTimer.Time();
+
+            if (v8 > 0) {
+                Show_Squad_Game_Prescreen(v8);
+            }
+        }
+
+        if (ShowAcceptedList) {
+            Host_Print_Accepted_List();
+        }
 
 #ifndef REMASTER_BUILD
         Blit_Display();
@@ -470,7 +534,8 @@ void GScreenClass::Blit_Display(void)
     } else {
 #else //(0)
     WWMouse->Draw_Mouse(&HidPage);
-    HidPage.Blit(SeenBuff, 0, 0, 0, 0, HidPage.Get_Width(), HidPage.Get_Height(), false);
+    UnknownViewport2.Blit(
+        UnknownViewport1, 0, 0, 0, 0, UnknownViewport2.Get_Width(), UnknownViewport2.Get_Height());
 #ifdef CHEAT_KEYS
     Add_Current_Screen();
 #endif

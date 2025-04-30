@@ -58,8 +58,15 @@ void GameControlsClass::Process(void)
     /*
     **	Dialog & button dimensions
     */
-    int d_dialog_w = 232 * factor;                               // dialog width
-    int d_dialog_h = 141 * factor;                               // dialog height
+    int d_dialog_w = 232 * factor; // dialog width
+    int d_dialog_h;                // dialog height
+
+    if (GameToPlay != GAME_CLIENT) {
+        d_dialog_h = 157 * factor;
+    } else {
+        d_dialog_h = 127 * factor;
+    }
+
     int d_dialog_x = ((SeenBuff.Get_Width() - d_dialog_w) / 2);  // dialog x-coord
     int d_dialog_y = ((SeenBuff.Get_Height() - d_dialog_h) / 2); // centered y-coord
     int d_dialog_cx = d_dialog_x + (d_dialog_w / 2);             // center x-coord
@@ -77,7 +84,13 @@ void GameControlsClass::Process(void)
     int d_scroll_w = d_dialog_w - (20 * factor);
     int d_scroll_h = 6 * factor;
     int d_scroll_x = d_dialog_x + (10 * factor);
-    int d_scroll_y = d_speed_y + d_speed_h + d_txt6_h + (d_margin1 * 2) + d_txt6_h;
+    int d_scroll_y;
+
+    if (GameToPlay != GAME_CLIENT) {
+        d_scroll_y = d_speed_y + d_speed_h + d_txt6_h + (d_margin1 * 2) + d_txt6_h;
+    } else {
+        d_scroll_y = d_speed_y;
+    }
 
     int d_visual_w = d_dialog_w - (40 * factor);
     int d_visual_h = 9 * factor;
@@ -88,6 +101,11 @@ void GameControlsClass::Process(void)
     int d_sound_h = 9 * factor;
     int d_sound_x = d_dialog_x + (20 * factor);
     int d_sound_y = d_visual_y + d_visual_h + d_margin1;
+
+    int d_voice_w = d_dialog_w - (40 * factor);
+    int d_voice_h = 9 * factor;
+    int d_voice_x = d_dialog_x + (20 * factor);
+    int d_voice_y = d_sound_y + d_sound_h + d_margin1;
 
     int d_ok_w = 20 * factor;
     int d_ok_h = 9 * factor;
@@ -103,6 +121,7 @@ void GameControlsClass::Process(void)
         BUTTON_SCROLLRATE,
         BUTTON_VISUAL,
         BUTTON_SOUND,
+        BUTTON_VOICE,
         BUTTON_OK,
         BUTTON_COUNT,
         BUTTON_FIRST = BUTTON_SPEED,
@@ -118,6 +137,13 @@ void GameControlsClass::Process(void)
     int selection;
     bool pressed = false;
     int curbutton = 0;
+
+    if (GameToPlay != GAME_CLIENT) {
+        curbutton = 0;
+    } else {
+        curbutton = 1;
+    }
+
     TextButtonClass* buttons[BUTTON_COUNT - BUTTON_FIRST];
     TextPrintType style;
 
@@ -146,6 +172,14 @@ void GameControlsClass::Process(void)
                               d_sound_w,
                               d_sound_h);
 
+    TextButtonClass voice_btn(BUTTON_VOICE,
+                              TXT_VOICE_THEMES,
+                              TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
+                              d_voice_x,
+                              d_voice_y,
+                              d_voice_w,
+                              d_voice_h);
+
     TextButtonClass okbtn(
         BUTTON_OK, TXT_OPTIONS_MENU, TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW, d_ok_x, d_ok_y);
     okbtn.X = (SeenBuff.Get_Width() - okbtn.Width) / 2;
@@ -159,10 +193,15 @@ void GameControlsClass::Process(void)
     **	Build button list
     */
     commands = &okbtn;
-    gspeed_btn.Add_Tail(*commands);
+
+    if (GameToPlay != GAME_CLIENT) {
+        gspeed_btn.Add_Tail(*commands);
+    }
+
     scrate_btn.Add_Tail(*commands);
     visual_btn.Add_Tail(*commands);
     sound_btn.Add_Tail(*commands);
+    voice_btn.Add_Tail(*commands);
 
     /*
     **	Init button states
@@ -187,7 +226,8 @@ void GameControlsClass::Process(void)
     buttons[1] = NULL;
     buttons[2] = &visual_btn;
     buttons[3] = &sound_btn;
-    buttons[4] = &okbtn;
+    buttons[4] = &voice_btn;
+    buttons[5] = &okbtn;
 
     /*
     **	Processing loop.
@@ -200,7 +240,7 @@ void GameControlsClass::Process(void)
         /*
         **	Invoke game callback.
         */
-        if (GameToPlay == GAME_NORMAL || GameToPlay == GAME_SKIRMISH) {
+        if (GameToPlay == GAME_NORMAL || OfflineMode) {
             Call_Back();
         } else {
             if (Main_Loop()) {
@@ -239,20 +279,22 @@ void GameControlsClass::Process(void)
             if (curbutton == (BUTTON_SPEED - BUTTON_FIRST)) {
                 style = (TextPrintType)(style | TPF_BRIGHT_COLOR);
             }
-            Fancy_Text_Print(TXT_SPEED, d_speed_x, d_speed_y - d_txt6_h, CC_GREEN, TBLACK, style);
 
-            Fancy_Text_Print(TXT_SLOWER,
-                             d_speed_x,
-                             d_speed_y + d_speed_h + 1,
-                             CC_GREEN,
-                             TBLACK,
-                             TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
-            Fancy_Text_Print(TXT_FASTER,
-                             d_speed_x + d_speed_w,
-                             d_speed_y + d_speed_h + 1,
-                             CC_GREEN,
-                             TBLACK,
-                             TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW | TPF_RIGHT);
+            if (GameToPlay != GAME_CLIENT) {
+                Fancy_Text_Print(TXT_SPEED, d_speed_x, d_speed_y - d_txt6_h, CC_GREEN, TBLACK, style);
+                Fancy_Text_Print(TXT_SLOWER,
+                                 d_speed_x,
+                                 d_speed_y + d_speed_h + 1,
+                                 CC_GREEN,
+                                 TBLACK,
+                                 TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                Fancy_Text_Print(TXT_FASTER,
+                                 d_speed_x + d_speed_w,
+                                 d_speed_y + d_speed_h + 1,
+                                 CC_GREEN,
+                                 TBLACK,
+                                 TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW | TPF_RIGHT);
+            }
 
             /*
             **	Label the scroll rate slider
@@ -311,13 +353,19 @@ void GameControlsClass::Process(void)
             pressed = true;
             break;
 
+        case (BUTTON_VOICE | KN_BUTTON):
+            selection = BUTTON_VOICE;
+            pressed = true;
+            break;
+
         case (BUTTON_OK | KN_BUTTON):
             selection = BUTTON_OK;
             pressed = true;
             break;
 
         case (KN_ESC):
-            process = false;
+            selection = BUTTON_OK;
+            pressed = true;
             break;
 
         case (KN_LEFT):
@@ -347,6 +395,10 @@ void GameControlsClass::Process(void)
                 curbutton = (BUTTON_COUNT - BUTTON_FIRST - 1);
             }
 
+            if (GameToPlay == GAME_CLIENT && curbutton == 0) {
+                curbutton = (BUTTON_COUNT - BUTTON_FIRST - 1);
+            }
+
             if (buttons[curbutton]) {
                 buttons[curbutton]->Turn_On();
                 buttons[curbutton]->Flag_To_Redraw();
@@ -363,6 +415,10 @@ void GameControlsClass::Process(void)
             curbutton++;
             if (curbutton > (BUTTON_COUNT - BUTTON_FIRST - 1)) {
                 curbutton = 0;
+            }
+
+            if (GameToPlay == GAME_CLIENT && curbutton == 0) {
+                curbutton = 1;
             }
 
             if (buttons[curbutton]) {
@@ -417,7 +473,9 @@ void GameControlsClass::Process(void)
             */
             switch (selection) {
             case (BUTTON_VISUAL):
+                Sound_Effect(VOC_SIDEBAR_CLOSE);
                 VisualControlsClass().Process();
+                Sound_Effect(VOC_SIDEBAR_OPEN);
                 process = true;
                 display = true;
                 refresh = true;
@@ -430,8 +488,30 @@ void GameControlsClass::Process(void)
                     display = true;
                     refresh = true;
                 } else {
+                    Sound_Effect(VOC_SIDEBAR_CLOSE);
                     SoundControlsClass().Process();
+                    Sound_Effect(VOC_SIDEBAR_OPEN);
+
+                    process = true;
+                    display = true;
+                    refresh = true;
+
+                    HiddenPage.Clear();
+                    Map.Flag_To_Redraw(true);
+                    Map.Render();
                 }
+                break;
+
+            case (BUTTON_VOICE):
+                Sound_Effect(VOC_SIDEBAR_CLOSE);
+
+                Select_Voice_Dialog();
+
+                Sound_Effect(VOC_SIDEBAR_OPEN);
+
+                process = true;
+                display = true;
+                refresh = true;
                 break;
 
             case (BUTTON_OK):

@@ -52,11 +52,12 @@ bool Debug_Threat = false;
 bool Debug_Find_Path = false;
 bool Debug_Check_Map = false; // true = validate the map each frame
 bool Debug_Playtest = false;
-int In_Debugger = 0;
-bool Debug_Heap_Dump = false;       // true = print the Heap Dump
+//int In_Debugger = 0;
+//bool Debug_Heap_Dump = false;       // true = print the Heap Dump
 bool Debug_Smart_Print = false;     // true = print everything that calls Smart_Printf
-bool Debug_Trap_Check_Heap = false; // true = check the Heap
+//bool Debug_Trap_Check_Heap = false; // true = check the Heap
 bool Debug_Instant_Build = false;
+bool Debug_NEW = false;
 bool Debug_Force_Crash = false;
 
 TFixedIHeapClass<UnitClass> Units;
@@ -149,8 +150,15 @@ bool AllowVoice = true;
 **	then a timer is started that will control crate creation.
 */
 int CrateCount;
+int WDTNumArmageddonCrates;
 TCountDownTimerClass CrateTimer;
 bool CrateMaker = false;
+
+int CrateDensity;
+CountDownTimerClass CrateKeepTimer;
+
+int WDTCrateTimerVal = 300;
+int WDTCrateDensity = 200;
 
 /***************************************************************************
 **	This is the current frame number. This number is guaranteed to count
@@ -256,6 +264,8 @@ MapEditClass Map;
 MouseClass Map;
 #endif
 
+GameResultClass ServerGameResults;
+
 /**************************************************************************
 **	The running game score is handled by this class (and member functions).
 */
@@ -265,7 +275,7 @@ ScoreClass Score;
 **	The running credit display is controlled by this class (and member
 **	functions.
 */
-CreditClass CreditDisplay;
+//CreditClass CreditDisplay;
 
 /***************************************************************************
 **	These are the bits that are set when the appropriate tutor message
@@ -405,16 +415,16 @@ GameType GameToPlay = GAME_NORMAL;
 /***************************************************************************
 **	This is the current communications protocol
 */
-CommProtocolType CommProtocol;
+//CommProtocolType CommProtocol;
 
 /***************************************************************************
 **	These values are used for recording & playing back a game.
 */
-CCFileClass RecordFile("RECORD.BIN");
-int RecordGame = 0;   // 1 = record a game
-int SuperRecord = 0;  // 1 = reopen record file with every write
-int PlaybackGame = 0; // 1 = play back a game
-int AllowAttract = 0; // 1 = allow attract mode
+//CCFileClass RecordFile("RECORD.BIN");
+//int RecordGame = 0;   // 1 = record a game
+//int SuperRecord = 0;  // 1 = reopen record file with every write
+//int PlaybackGame = 0; // 1 = play back a game
+//int AllowAttract = 0; // 1 = allow attract mode
 
 /***************************************************************************
 **	This is the null modem manager class.  Declaring this class doesn't
@@ -444,7 +454,7 @@ char* DialMethodCheck[DIAL_METHODS] = {"T", "P"};
 char* CallWaitStrings[CALL_WAIT_STRINGS_NUM] = {"*70,", "70#,", "1170,", "CUSTOM -                "};
 #endif
 
-ModemGameType ModemGameToPlay; // type of modem play Dialer, answerer, null
+//ModemGameType ModemGameToPlay; // type of modem play Dialer, answerer, null
 
 /***************************************************************************
 **	Index into scenario description list box
@@ -454,7 +464,7 @@ int ScenarioIdx;
 /***************************************************************************
 **	This array of flags tells if the given colors have been used, or are
 */
-int ColorUsed[MAX_MPLAYER_COLORS];
+//int ColorUsed[MAX_MPLAYER_COLORS];
 
 /***************************************************************************
 **	This string stores the player's name.
@@ -492,6 +502,8 @@ int MPlayerTColors[MAX_MPLAYER_COLORS] = {
 char MPlayerDescriptions[100][40];
 DynamicVectorClass<char*> MPlayerScenarios;
 DynamicVectorClass<int> MPlayerFilenum;
+class VoiceThemeClass;
+DynamicVectorClass<VoiceThemeClass *> VoiceThemes;
 
 /***************************************************************************
 **	This value determines the max allowable # of players.
@@ -514,6 +526,139 @@ int MPlayerGhosts;            // 1 = houses with no players will still play
 int MPlayerSolo = 0;          // 1 = allows a single-player net game
 int MPlayerUnitCount = 10;    // # units for non-base multiplayer scenarios
 
+// Sole
+//#include "sole_temp.h"
+//#include "reliable.h"
+//#include "protocol.h"
+
+class ProtocolClass;
+class ListenerProtocolClass;
+class ListenerClass;
+class ReliableCommClass;
+class ReliableProtocolClass;
+struct PlayerNameTag;
+
+ListenerProtocolClass *Protocol;
+ListenerClass *Listener;
+
+DynamicVectorClass<PlayerNameTag *> ActivePlayers;
+
+DynamicVectorClass<ReliableCommClass *> ReliableComms;
+DynamicVectorClass<ReliableProtocolClass *> ReliableProtocols;
+DynamicVectorClass<ReliableCommClass *> RemoteAdminsComms;
+DynamicVectorClass<ReliableProtocolClass *> RemoteAdminsProtocols;
+
+void *UnreliableComm;
+void *UnreliableProtocol;
+
+char Host[40];
+char ResultHost[128];
+char TempPacketBuffer[100000];
+
+DynamicVectorClass<NewDeletePacketData *> NewDeletePacketDatas;
+DynamicVectorClass<HealthPacketData *> HealthPacketDatas;
+DynamicVectorClass<DamagePacketData *> DamagePacketDatas;
+DynamicVectorClass<SquishPacketData *> SquishPacketDatas;
+DynamicVectorClass<CapturePacketData *> CapturePacketDatas;
+DynamicVectorClass<CargoPacketData *> CargoPacketDatas;
+DynamicVectorClass<FlagPacketData *> FlagPacketDatas;
+DynamicVectorClass<CTFPacketData *> CTFPacketDatas;
+DynamicVectorClass<MovePacketData *> MovePacketDatas;
+DynamicVectorClass<TargetPacketData *> TargetPacketDatas;
+DynamicVectorClass<FireAtPacketData *> FireAtPacketDatas;
+DynamicVectorClass<DoTurnPacketData *> DoTurnPacketDatas;
+DynamicVectorClass<CratePacketData *> CratePacketDatas;
+DynamicVectorClass<PerCellPacketData *> PerCellPacketDatas;
+DynamicVectorClass<TechnoPacketData *> TechnoPacketDatas;
+
+
+#include "statpanel.h"
+
+
+/*---------------------------------------------------------------------------
+Min & Max unit count values; index0 = bases OFF, index1 = bases ON
+---------------------------------------------------------------------------*/
+int MPlayerCountMin[2] = {1,0};
+int MPlayerCountMax[2] = {50,12};
+
+long PlanetWestwoodPortNumber = 1234;					//Port number to send to
+
+int PacketLength[PACKET_COUNT] = {
+	{ sizeof(PacketHeaderStruct),         }, // EMPTY
+	{ sizeof(ConnectPacketStruct),        }, // CONNECTION
+	{ sizeof(PlayerLeavePacketStruct),    }, // PLAYER_LEAVE
+	{ sizeof(EventPacketStruct),          }, // EVENT
+	{ sizeof(GameOptionsPacketStruct),    }, // GAME_OPTIONS
+	{ sizeof(PlayerJoinPacketStruct),     }, // PLAYER_UNITS
+	{ sizeof(FrameRatePacketStruct),      }, // FRAMERATE
+	{ sizeof(GameStateStartPacketStruct), }, // GAME_STATE_START
+	{ sizeof(GameStatePacketStruct),      }, // GAME_STATE
+	{ sizeof(GameStateDonePacketStruct),  }, // GAME_STATE_DONE
+	{ sizeof(HouseUpdatePacketStruct),    }, // HOUSE_UPDATE
+	{ sizeof(NewDeletePacketStruct),      }, // NEW_DELETE_OBJ
+	{ sizeof(HealthPacketStruct),         }, // HEALTH
+	{ sizeof(DamagePacketStruct),         }, // DAMAGE
+	{ sizeof(SquishPacketStruct),         }, // SQUISH
+	{ sizeof(CapturePacketStruct),        }, // CAPTURE
+	{ sizeof(CargoPacketStruct),          }, // CARGO
+	{ sizeof(FlagPacketStruct),           }, // FLAG
+	{ sizeof(CTFPacketStruct),            }, // CTF
+	{ sizeof(MovePacketStruct),           }, // MOVE
+	{ sizeof(TargetPacketStruct),         }, // TARGET
+	{ sizeof(FireAtPacketStruct),         }, // FIRE_AT
+	{ sizeof(DoTurnPacketStruct),         }, // DO_TURN
+	{ sizeof(CratePacketStruct),          }, // CRATE
+	{ sizeof(PerCellPacketStruct),        }, // PCP
+	{ sizeof(TechnoPacketStruct),         }, // TECHNO
+	{ sizeof(SpectatorPacketStruct),      }, // SPECTATOR
+	{ sizeof(GameEndPacketStruct),        }, // GAME_END
+	{ sizeof(ScenarioChangePacketStruct), }, // SCENARIO_CHANGE
+	{ sizeof(MessagePacketStruct),        }, // MESSAGE
+	{ sizeof(CommandPacketStruct),        }, // COMMAND
+	{ sizeof(ServerPassPacketStruct),     }, // SERVER_PASSWORD
+};
+
+int ShowNames = true;
+int PlayerNameDrawStyle = 8;
+bool ShowServerDialog = true;
+bool CratesDisabled = true;
+int WDTCrateIonFactor = 200;
+int CurrentVoiceTheme = 1;
+int ClientFPS;
+int LastClientFrame;
+CountDownTimerClass FramerateUpdateTimer;
+int RecievedBytesSec;
+int SentBytesSec;
+int SentTCP;
+int SentUDP;
+int RecievedTCP;
+int RecievedUDP;
+CountDownTimerClass TransmisionStatsTimer;
+int SpeedScale;
+RTTIType Chosen_RTTI;
+int Chosen_Type;
+bool IsTrackingCurrentObject;
+int UnknownGlobal0;
+bool Making_a_choice;
+int WDTRadarAdded;
+char WDTMapOverride[80];
+int WDTCrateShares[WDT_CRATE_COUNT];
+int WDTCrateSteel;
+int WDTCrateGreen;
+int WDTCrateOrange;
+int UnknownGlobal1;
+TimerClass WDTGameTimer;
+int ColorListTiming;
+bool ServerConnectionLost;
+GAMEPARAMS GameParams;
+StatsPanelClass StatPanel;
+DynamicVectorClass<char *> BannedPlayers;
+CELL FlagHomes[4];
+CELL FootballCells[2];
+TechnoClass *TechnoThatGotStealthCrate;
+TimerClass ArmageddonDelayTimer;
+
+#if 0 // Sole
 /*---------------------------------------------------------------------------
 Min & Max unit count values; index0 = bases OFF, index1 = bases ON
 ---------------------------------------------------------------------------*/
@@ -545,6 +690,7 @@ unsigned char MPlayerID[MAX_PLAYERS];
 ** This array stores the actual HousesType for all players (MULT1, etc).
 */
 HousesType MPlayerHouses[MAX_PLAYERS];
+#endif
 
 /***************************************************************************
 ** This array stores the names of all players in a multiplayer game.
@@ -557,16 +703,17 @@ char MPlayerNames[MAX_PLAYERS][MPLAYER_NAME_MAX];
 ** sent (for the computer's messages).
 */
 MessageListClass Messages;
-#ifdef NETWORKING
-IPXAddressClass MessageAddress;
-#endif
-char LastMessage[MAX_MESSAGE_LENGTH];
+//#ifdef NETWORKING
+//IPXAddressClass MessageAddress;
+//#endif
+//char LastMessage[MAX_MESSAGE_LENGTH];
+bool IsTeamMessage;
 
 /***************************************************************************
 ** If this flag is set, computer AI will blitz the humans all at once;
 ** otherwise, the computer units trickle gradually out.
 */
-int MPlayerBlitz = 0;
+//int MPlayerBlitz = 0;
 
 /***************************************************************************
 ** If this flag is set, we can move around the map, but we can't do anything.
@@ -574,6 +721,7 @@ int MPlayerBlitz = 0;
 */
 int MPlayerObiWan = 0;
 
+if 0
 /***************************************************************************
 ** These variables keep track of the multiplayer game scores.
 */
@@ -718,6 +866,7 @@ const char* SerialPacketNames[] = {
     "SCORE_SCREEN",
     "LAST_COMMAND",
 };
+#endif
 
 /***************************************************************************
 **	These variables are just to help find sync bugs.
@@ -730,7 +879,7 @@ void* TrapThis = NULL;              // 'this' ptr of object to trap
 CellClass* TrapCell = NULL;         // for trapping a cell
 int TrapCheckHeap = 0;              // start checking the Heap
 
-#ifdef NETWORKING
+#if 0
 /***************************************************************************
 **	This is the network IPX manager class.  It handles multiple remote
 ** connections.  Declaring this class doesn't perform any allocations;
@@ -742,7 +891,7 @@ IPXManagerClass Ipx(sizeof(GlobalPacketType), // size of Global Channel packets
                     8,                                        // # entries in Private Queues
                     VIRGIN_SOCKET,                            // Socket ID #
                     IPXGlobalConnClass::COMMAND_AND_CONQUER); // Product ID #
-#endif
+
 //#if(TIMING_FIX)
 //
 // These values store the min & max frame #'s for when MaxAhead >>increases<<.
@@ -800,6 +949,7 @@ unsigned short GProductID; // sender's Product ID
 */
 char* MetaPacket = 0;
 int MetaSize = ((546 - sizeof(CommHeaderType)) / sizeof(EventClass)) * sizeof(EventClass);
+#endif
 
 /***************************************************************************
 **	This is the random-number seed; it's synchronized between systems for
@@ -852,8 +1002,10 @@ GraphicBufferClass VisiblePage;
 GraphicBufferClass HiddenPage;
 
 GraphicViewPortClass SeenBuff(&VisiblePage, 0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
+GraphicViewPortClass UnknownViewport1(&VisiblePage, 0,0,640,480);
 GraphicBufferClass ModeXBuff;
 GraphicViewPortClass HidPage(&HiddenPage, 0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
+GraphicViewPortClass UnknownViewport2(&HiddenPage, 0,0, 640,480);
 GraphicBufferClass SysMemPage(320, 200, (void*)NULL);
 int SoundOn;
 CountDownTimerClass FrameTimer(BT_SYSTEM, 0);
@@ -866,9 +1018,9 @@ NewConfigType NewConfig;
 **	This timer measures how long (in ticks) it takes to process the game's
 ** logic, with no packet processing or artificial delays.
 */
-TimerClass ProcessTimer;
-int ProcessTicks;  // accumulated ticks
-int ProcessFrames; // # frames used to measure 'ProcessTicks'
+//TimerClass ProcessTimer;
+//int ProcessTicks;  // accumulated ticks
+//int ProcessFrames; // # frames used to measure 'ProcessTicks'
 
 /***************************************************************************
 **	This flag is for popping up dialogs that call the main loop.
@@ -888,7 +1040,7 @@ SpecialDialogType SpecialDialog = SDLG_NONE;
 /*
 **	List of all games out there, & the address of the game's owner
 */
-DynamicVectorClass<NodeNameType*> Games;
+//DynamicVectorClass<NodeNameType*> Games;
 
 /*
 **	List of names & addresses of all the players in the game I'm joining.
@@ -900,7 +1052,7 @@ DynamicVectorClass<NodeNameType*> Games;
 **	very soon after a player joins, not everyone may know about him; to prevent
 **	this, a timer restriction is put on the New Game dialog's GO button.
 */
-DynamicVectorClass<NodeNameType*> Players;
+//DynamicVectorClass<NodeNameType*> Players;
 
 char* DebugFname; // for stoopid debugging purposes
 int DebugLine;    // for stoopid debugging purposes
@@ -916,7 +1068,7 @@ int MouseInstalled;
 ** an entry in an INI file.  If this flag is 'true', those options have been
 ** enabled by the INI file.
 */
-int AreThingiesEnabled = false;
+//int AreThingiesEnabled = false;
 
 /*
 ** Command line arguments
@@ -932,6 +1084,8 @@ WWMouseClass* WWMouse = NULL;
 int AllDone;
 bool InMovie = false; // Are we currently playing a VQ movie?
 
+bool	SpawnedFromWChat;
+int		UnknownGlobal2;
 TheaterType LastTheater = THEATER_NONE;
 
 bool RunningAsDLL = false;
@@ -941,3 +1095,31 @@ char* TitlePicture = NULL;
 
 // OmniBlade - Moves from tcpip.cpp as part of networking cleanup.
 bool Server; // Is this player acting as client or server
+
+// Sole
+bool DoFullRedraw = true;
+bool DDEShutdown;
+HWND ServerDlg;
+int GameOptionsBitfield;
+bool IsTrackingRedraw;
+char TeamMessages[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH];
+int FlagDrawLocation[4];
+bool IsServerAdmin;
+bool OfflineMode;
+int UnknownGlobal3;
+int OfflinePoints;
+int OfflineDeathCount;
+int UnknownGlobal4;
+bool ShowHelpText;
+bool ShowGameParams;
+bool ShowKeyCommands;
+bool ShowThanksToTesters;
+int UnknownGlobal5;
+char ButtonFiveText[1000];
+char ButtonFiveURL[1000];
+char ButtonSixText[1000];
+char ButtonSixURL[980];//should be 1000 but it will corrupt neighboring globals
+int TeamPoints[4];
+int UnknownGlobal6;
+bool SetMenuChoiceTo1;
+int TeamScores[4];

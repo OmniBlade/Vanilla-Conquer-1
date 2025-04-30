@@ -80,6 +80,15 @@ void GameOptionsClass::Adjust_Variables_For_Resolution(void)
  *=============================================================================================*/
 void GameOptionsClass::Process(void)
 {
+    bool bool1 = false;
+    if (Map.IsSidebarActive) {
+        Map.Activate(0);
+        Map.Render();
+        bool1 = true;
+    }
+
+    Sound_Effect(VOC_SIDEBAR_CLOSE);
+
     static struct
     {
         int ID;         // Button ID to use.
@@ -88,7 +97,7 @@ void GameOptionsClass::Process(void)
     } _constants[] = {
         {BUTTON_LOAD, TXT_LOAD_MISSION, false},
         {BUTTON_SAVE, TXT_SAVE_MISSION, false},
-        {BUTTON_DELETE, TXT_DELETE_MISSION, true},
+        {BUTTON_DELETE, TXT_DELETE_MISSION, false},
         {BUTTON_GAME, TXT_GAME_CONTROLS, true},
         {BUTTON_QUIT, TXT_QUIT_MISSION, true},
         {BUTTON_RESUME, TXT_RESUME_MISSION, true},
@@ -196,6 +205,7 @@ void GameOptionsClass::Process(void)
     **	Main Processing Loop.
     */
     bool display = true;
+    bool redraw = false;
     bool process = true;
     pressed = false;
     while (process) {
@@ -207,12 +217,13 @@ void GameOptionsClass::Process(void)
         if (AllSurfaces.SurfacesRestored) {
             AllSurfaces.SurfacesRestored = false;
             display = true;
+            redraw = true;
         }
 
         /*
         **	Invoke game callback.
         */
-        if (GameToPlay == GAME_NORMAL || GameToPlay == GAME_SKIRMISH) {
+        if (GameToPlay == GAME_NORMAL || OfflineMode) {
             Call_Back();
         } else {
             if (Main_Loop()) {
@@ -228,9 +239,12 @@ void GameOptionsClass::Process(void)
             /*
             **	Redraw the map.
             */
-            HiddenPage.Clear();
-            Map.Flag_To_Redraw(true);
-            Map.Render();
+            if (redraw) {
+                HiddenPage.Clear();
+                Map.Flag_To_Redraw(true);
+                Map.Render();
+                redraw = false;
+            }
 
             /*
             **	Reset up the window.  Window x-coords are in bytes not pixels.
@@ -251,7 +265,7 @@ void GameOptionsClass::Process(void)
             /*
             **	Display the version number at the bottom of the dialog box.
             */
-            Fancy_Text_Print("%s\r%s",
+            Fancy_Text_Print("%s\r%x.%02x%s",
                              (WindowList[WINDOW_EDITOR][WINDOWX] + WindowList[WINDOW_EDITOR][WINDOWWIDTH])
                                  - 3 * resfactor,
                              WindowList[WINDOW_EDITOR][WINDOWY] + WindowList[WINDOW_EDITOR][WINDOWHEIGHT]
@@ -260,6 +274,8 @@ void GameOptionsClass::Process(void)
                              TBLACK,
                              TPF_6POINT | TPF_NOSHADOW | TPF_RIGHT,
                              Scen.ScenarioName,
+                             (unsigned int)Version_Number() >> 8,
+                             (unsigned char)Version_Number(),
                              VersionText);
 
             buttons->Draw_All();
@@ -322,7 +338,7 @@ void GameOptionsClass::Process(void)
                     curbutton = (BUTTON_COUNT - 1);
                 }
             } else {
-                if (curbutton < BUTTON_DELETE) {
+                if (curbutton < BUTTON_GAME) {
                     curbutton = BUTTON_RESUME;
                     //						curbutton = (BUTTON_COUNT-1);
                 }
@@ -341,7 +357,7 @@ void GameOptionsClass::Process(void)
                 }
             } else {
                 if (curbutton > BUTTON_RESUME) {
-                    curbutton = BUTTON_DELETE;
+                    curbutton = BUTTON_GAME;
                 }
             }
             buttonsel[curbutton - 1]->Turn_On();
@@ -439,18 +455,27 @@ void GameOptionsClass::Process(void)
                         break;
                     }
                 } else {
+                    Sound_Effect(VOC_SIDEBAR_CLOSE);
                     if (ConfirmationClass().Process(TXT_CONFIRM_EXIT)) {
                         process = false;
                         Queue_Exit();
                     } else {
                         display = true;
                     }
+                    Sound_Effect(VOC_SIDEBAR_OPEN);
                 }
                 break;
 
             case (BUTTON_GAME):
                 display = true;
+                Sound_Effect(VOC_SIDEBAR_CLOSE);
                 GameControlsClass().Process();
+                Sound_Effect(VOC_SIDEBAR_OPEN);
+                redraw = true;
+
+                Call_Back();
+                Map.Flag_To_Redraw(true);
+                Map.Render();
                 break;
 
             case (BUTTON_RESUME):
@@ -475,6 +500,8 @@ void GameOptionsClass::Process(void)
     */
     buttons->Delete_List();
 
+    Sound_Effect(VOC_SIDEBAR_OPEN);
+
     /*
     **	Redraw the map.
     */
@@ -482,6 +509,14 @@ void GameOptionsClass::Process(void)
     Call_Back();
     HiddenPage.Clear();
     Call_Back();
+
+    if (display) {
+		Map.IsSidebarActive = true;
+		if (bool1) {
+			Map.Activate(1);
+		}
+	}
+
     Map.Flag_To_Redraw(true);
     Map.Render();
 }
@@ -566,7 +601,7 @@ void Draw_Caption(int text, int x, int y, int w)
     /*
     **	Draw the filigree at the corners of the dialog.
     */
-    if (option != OPTION_NONE) {
+    if (option != OPTION_NONE && InMainLoop == 1) {
         CC_Draw_Shape(MFCD::Retrieve("OPTIONS.SHP"), (int)option, x + 12, y + 11, WINDOW_MAIN, SHAPE_CENTER);
         CC_Draw_Shape(MFCD::Retrieve("OPTIONS.SHP"), (int)option + 1, x + w - 14, y + 11, WINDOW_MAIN, SHAPE_CENTER);
     }
@@ -575,12 +610,11 @@ void Draw_Caption(int text, int x, int y, int w)
     **	Draw the caption.
     */
     if (text != TXT_NONE) {
-        Fancy_Text_Print(text,
-                         w / 2 + x,
-                         5 * factor + y,
-                         CC_GREEN,
-                         TBLACK,
-                         TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+        if (InMainLoop == 1) {
+			Fancy_Text_Print(text, w/2 + x, 5*factor + y, CC_GREEN, TBLACK, TPF_CENTER|TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_NOSHADOW);
+		} else {
+			Fancy_Text_Print(text, w/2 + x, 5*factor + y, CC_GREEN, TBLACK, TPF_CENTER|TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_NOSHADOW|TPF_BRIGHT_COLOR);
+		}
 
         int length = String_Pixel_Width(Text_String(text));
         LogicPage->Draw_Line((x + (w / 2)) - (length / 2),

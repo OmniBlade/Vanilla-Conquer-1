@@ -106,6 +106,8 @@ public:
     */
     static GadgetClass* Buttons;
 
+    unsigned IsToDrawUnknown : 1;
+    
 private:
     /*
     **	If the entire map is required to redraw, then this flag is true. This flag
