@@ -44,6 +44,7 @@
 
 class TriggerClass;
 class CCINIClass;
+class FootClass;
 #ifdef USE_RA_AI
 class FootClass;    // ST - 7/17/2019 11:54AM
 class FactoryClass; // ST - 7/17/2019 11:54AM
@@ -127,6 +128,10 @@ public:
     */
     unsigned IsDefeated : 1;
 
+    TCountDownTimerClass Timer1;
+
+    int Int1;
+
     /*
     **	These flags are used in conjunction with the BorrowedTime timer. When
     **	that timer expires and one of these flags are set, then that event is
@@ -136,6 +141,8 @@ public:
     unsigned IsToDie : 1;
     unsigned IsToWin : 1;
     unsigned IsToLose : 1;
+    unsigned IsUnk1 : 1;
+    unsigned IsUnk2 : 1;
 
     /*
     **	This flag is set when a transport carrying a civilian has been
@@ -397,11 +404,16 @@ public:
     unsigned BuildingsKilled[HOUSE_COUNT];
     unsigned BuildingsLost;
 
+    unsigned Int2;
+    int Int3;
+
     /*
     ** For multiplayer games, this keeps track of the last house to destroy
     ** one of my units.
     */
     HousesType WhoLastHurtMe;
+
+    int Int4;
 
     /*
     ** Start location (waypoint index) passed in from GlyphX
@@ -450,12 +462,12 @@ public:
         , AITimer(noinit)
     {
     }
-    operator HousesType(void) const;
+    // operator HousesType(void) const;
 
     /*---------------------------------------------------------------------
     **	Member function prototypes.
     */
-    ProdFailType Begin_Production(RTTIType type, int id);
+    ProdFailType Begin_Production(RTTIType type, int id, bool unk = false);
     ProdFailType Suspend_Production(RTTIType type);
     ProdFailType Abandon_Production(RTTIType type);
     bool Place_Object(RTTIType type, CELL cell);
@@ -463,8 +475,9 @@ public:
     void Special_Weapon_AI(SpecialWeaponType id);
     bool Place_Special_Blast(SpecialWeaponType id, CELL cell);
     bool Flag_Attach(CELL cell, bool set_home = false);
-    bool Flag_Attach(UnitClass* object, bool set_home = false);
-    bool Flag_Remove(TARGET target, bool set_home = false);
+    void Flag_Detach(CELL cell);
+    bool Flag_Attach(FootClass* object, bool set_home = false);
+    bool Flag_Remove(TARGET target, bool unk = false);
     void Init_Data(PlayerColorType color, HousesType house, int credits);
 
     void Sell_Wall(CELL cell);
@@ -565,6 +578,9 @@ public:
     void Add_Nuke_Piece(int piece = -1);
     //		void  Make_Air_Strike_Available(bool present, bool one_time_effect = false);
     bool Has_Nuke_Device(void);
+
+    void Make_CTF_Packet_Dropped(CELL cell, bool unk = false);
+    void Make_CTF_Packet_Picked_Up(CELL cell, bool unk = false);
 
     /*
     ** New default win mode to avoid griefing. ST - 1/31/2020 3:33PM
@@ -719,13 +735,17 @@ public:
     /*
     ** This routine blows up everything in this house.  Fun!
     */
-    void Blowup_All(void);
+    void Blowup_All(bool keep_buildings = false);
 
     /*
     ** This routine gets called in multiplayer games when every unit, building,
     ** and infantry for a house is destroyed.
     */
     void MPlayer_Defeated(void);
+    bool Delete_Allowed()
+    {
+        return true;
+    }
 
     /*
     **	Screen shake timer.
@@ -740,7 +760,7 @@ private:
     **	this house. It is presumed that any house that isn't an ally, is therefore
     **	an enemy. A house is always considered allied with itself.
     */
-    unsigned Allies;
+    unsigned char Allies[(HOUSE_COUNT / 8) + 1];
 
     /*
     **	This is the standard delay time between announcements concerning the
@@ -763,6 +783,8 @@ private:
     **	Team creation is done whenever this timer expires.
     */
     TCountDownTimerClass TeamTime;
+
+    CountDownTimerClass Timer2;
 
     /*
     **	This controls the rate that the trigger time logic is processed.
@@ -944,8 +966,8 @@ public:
 
         BuildChoiceClass(UrgencyType u, StructType s)
             : Urgency(u)
-            , Structure(s){};
-        BuildChoiceClass(NoInitClass const&){};
+            , Structure(s) {};
+        BuildChoiceClass(NoInitClass const&) {};
         int Save(FileClass&) const
         {
             return (true);
@@ -954,8 +976,8 @@ public:
         {
             return (true);
         };
-        void Code_Pointers(void){};
-        void Decode_Pointers(void){};
+        void Code_Pointers(void) {};
+        void Decode_Pointers(void) {};
     };
 
     static TFixedIHeapClass<BuildChoiceClass> BuildChoice;

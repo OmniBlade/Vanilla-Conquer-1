@@ -65,7 +65,7 @@ public:
     };
 
     virtual int Set_Heap(int count, void* buffer = 0);
-    virtual void* Allocate(void);
+    virtual void* Allocate(int index);
     virtual void Clear(void);
     virtual int Free(void* pointer);
     virtual int Free_All(void);
@@ -125,8 +125,8 @@ template <class T> class TFixedHeapClass : public FixedHeapClass
 {
 public:
     TFixedHeapClass(void)
-        : FixedHeapClass(sizeof(T)){};
-    virtual ~TFixedHeapClass(void){};
+        : FixedHeapClass(sizeof(T)) {};
+    virtual ~TFixedHeapClass(void) {};
 
     int ID(T const* pointer)
     {
@@ -159,11 +159,11 @@ class FixedIHeapClass : public FixedHeapClass
 {
 public:
     FixedIHeapClass(int size)
-        : FixedHeapClass(size){};
-    virtual ~FixedIHeapClass(void){};
+        : FixedHeapClass(size) {};
+    virtual ~FixedIHeapClass(void) {};
 
     virtual int Set_Heap(int count, void* buffer = 0);
-    virtual void* Allocate(void);
+    virtual void* Allocate(int index = -1);
     virtual void Clear(void);
     virtual int Free(void* pointer);
     virtual int Free_All(void);
@@ -191,8 +191,8 @@ template <class T> class TFixedIHeapClass : public FixedIHeapClass
 {
 public:
     TFixedIHeapClass(void)
-        : FixedIHeapClass(sizeof(T)){};
-    virtual ~TFixedIHeapClass(void){};
+        : FixedIHeapClass(sizeof(T)) {};
+    virtual ~TFixedIHeapClass(void) {};
 
     int ID(T const* pointer)
     {
@@ -201,14 +201,6 @@ public:
     virtual T* Alloc(void)
     {
         return (T*)FixedIHeapClass::Allocate();
-    };
-    virtual int Free(T* pointer)
-    {
-        return FixedIHeapClass::Free(pointer);
-    };
-    virtual int Free(void* pointer)
-    {
-        return FixedIHeapClass::Free(pointer);
     };
     virtual int Save(FileClass&);
     virtual int Load(FileClass&);
@@ -222,6 +214,14 @@ public:
     virtual T* Raw_Ptr(int index)
     {
         return (index >= 0 && index < Length()) ? (T*)((*this)[index]) : NULL;
+    };
+    virtual int Free(T* pointer)
+    {
+        return FixedIHeapClass::Free(pointer);
+    };
+    virtual int Free_All(void)
+    {
+        return FixedIHeapClass::Free_All();
     };
 };
 

@@ -154,11 +154,13 @@ int HouseClass::Validate(void) const
  * HISTORY:                                                                                    *
  *   01/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-HouseClass::operator HousesType(void) const
+#if 0 // TODO work out if this is really unneeded?
+ HouseClass::operator HousesType(void) const
 {
     Validate();
     return (Class->House);
 }
+#endif
 
 /***********************************************************************************************
  * HouseClass::As_Pointer -- Converts a house number into a house object pointer.              *
@@ -377,6 +379,8 @@ HouseClass::HouseClass(HousesType house)
     }
     WhoLastHurtMe = house; // init this to myself
 
+    Int2 = 0;
+    Int3 = 0;
     IsVisionary = false;
     IsFreeHarvester = false;
     Blockage = 0;
@@ -392,7 +396,7 @@ HouseClass::HouseClass(HousesType house)
     NewActiveAScan = 0;
     ActiveAScan = 0;
 
-    strcpy((char*)Name, "Computer"); // Default computer name.
+    strcpy((char*)Name, Text_String(TXT_HUNTER)); // Default computer name.
     JustBuilt = STRUCT_NONE;
     AlertTime = 0;
     IsAlerted = false;
@@ -400,7 +404,23 @@ HouseClass::HouseClass(HousesType house)
     AircraftFactory = -1;
     AircraftFactories = 0;
     ActLike = Class->House;
-    Allies = 0;
+
+    for (int j = 0; j < (int)(sizeof(Allies) / sizeof(Allies[0])); j++) {
+        Allies[j] = 0;
+    }
+
+    if (house == HOUSE_BLUE_TEAM) {
+        Int4 = 1;
+    } else if (house == HOUSE_ORANGE_TEAM) {
+        Int4 = 2;
+    } else if (house == HOUSE_GREEN_TEAM) {
+        Int4 = 3;
+    } else if (house == HOUSE_GREY_TEAM) {
+        Int4 = 4;
+    } else {
+        Int4 = -1;
+    }
+
     AScan = 0;
     NukeDest = 0;
     BlitzTime.Clear();
@@ -428,6 +448,7 @@ HouseClass::HouseClass(HousesType house)
     IScan = 0;
     IsRecalcNeeded = true;
     IsCivEvacuated = false;
+    Int1 = 0;
     IsDefeated = false;
     IsDiscovered = false;
     IsHuman = false;
@@ -436,6 +457,8 @@ HouseClass::HouseClass(HousesType house)
     IsStarted = false;
     IsToDie = false;
     IsToLose = false;
+    IsUnk1 = false;
+    IsUnk2 = false;
     IsToWin = false;
     Make_Ally(house);
     MaxBuilding = 0;
@@ -460,6 +483,7 @@ HouseClass::HouseClass(HousesType house)
     SpecialFactories = 0;
     SpecialFactory = -1;
     TeamTime = TEAM_DELAY;
+    Timer2.Set(0);
     Tiberium = 0;
     TriggerTime = 0;
     UnitFactories = 0;
@@ -554,7 +578,7 @@ bool HouseClass::Can_Build(TechnoTypeClass const* type, HousesType house) const
     if (!type || !type->IsBuildable || !((1L << house) & type->Ownable))
         return (false);
 
-        /*
+    /*
         **	The computer can always build everthing.
         */
 #ifdef USE_RA_AI
@@ -600,7 +624,7 @@ bool HouseClass::Can_Build(TechnoTypeClass const* type, HousesType house) const
     /*
     **	Multiplayer game uses a different legality check for building.
     */
-    if (GameToPlay != GAME_NORMAL || (Special.IsJurassic && AreThingiesEnabled)) {
+    if (GameToPlay != GAME_NORMAL || Special.IsJurassic) {
         if (DebugUnlockBuildables) {
             return true;
         }
@@ -1055,41 +1079,155 @@ void HouseClass::AI(void)
         ** Create the object, and use Scan_Place_Object to place the object near
         ** the center of the map.
         */
-        if (GameToPlay != GAME_NORMAL && Class->House == HOUSE_JP) {
-            int rlimit;
-
-            if (Special.IsJurassic && AreThingiesEnabled) {
-                rlimit = 450;
-            } else {
-                rlimit = 1000;
-            }
-
-            // if (IRandom(0, rlimit) == 0) {
-            if (Random_Pick(0, rlimit) <= 5) { // More visceroids! ST - 3/3/2020 4:34PM
-                UnitClass* obj = NULL;
+        if (!GameParams.AllowFlagSitting
+            && (GameParams.IsCaptureTheFlag || GameParams.Football && GameParams.FootballNumFlags == 2)
+            && GameToPlay != GAME_NORMAL) {
+            if (Target_Legal(FlagLocation)) {
+                //stack doesn't match here
+                TechnoClass* techno;
                 CELL cell;
+                int damage;
+                int count;
+                int moving;
 
-                if (Special.IsJurassic && AreThingiesEnabled) {
-                    obj = new UnitClass(Random_Pick(UNIT_TRIC, UNIT_STEG), HOUSE_JP);
-                } else if (Special.IsVisceroids) {
-                    if (BuildLevel >= 7) {
-                        if (!(UScan & UNITF_VICE)) {
-                            obj = new UnitClass(UNIT_VICE, HOUSE_JP);
+                /*
+				**	If this house's flag waypoint is a valid cell, see if there's
+				**	someone sitting on it.  If so, make the scatter.  If they refuse,
+				**	blow them up.
+				*/
+                cell = As_Cell(FlagLocation);
+                if (cell) {
+                    techno = Map[cell].Cell_Techno();
+                    if (techno
+                        && ((GameParams.IsCaptureTheFlag && techno->House->Is_Ally(this))
+                            || (GameParams.Football && !techno->House->Is_Ally(this)))) {
+                        moving = false;
+                        techno->Scatter(0, true);
+
+                        /*
+						**	If the techno doesn't have a valid NavCom, he's not moving,
+						**	so blow him up.
+						*/
+                        if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT) {
+                            if (Target_Legal(((FootClass*)techno)->NavCom)) {
+                                moving = true;
+                            }
+                        }
+
+                        /*
+						**	If the techno wasn't an infantry or unit (ie he's a building),
+						**	or he refuses to move, blow him up
+						*/
+                        if (!moving) {
+                            count = 0;
+                            while (!(techno->IsInLimbo) && count++ < 5) {
+                                damage = 0x7fff;
+                                Explosion_Damage(techno->Center_Coord(), damage, NULL, WARHEAD_HE);
+                            }
                         }
                     }
                 }
+            }
+        }
+        TeamTime.Set(TEAM_DELAY);
+    }
 
-                if (obj) {
-                    cell = XY_Cell(Map.MapCellX + Random_Pick(0, Map.MapCellWidth - 1),
-                                   Map.MapCellY + Random_Pick(0, Map.MapCellHeight - 1));
-                    if (!Scan_Place_Object(obj, cell)) {
-                        delete obj;
+    /*
+	** Randomly create a Visceroid or other disastrous multiplayer object.
+	** Create the object, and use Scan_Place_Object to place the object near
+	** the center of the map.
+	*/
+    if (Class->House == HOUSE_JP && !CratesDisabled && !Timer2.Time()) {
+        if (GameParams.AIUnitsPer10min > 0) {
+            int numaiunits = 0;
+            for (int index = 0; index < Units.Count(); index++) {
+                UnitClass* uptr = (UnitClass*)Units.Active_Ptr(index);
+                HouseClass* hptr = HouseClass::As_Pointer(uptr->Owner());
+                if (!hptr->IsHuman) {
+                    numaiunits++;
+                }
+            }
+
+            if (!OfflineMode && GameParams.IsMaxNumAIsScaled) {
+                int maxaiunits = 0;
+                for (int index = 0; index < SidebarClass::ColorListInstance1->Count(); index++) {
+                    if (SidebarClass::ColorListInstance1->Colors[index] != 13) {
+                        maxaiunits++;
+                    }
+                }
+                GameParams.MaxAIUnits = maxaiunits;
+            }
+
+            if (numaiunits < GameParams.MaxAIUnits) {
+                int rlimit;
+
+                rlimit = 120 / GameParams.AIUnitsPer10min;
+                if (rlimit < 1) {
+                    rlimit = 1;
+                }
+
+                if (Random_Pick(1, rlimit) == 1) {
+                    TechnoClass* obj = NULL;
+                    CELL cell;
+
+                    if (UnitClass::New_Allowed()) {
+                        obj = Create_AI_Unit();
+                    }
+
+                    if (obj) {
+                        cell = XY_Cell(Map.MapCellX + WDT_Random_Pick(0, Map.MapCellWidth - 2),
+                                       Map.MapCellY + WDT_Random_Pick(0, Map.MapCellHeight - 1));
+                        if (!Scan_Place_Object(obj, cell)) {
+                            delete obj;
+                        } else {
+                            if (obj->What_Am_I() == RTTI_UNIT) {
+                                obj->Assign_Mission(MISSION_FIND_CRATE);
+                            }
+                        }
                     }
                 }
             }
         }
 
-        TeamTime.Set(TEAM_DELAY);
+        if (GameParams.AIBuildingsPer10min > 0) {
+            int numaibuildings = 0;
+            for (int index = 0; index < Buildings.Count(); index++) {
+                BuildingClass* bptr = (BuildingClass*)Buildings.Ptr(index);
+                if (!bptr->House->IsHuman) {
+                    numaibuildings++;
+                }
+            }
+
+            if (numaibuildings < GameParams.MaxAIBuildings) {
+                int rlimit;
+
+                rlimit = 120 / GameParams.AIBuildingsPer10min;
+                if (rlimit < 1) {
+                    rlimit = 1;
+                }
+
+                if (Random_Pick(1, rlimit) == 1) {
+                    TechnoClass* obj = NULL;
+                    CELL cell;
+
+                    // TODO BUG aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    if (UnitClass::New_Allowed()) {
+                        obj = Create_Building();
+                    }
+
+                    if (obj) {
+                        cell = XY_Cell(Map.MapCellX + WDT_Random_Pick(0, Map.MapCellWidth - 1),
+                                       Map.MapCellY + WDT_Random_Pick(0, Map.MapCellHeight - 1));
+                        if (!Scan_Place_Object(obj, cell)) {
+                            delete obj;
+                        }
+                    }
+                }
+            }
+        }
+
+        //TeamTime.Set(TEAM_DELAY);
+        Timer2.Set(300);
     }
 
     /*
@@ -1216,9 +1354,14 @@ void HouseClass::AI(void)
         if (unit) {
             unit->Mark(MARK_CHANGE);
         } else {
-            CELL cell = As_Cell(FlagLocation);
-            Map[cell].Flag_Update();
-            Map[cell].Redraw_Objects();
+            InfantryClass* infantry = As_Infantry(FlagLocation);
+            if (infantry) {
+                infantry->Mark(MARK_CHANGE);
+            } else {
+                CELL cell = As_Cell(FlagLocation);
+                Map[cell].Flag_Update();
+                Map[cell].Redraw_Objects();
+            }
         }
     }
 
@@ -1429,9 +1572,11 @@ void HouseClass::AI(void)
     }
 #endif
 
+#if 0
     if (GameToPlay != GAME_NORMAL && Class->House != HOUSE_JP) {
         Check_Pertinent_Structures();
     }
+#endif
 
     /*
     ** Special win/lose check for multiplayer games; by-passes the
@@ -1439,8 +1584,7 @@ void HouseClass::AI(void)
     ** may not properly set IScan etc for each house; you have to go
     ** through each object's AI before it will be properly set.
     */
-    if (GameToPlay != GAME_NORMAL && !IsDefeated && !ActiveBScan && !ActiveAScan && !UScan && !ActiveIScan
-        && Frame > 0) {
+    if (!IsDefeated && !ActiveBScan && !ActiveAScan && !UScan && !ActiveIScan && Frame > 0) {
         MPlayer_Defeated();
     }
 
@@ -1549,7 +1693,7 @@ void HouseClass::AI(void)
     **	If a radar facility is not present, but the radar is active, then turn the radar off.
     **	The radar also is turned off when the power gets below 100% capacity.
     */
-    if (PlayerPtr == this) {
+    if (PlayerPtr == this && !WDTRadarAdded) {
         if (Map.Is_Radar_Active()) {
             if (BScan & (STRUCTF_RADAR | STRUCTF_EYE)) {
                 if (Power_Fraction() < 1) {
@@ -2007,9 +2151,24 @@ void HouseClass::Write_INI(CCINIClass& ini)
  *=============================================================================================*/
 bool HouseClass::Is_Ally(HousesType house) const
 {
+    unsigned int house_index;
+    unsigned char house_mask;
     Validate();
     if (house != HOUSE_NONE) {
-        return (((1 << house) & Allies) != 0);
+        house_index = house >> 3;
+        house_mask = 1 << (house & 7);
+        if ((Allies[house_index] & house_mask) != 0) {
+            return (true);
+        }
+
+        HouseClass* hptr = As_Pointer(house);
+        if (hptr && hptr->Int4 == Int4 && Int4 != -1) {
+            return (true);
+        }
+
+        if (!IsHuman && hptr && !hptr->IsHuman) {
+            return (true);
+        }
     }
     return (false);
 }
@@ -2078,8 +2237,10 @@ bool HouseClass::Is_Ally(ObjectClass const* object) const
  *=============================================================================================*/
 void HouseClass::Make_Ally(HousesType house)
 {
+    unsigned int house_index;
+    unsigned char house_mask;
     Validate();
-    if (house != HOUSE_NONE && !Is_Ally(house)) {
+    if (house != HOUSE_NONE) {
 
         /*
         **	If in normal game play but the house is defeated, then don't allow the ally
@@ -2088,7 +2249,9 @@ void HouseClass::Make_Ally(HousesType house)
         if (!ScenarioInit && (IsDefeated || house == HOUSE_JP))
             return;
 
-        Allies |= (1 << house);
+        house_index = house >> 3;
+        house_mask = 1 << (house & 7);
+        Allies[house_index] |= house_mask;
 
 #ifdef CHEAT_KEYS
         if (Debug_Flag) {
@@ -2120,8 +2283,7 @@ void HouseClass::Make_Ally(HousesType house)
             }
 
             sprintf(buffer, Text_String(TXT_HAS_ALLIED), Name, HouseClass::As_Pointer(house)->Name);
-            Messages.Add_Message(
-                buffer, MPlayerTColors[RemapColor], TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW, 1200, 0, 0);
+            Messages.Add_Message(buffer, MPlayerTColors[RemapColor], TPF_8POINT | TPF_FULLSHADOW, 1200, 0, 0);
             Map.Flag_To_Redraw(false);
         }
     }
@@ -2145,20 +2307,25 @@ void HouseClass::Make_Ally(HousesType house)
  *=============================================================================================*/
 void HouseClass::Make_Enemy(HousesType house)
 {
+    unsigned int house_index;
+    unsigned char house_mask;
     Validate();
     if (house != HOUSE_NONE && Is_Ally(house)) {
+        house_index = house >> 3;
+        house_mask = 1 << (house & 7);
+        Allies[house_index] &= ~house_mask;
         HouseClass* enemy = HouseClass::As_Pointer(house);
-        Allies &= ~(1 << house);
         if (enemy && enemy->Is_Ally(this)) {
-            enemy->Allies &= ~(1 << Class->House);
+            house_index = Class->House >> 3;
+            house_mask = 1 << (Class->House & 7);
+            enemy->Allies[house_index] &= ~house_mask;
         }
 
         if ((Debug_Flag || GameToPlay != GAME_NORMAL) && !ScenarioInit) {
             char buffer[80];
 
             sprintf(buffer, Text_String(TXT_AT_WAR), Name, enemy->Name);
-            Messages.Add_Message(
-                buffer, MPlayerTColors[RemapColor], TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW, 600, 0, 0);
+            Messages.Add_Message(buffer, MPlayerTColors[RemapColor], TPF_8POINT | TPF_FULLSHADOW, 600, 0, 0);
             Map.Flag_To_Redraw(false);
         }
     }
@@ -2308,7 +2475,7 @@ void HouseClass::Adjust_Threat(int region, int threat)
  * HISTORY:                                                                                    *
  *   05/08/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
+ProdFailType HouseClass::Begin_Production(RTTIType type, int id, bool unk)
 {
     Validate();
     int* factory = 0;
@@ -2362,7 +2529,7 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
         if (!fptr)
             return (PROD_CANT);
         *factory = Factories.ID(fptr);
-        result = (tech) ? fptr->Set(*tech, *this) : fptr->Set(id, *this);
+        result = (tech) ? fptr->Set(*tech, *this, unk) : fptr->Set(id, *this);
         initial_start = true;
 
         /*
@@ -3172,29 +3339,40 @@ void HouseClass::Clobber_All(void)
 {
     Validate();
     int i;
+#define CLOBBER_ABSTRACT(ptr)                                                                                          \
+    if (ptr->Delete_Allowed()) {                                                                                       \
+        DELETE_OBJ(ptr, sizeof(AbstractClass));                                                                        \
+        i--;                                                                                                           \
+    } else {                                                                                                           \
+        ptr->Destruct();                                                                                               \
+    }
+
+#define CLOBBER_TRIGGER(ptr)                                                                                           \
+    if (ptr->Delete_Allowed()) {                                                                                       \
+        delete ptr;                                                                                                    \
+        i--;                                                                                                           \
+    } else {                                                                                                           \
+        ptr->IsActive = false;                                                                                         \
+    }
 
     for (i = 0; i < ::Aircraft.Count(); i++) {
         if (::Aircraft.Ptr(i)->House == this) {
-            delete ::Aircraft.Ptr(i);
-            i--;
+            CLOBBER_ABSTRACT(Aircraft.Ptr(i));
         }
     }
     for (i = 0; i < ::Units.Count(); i++) {
         if (::Units.Ptr(i)->House == this) {
-            delete ::Units.Ptr(i);
-            i--;
+            CLOBBER_ABSTRACT(Aircraft.Ptr(i));
         }
     }
     for (i = 0; i < Infantry.Count(); i++) {
         if (Infantry.Ptr(i)->House == this) {
-            delete Infantry.Ptr(i);
-            i--;
+            CLOBBER_ABSTRACT(Aircraft.Ptr(i));
         }
     }
     for (i = 0; i < Buildings.Count(); i++) {
         if (Buildings.Ptr(i)->House == this) {
-            delete Buildings.Ptr(i);
-            i--;
+            CLOBBER_ABSTRACT(Aircraft.Ptr(i));
         }
     }
     for (i = 0; i < TeamTypes.Count(); i++) {
@@ -3205,8 +3383,7 @@ void HouseClass::Clobber_All(void)
     }
     for (i = 0; i < Triggers.Count(); i++) {
         if (Triggers.Ptr(i)->House == Class->House) {
-            delete Triggers.Ptr(i);
-            i--;
+            CLOBBER_TRIGGER(Triggers.Ptr(i));
         }
     }
 
@@ -3573,7 +3750,7 @@ TechnoTypeClass const* HouseClass::Suggest_New_Object(RTTIType objecttype) const
                 memset(counter, 0x00, sizeof(counter));
             } else {
                 for (UnitType index = UNIT_FIRST; index < UNIT_COUNT; index++) {
-                    if (Can_Build(index, Class->House) && UnitTypeClass::As_Reference(index).Level <= BuildLevel) {
+                    if (Can_Build(index, ActLike) && UnitTypeClass::As_Reference(index).Level <= BuildLevel) {
                         counter[index] = 16;
                     } else {
                         counter[index] = 0;
@@ -3643,7 +3820,7 @@ TechnoTypeClass const* HouseClass::Suggest_New_Object(RTTIType objecttype) const
             int bestcount = 0;
             UnitType bestlist[UNIT_COUNT];
             for (UnitType utype = UNIT_FIRST; utype < UNIT_COUNT; utype++) {
-                if (counter[utype] > 0 && Can_Build(utype, Class->House)
+                if (counter[utype] > 0 && Can_Build(utype, ActLike)
                     && UnitTypeClass::As_Reference(utype).Cost_Of() <= Available_Money()) {
                     if (bestval == -1 || bestval < counter[utype]) {
                         bestval = counter[utype];
@@ -3674,7 +3851,7 @@ TechnoTypeClass const* HouseClass::Suggest_New_Object(RTTIType objecttype) const
                 memset(counter, 0x00, sizeof(counter));
             } else {
                 for (InfantryType index = INFANTRY_FIRST; index < INFANTRY_COUNT; index++) {
-                    if (Can_Build(index, Class->House) && InfantryTypeClass::As_Reference(index).Level <= BuildLevel) {
+                    if (Can_Build(index, ActLike) && InfantryTypeClass::As_Reference(index).Level <= BuildLevel) {
                         counter[index] = 16;
                     } else {
                         counter[index] = 0;
@@ -3745,7 +3922,7 @@ TechnoTypeClass const* HouseClass::Suggest_New_Object(RTTIType objecttype) const
             int bestcount = 0;
             InfantryType bestlist[INFANTRY_COUNT];
             for (InfantryType utype = INFANTRY_FIRST; utype < INFANTRY_COUNT; utype++) {
-                if (counter[utype] > 0 && Can_Build(utype, Class->House)
+                if (counter[utype] > 0 && Can_Build(utype, ActLike)
                     && InfantryTypeClass::As_Reference(utype).Cost_Of() <= Available_Money()) {
                     if (bestval == -1 || bestval < counter[utype]) {
                         bestval = counter[utype];
@@ -3802,15 +3979,24 @@ bool HouseClass::Flag_Remove(TARGET target, bool set_home)
 {
     Validate();
     bool rc = false;
+    FlagPacketData* data;
+
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return (false);
+    }
 
     if (Target_Legal(target)) {
 
         /*
         **	Remove the flag from a unit
         */
-        UnitClass* object = As_Unit(target);
+        FootClass* object = As_Unit(target);
+        if (!object) {
+            object = As_Infantry(target);
+        }
+
         if (object) {
-            rc = object->Flag_Remove();
+            rc = object->Flag_Remove(unk);
             if (rc && FlagLocation == target) {
                 FlagLocation = TARGET_NONE;
             }
@@ -3822,13 +4008,13 @@ bool HouseClass::Flag_Remove(TARGET target, bool set_home)
             */
             CELL cell = As_Cell(target);
             if (Map.In_Radar(cell)) {
-                rc = Map[cell].Flag_Remove();
+                rc = Map[cell].Flag_Remove(unk);
                 if (rc && FlagLocation == target) {
                     FlagLocation = TARGET_NONE;
                 }
             }
         }
-
+#if 0
         /*
         **	Handle the flag home cell:
         **	If 'set_home' is set, clear the home value & the cell's overlay
@@ -3840,6 +4026,15 @@ bool HouseClass::Flag_Remove(TARGET target, bool set_home)
                 FlagHome = 0;
             }
         }
+#endif
+    }
+
+    if (GameToPlay == GAME_HOST) {
+        data = new FlagPacketData;
+        data->House = Class->House;
+        data->Whom = target;
+        data->Attached = false;
+        FlagPacketDatas.Add(data);
     }
     return (rc);
 }
@@ -3862,13 +4057,48 @@ bool HouseClass::Flag_Remove(TARGET target, bool set_home)
  * HISTORY:                                                                                    *
  *   05/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool HouseClass::Flag_Attach(CELL cell, bool set_home)
+bool HouseClass::Flag_Attach(CELL cell bool set_home)
 {
     Validate();
+    FlagPacketData* data;
     bool rc;
     bool clockwise;
+    char buf[300];
     FacingType rot;
     FacingType fcounter;
+
+    if (!Map.In_Radar(cell) && GameToPlay == GAME_HOST) {
+        sprintf(buf,
+                "Map.In_Radar(%d) failed for HouseClass::Flag_Attach(%d, %d) at time %d\n",
+                cell,
+                cell,
+                unk,
+                time(0)); //BUG
+        CCDebugString(buf);
+        Messages.Add_Message(buf, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
+        Map.Flag_To_Redraw(false);
+        printf(buf);
+        cell = XY_Cell(WDT_Random_Pick(0, Map.MapCellWidth - 2) + Map.MapCellX,
+                       WDT_Random_Pick(0, Map.MapCellHeight - 1) + Map.MapCellY);
+    }
+
+    if (GameToPlay == GAME_CLIENT && !set_home) {
+        return (false);
+    }
+
+    if (GameToPlay == GAME_CLIENT && set_home) {
+        CellClass* cptr = &Map[cell];
+        cptr->IsFlagged = true;
+        Map.Radar_Pixel(cptr->Cell_Number());
+        cptr->Owner = Class->House;
+        cptr->Redraw_Objects();
+        FlagLocation = As_Target(cell);
+        if (Class->House == PlayerPtr->ActLike || GameParams.Football && GameParams.FootballNumFlags == 1) {
+            Map.Sight_From(cell, 4, false);
+        }
+
+        return (true);
+    }
 
     /*
     **	Randomly decide if we're going to search cells clockwise or counter-
@@ -3910,7 +4140,7 @@ bool HouseClass::Flag_Attach(CELL cell, bool set_home)
                     rot = Random_Pick(FACING_N, FACING_NW);
                     for (fcounter = FACING_N; fcounter <= FACING_NW; fcounter++) {
                         newcell = Coord_Cell(Coord_Move(Cell_Coord(cell), Facing_Dir(rot), dist * 256));
-                        if (Map.In_Radar(newcell) && Map[newcell].Flag_Place(Class->House)) {
+                        if (Map.In_Radar(newcell) && Map[newcell].Flag_Place(Class->House, set_home)) {
                             dist = 32;
                             rc = true;
                             break;
@@ -3927,7 +4157,7 @@ bool HouseClass::Flag_Attach(CELL cell, bool set_home)
                     rot = Random_Pick(FACING_N, FACING_NW);
                     for (fcounter = FACING_NW; fcounter >= FACING_N; fcounter--) {
                         newcell = Coord_Cell(Coord_Move(Cell_Coord(cell), Facing_Dir(rot), dist * 256));
-                        if (Map.In_Radar(newcell) && Map[newcell].Flag_Place(Class->House)) {
+                        if (Map.In_Radar(newcell) && Map[newcell].Flag_Place(Class->House, set_home)) {
                             dist = 32;
                             rc = true;
                             break;
@@ -3946,6 +4176,7 @@ bool HouseClass::Flag_Attach(CELL cell, bool set_home)
         **	mark that cell as this house's flag home cell. Otherwise fall back
         **	on returning the flag to its home.
         */
+#if 0
         if (rc) {
             FlagLocation = As_Target(newcell);
 
@@ -3956,10 +4187,109 @@ bool HouseClass::Flag_Attach(CELL cell, bool set_home)
         } else if (FlagHome != 0) {
             rc = Map[FlagHome].Flag_Place(Class->House);
         }
+#else
+        if (rc) {
+            FlagLocation = As_Target(newcell);
+            if (GameToPlay == GAME_HOST) {
+                data = new FlagPacketData;
+                data->House = Class->House;
+                data->Whom = As_Target(newcell);
+                data->Attached = 1;
+                FlagPacketDatas.Add(data);
+            }
+        }
+#endif
 
         return (rc);
     }
     return (false);
+}
+
+void HouseClass::Flag_Detach(CELL cell)
+{
+    if (Map.In_Radar(cell)) {
+        CellClass* cptr = &Map[cell];
+        if (cptr->Overlay) {
+            cptr->Overlay = OVERLAY_NONE;
+            new OverlayClass(OVERLAY_CONCRETE, cell);
+            Map.Flag_Cell(cell);
+        }
+    }
+}
+
+void HouseClass::Make_CTF_Packet_Dropped(CELL cell, bool unk)
+{
+    CTFPacketData* data;
+    CellClass* cptr;
+
+    if (GameToPlay == GAME_CLIENT && !unk)
+        return;
+
+    FlagHome = cell;
+
+    if (GameParams.IsCaptureTheFlag) {
+        cptr = &Map[cell];
+        cptr->Overlay = OVERLAY_FLAG_SPOT;
+        Map.Flag_Cell(cell);
+    } else if (GameParams.Football) {
+        CELL c;
+        if (Class->House == HOUSE_BLUE_TEAM) {
+            c = cell;
+        } else {
+            c = cell - 1;
+        }
+        Flag_Detach(c - 129);
+        Flag_Detach(c - 128);
+        Flag_Detach(c - 127);
+        Flag_Detach(c - 126);
+        Flag_Detach(c - 1);
+        Flag_Detach(c);
+        Flag_Detach(c + 1);
+        Flag_Detach(c + 2);
+        Flag_Detach(c + 127);
+        Flag_Detach(c + 128);
+        Flag_Detach(c + 129);
+        Flag_Detach(c + 130);
+        if (PlayerPtr->IsUnk2) {
+            Map.Flag_To_Redraw(true);
+            Map.IsToDrawUnknown = true;
+        }
+    }
+
+    if (GameParams.Football && GameToPlay == GAME_CLIENT && Class->House == PlayerPtr->ActLike) {
+        Map.Sight_From(FlagHome, 4, 0);
+    }
+
+    if (GameToPlay == GAME_HOST) {
+        data = new CTFPacketData;
+        data->House = Class->House;
+        data->Cell = cell;
+        data->State = 1;
+        CTFPacketDatas.Add(data);
+    }
+}
+
+void HouseClass::Make_CTF_Packet_Picked_Up(CELL cell, bool unk)
+{
+    CTFPacketData* data;
+    CellClass* cptr;
+
+    if (GameToPlay == GAME_CLIENT && !unk)
+        return;
+
+    if (GameParams.IsCaptureTheFlag) {
+        cptr = &Map[cell];
+        cptr->Overlay = OVERLAY_NONE;
+        Map.Flag_Cell(cell);
+    }
+    FlagHome = 0;
+    if (GameToPlay == GAME_HOST) {
+        data = new CTFPacketData;
+        data->House = Class->House;
+        data->Cell = cell;
+        data->State = 0;
+        CTFPacketDatas.Add(data);
+    }
 }
 
 /***********************************************************************************************
@@ -3981,15 +4311,46 @@ bool HouseClass::Flag_Attach(CELL cell, bool set_home)
  *=============================================================================================*/
 bool HouseClass::Flag_Attach(UnitClass* object, bool set_home)
 {
+    FlagPacketData* data;
     Validate();
+
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return (false);
+    }
+
     if (object && !object->IsInLimbo) {
-        Flag_Remove(FlagLocation, set_home);
+        Flag_Remove(FlagLocation /*, set_home*/, unk);
+
+        TARGET target;
+        int id;
+        if (object->What_Am_I() == RTTI_INFANTRY) {
+            id = Infantry.ID((InfantryClass*)object);
+            target = Build_Target(KIND_INFANTRY, id);
+        } else if (object->What_Am_I() == RTTI_UNIT) {
+            id = Units.ID((UnitClass*)object);
+            target = Build_Target(KIND_UNIT, id);
+        } else {
+            return (false);
+        }
 
         /*
-        **	Attach the flag to the object.
-        */
-        object->Flag_Attach(Class->House);
-        FlagLocation = object->As_Target();
+		**	Attach the flag to the object.
+		*/
+        object->Flag_Attach(Class->House, unk);
+
+        if (PlayerPtr->Class->House == object->Owner()) {
+            Sound_Effect(VOC_DOWN);
+        }
+
+        FlagLocation = target;
+
+        if (GameToPlay == GAME_HOST) {
+            data = new FlagPacketData;
+            data->House = Class->House;
+            data->Whom = target;
+            data->Attached = true;
+            FlagPacketDatas.Add(data);
+        }
         return (true);
     }
     return (false);
@@ -4014,6 +4375,30 @@ extern void On_Defeated_Message(const char* message, float timeout_seconds);
  *=========================================================================*/
 void HouseClass::MPlayer_Defeated(void)
 {
+    // IsHuman
+    if (IsHuman) {
+        IsDefeated = true;
+    }
+
+    if (Class->House != HOUSE_SPECTATOR && Class->House != HOUSE_ADMIN) {
+
+        if (!IsVisionary && !GameParams.FreeRadarForAll) {
+            IsUnk2 = false;
+        }
+
+        if (this == PlayerPtr && WDTRadarAdded && !IsVisionary && !GameParams.FreeRadarForAll) {
+            Remove_WDT_Radar();
+        }
+
+        if (this == PlayerPtr && OfflineMode) {
+            OfflineDeathCount++;
+        }
+        if (GameToPlay == GAME_HOST && IsHuman) {
+            Timer1.Set(60);
+        }
+    }
+
+#if 0
     Validate();
     char txt[80];
     int i, j, k;
@@ -4340,6 +4725,7 @@ void HouseClass::MPlayer_Defeated(void)
         }
 #endif
     }
+#endif
 }
 
 /***************************************************************************
@@ -4358,7 +4744,7 @@ void HouseClass::MPlayer_Defeated(void)
  *   05/16/1995 BRR : Created.                                             *
  *   06/09/1995 JLB : Handles aircraft.                                    *
  *=========================================================================*/
-void HouseClass::Blowup_All(void)
+void HouseClass::Blowup_All(bool keep_buildings)
 {
     Validate();
     int i;
@@ -4388,7 +4774,8 @@ void HouseClass::Blowup_All(void)
             count = 0;
             while (::Units.Ptr(i) == uptr && uptr->Strength) {
                 damage = 0x7fff;
-                Explosion_Damage(uptr->Center_Coord(), damage, NULL, WARHEAD_HE);
+                uptr->TechnoUnk2 = false;
+                uptr->Take_Damage(damage, NULL, WARHEAD_HE, NULL);
                 count++;
                 if (count > 5) {
                     delete uptr;
@@ -4407,6 +4794,7 @@ void HouseClass::Blowup_All(void)
             AircraftClass* aptr = ::Aircraft.Ptr(i);
 
             damage = 0x7fff;
+            aptr->TechnoUnk2 = false;
             aptr->Take_Damage(damage, 0, WARHEAD_HE, NULL);
             if (!aptr->IsActive) {
                 i--;
@@ -4418,19 +4806,22 @@ void HouseClass::Blowup_All(void)
     **	Buildings don't delete themselves when they die; they shake the screen
     **	and begin a countdown, so don't decrement 'i' when it's destroyed.
     */
-    for (i = 0; i < Buildings.Count(); i++) {
-        if (Buildings.Ptr(i)->House == this && !Buildings.Ptr(i)->IsInLimbo) {
-            bptr = Buildings.Ptr(i);
+    if (!keep_buildings) {
+        for (i = 0; i < Buildings.Count(); i++) {
+            if (Buildings.Ptr(i)->House == this && !Buildings.Ptr(i)->IsInLimbo) {
+                bptr = Buildings.Ptr(i);
 
-            count = 0;
-            bptr->IsSurvivorless = true;
-            while (Buildings.Ptr(i) == bptr && bptr->Strength) {
-                damage = 0x7fff;
-                Explosion_Damage(bptr->Center_Coord(), damage, NULL, WARHEAD_HE);
-                count++;
-                if (count > 5) {
-                    delete bptr;
-                    break;
+                count = 0;
+                bptr->IsSurvivorless = true;
+                while (Buildings.Ptr(i) == bptr && bptr->Strength) {
+                    damage = 0x7fff;
+                    bptr->TechnoUnk2 = false;
+					bptr->Take_Damage(damage, NULL, WARHEAD_HE, NULL);
+                    count++;
+                    if (count > 5) {
+                        delete bptr;
+                        break;
+                    }
                 }
             }
         }
@@ -4450,7 +4841,8 @@ void HouseClass::Blowup_All(void)
             while (Infantry.Ptr(i) == iptr && iptr->Strength) {
                 damage = 0x7fff;
                 warhead = Random_Pick(WARHEAD_SA, WARHEAD_FIRE);
-                Explosion_Damage(iptr->Center_Coord(), damage, NULL, warhead);
+                iptr->TechnoUnk2 = false;
+				iptr->Take_Damage(damage, NULL, WARHEAD_HE, NULL);
                 if (iptr->IsActive) {
                     damage = 0x7fff;
                     iptr->Take_Damage(damage, 0, warhead);
