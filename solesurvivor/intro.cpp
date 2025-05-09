@@ -253,7 +253,7 @@ void Choose_Side(void)
     /*
     ** Skip the briefings if we're in special mode.
     */
-    if (Special.IsJurassic && AreThingiesEnabled) {
+    if (Special.IsJurassic) {
         if (nodbrief) {
             VQA_Close(nodbrief);
             VQA_Free(nodbrief);

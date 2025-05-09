@@ -499,7 +499,7 @@ int Scan_Place_Object(ObjectClass* obj, CELL cell);
 */
 void Uninit_Game(void);
 unsigned Obfuscate(char const* string);
-void Anim_Init(void);
+void Anim_Init(bool unk);
 bool Init_Game(int argc, char* argv[]);
 bool Select_Game(bool fade = false);
 bool Parse_Command_Line(int argc, char* argv[]);

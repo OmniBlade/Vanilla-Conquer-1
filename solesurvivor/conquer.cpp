@@ -3675,7 +3675,8 @@ void Clear_Team_Scores()
  **************************************************************************************************/
 void Blit_Hid_Page_To_Seen_Buff(void)
 {
-    HidPage.Blit(SeenBuff);
+    //HidPage.Blit(SeenBuff);
+    UnknownViewport2.Blit(UnknownViewport1);
 }
 
 /***********************************************************************************************

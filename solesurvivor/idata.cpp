@@ -114,15 +114,13 @@ static InfantryTypeClass const E1(INFANTRY_E1,          // Infantry type number.
                                   &MiniGunnerDos[0][0], // Ptr to minigunner 'DO' table above
                                   2,                    // Frame of projectile launch.
                                   2,                    // Frame of projectile launch while prone.
-                                  50,                   // Strength of infantry (in damage points).
-                                  1,                    // Sight range.
+                                  125,                  // Strength of infantry (in damage points).
+                                  3,                    // Sight range.
                                   100,                  // Cost of infantry (in credits).
                                   1,                    // Scenario when they first appear.
                                   80,
-                                  10, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
-                                      | HOUSEF_BAD, // Who can own this infantry unit.
+                                  10,                                   // Risk/Reward of this infantry unit.
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_M16,
                                   WEAPON_NONE,
                                   MPH_SLOW // Maximum speed of infantry.
@@ -184,17 +182,16 @@ static InfantryTypeClass const E2(INFANTRY_E2,         // Infantry type number.
                                   &GrenadierDos[0][0], // Ptr to grenadier DO table (above)
                                   14,                  // Frame of projectile launch.
                                   6,                   // Frame of projectile launch while prone.
-                                  50,                  // Strength of infantry (in damage points).
-                                  1,                   // Sight range.
+                                  135,                 // Strength of infantry (in damage points).
+                                  4,                   // Sight range.
                                   160,                 // Cost of infantry (in credits).
                                   3,                   // Scenario when they first appear.
                                   80,
-                                  10, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD, // Who can own this infantry unit.
+                                  10,                      // Risk/Reward of this infantry unit.
+                                  HOUSEF_JP | HOUSEF_GOOD, // Who can own this infantry unit.
                                   WEAPON_GRENADE,
                                   WEAPON_NONE,
-                                  MPH_SLOW_ISH // Maximum speed of infantry.
+                                  MPH_MEDIUM // Maximum speed of infantry.
 );
 
 // Bazooka
@@ -253,18 +250,16 @@ static InfantryTypeClass const E3(INFANTRY_E3,       // Infantry type number.
                                   &BazookaDos[0][0], // Ptr to DO table (above)
                                   3,                 // Frame of projectile launch.
                                   3,                 // Frame of projectile launch while prone.
-                                  25,                // Strength of infantry (in damage points).
-                                  2,                 // Sight range.
+                                  100,               // Strength of infantry (in damage points).
+                                  3,                 // Sight range.
                                   300,               // Cost of infantry (in credits).
                                   3,                 // Scenario when they first appear.
                                   80,
-                                  10, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
-                                      | HOUSEF_BAD, // Who can own this infantry unit.
+                                  10,                                   // Risk/Reward of this infantry unit.
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_DRAGON,
                                   WEAPON_NONE,
-                                  MPH_KINDA_SLOW // Maximum speed of infantry.
+                                  MPH_VERY_SLOW // Maximum speed of infantry.
 );
 
 // Flamethrower
@@ -323,17 +318,16 @@ static InfantryTypeClass const E4(INFANTRY_E4,            // Infantry type numbe
                                   &FlamethrowerDos[0][0], // ptr to DO table (above)
                                   2,                      // Frame of projectile launch.
                                   0,                      // Frame of projectile launch while prone.
-                                  70,                     // Strength of infantry (in damage points).
-                                  1,                      // Sight range.
+                                  190,                    // Strength of infantry (in damage points).
+                                  5,                      // Sight range.
                                   200,                    // Cost of infantry (in credits).
                                   5,                      // Scenario when they first appear.
                                   80,
-                                  10, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD, // Who can own this infantry unit.
+                                  10,                     // Risk/Reward of this infantry unit.
+                                  HOUSEF_JP | HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_FLAMETHROWER,
                                   WEAPON_NONE,
-                                  MPH_SLOW_ISH);
+                                  MPH_MEDIUM_SLOW);
 
 // Chemwarrior
 
@@ -391,19 +385,18 @@ static InfantryTypeClass const E5(INFANTRY_E5,           // Infantry type number
                                   &ChemwarriorDos[0][0], // ptr to DO table
                                   2,                     // Frame of projectile launch.
                                   0,                     // Frame of projectile launch while prone.
-                                  70,                    // Strength of infantry (in damage points).
-                                  1,                     // Sight range.
+                                  200,                   // Strength of infantry (in damage points).
+                                  5,                     // Sight range.
                                   300,                   // Cost of infantry (in credits).
                                   98,                    // Scenario when they first appear.
                                   80,
                                   10, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP |
+                                  HOUSEF_JP |
                                       //	HOUSEF_GOOD|
                                       HOUSEF_BAD, // Who can own this infantry unit.
                                   WEAPON_CHEMSPRAY,
                                   WEAPON_NONE,
-                                  MPH_SLOW);
+                                  MPH_MEDIUM_FAST);
 
 // Engineer
 
@@ -462,14 +455,12 @@ static InfantryTypeClass const E7(INFANTRY_E7,        // Infantry type number.
                                   3,                  // Frame of projectile launch.
                                   3,                  // Frame of projectile launch while prone.
                                   25,                 // Strength of infantry (in damage points).
-                                  2,                  // Sight range.
+                                  3,                  // Sight range.
                                   500,                // Cost of infantry (in credits).
                                   2,                  // Scenario when they first appear.
                                   80,
-                                  75, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD
-                                      | HOUSEF_GOOD, // Who can own this infantry unit.
+                                  75,                                   // Risk/Reward of this infantry unit.
+                                  HOUSEF_JP | HOUSEF_BAD | HOUSEF_GOOD, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
                                   MPH_SLOW // Maximum speed of infantry.
@@ -531,15 +522,13 @@ static InfantryTypeClass const Commando(INFANTRY_RAMBO,     // Infantry type num
                                         &CommandoDos[0][0], // ptr to DO table
                                         2,                  // Frame of projectile launch.
                                         2,                  // Frame of projectile launch while prone.
-                                        80,                 // Strength of infantry (in damage points).
+                                        150,                // Strength of infantry (in damage points).
                                         5,                  // Sight range.
                                         1000,               // Cost of infantry (in credits).
                                         98,                 // Scenario when they first appear.
                                         80,
-                                        75, // Risk/Reward of this infantry unit.
-                                        HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                            | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
-                                            | HOUSEF_BAD, // Who can own this infantry unit.
+                                        75,                                   // Risk/Reward of this infantry unit.
+                                        HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // Who can own this infantry unit.
                                         WEAPON_RIFLE,
                                         WEAPON_NONE,
                                         MPH_SLOW_ISH // Maximum speed of infantry.
@@ -607,8 +596,7 @@ static InfantryTypeClass const C1(INFANTRY_C1,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_PISTOL,
                                   WEAPON_NONE,
@@ -674,8 +662,7 @@ static InfantryTypeClass const C2(INFANTRY_C2,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -742,8 +729,7 @@ static InfantryTypeClass const C3(INFANTRY_C3,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -809,8 +795,7 @@ static InfantryTypeClass const C4(INFANTRY_C4,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -876,8 +861,7 @@ static InfantryTypeClass const C5(INFANTRY_C5,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -943,8 +927,7 @@ static InfantryTypeClass const C6(INFANTRY_C6,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -1010,8 +993,7 @@ static InfantryTypeClass const C7(INFANTRY_C7,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_PISTOL,
                                   WEAPON_NONE,
@@ -1077,8 +1059,7 @@ static InfantryTypeClass const C8(INFANTRY_C8,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -1144,8 +1125,7 @@ static InfantryTypeClass const C9(INFANTRY_C9,         // Infantry type number.
                                   99,                  // Scenario when they first appear.
                                   0,
                                   1, // Risk/Reward of this infantry unit.
-                                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                      | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                       | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                   WEAPON_NONE,
                                   WEAPON_NONE,
@@ -1213,8 +1193,7 @@ static InfantryTypeClass const C10(INFANTRY_C10,       // Infantry type number.
                                    99,                 // Scenario when they first appear.
                                    0,
                                    1, // Risk/Reward of this infantry unit.
-                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                   HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                        | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                    WEAPON_NONE,
                                    WEAPON_NONE,
@@ -1280,8 +1259,7 @@ static InfantryTypeClass const Moebius(INFANTRY_MOEBIUS,  // Infantry type numbe
                                        99,                // Scenario when they first appear.
                                        0,
                                        10, // Risk/Reward of this infantry unit.
-                                       HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                           | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
+                                       HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD
                                            | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                        WEAPON_NONE,
                                        WEAPON_NONE,
@@ -1346,10 +1324,8 @@ static InfantryTypeClass const Delphi(INFANTRY_DELPHI,  // Infantry type number.
                                       10,               // Cost of infantry (in credits).
                                       99,               // Scenario when they first appear.
                                       0,
-                                      0, // Risk/Reward of this infantry unit.
-                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                          | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
-                                          | HOUSEF_NEUTRAL, // Who can own this infantry unit.
+                                      0,                                        // Risk/Reward of this infantry unit.
+                                      HOUSEF_JP | HOUSEF_GOOD | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                       WEAPON_PISTOL,
                                       WEAPON_NONE,
                                       MPH_SLOW_ISH);
@@ -1413,10 +1389,8 @@ static InfantryTypeClass const DrChan(INFANTRY_CHAN,    // Infantry type number.
                                       10,               // Cost of infantry (in credits).
                                       99,               // Scenario when they first appear.
                                       0,
-                                      1, // Risk/Reward of this infantry unit.
-                                      HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                          | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
-                                          | HOUSEF_NEUTRAL, // Who can own this infantry unit.
+                                      1,                                        // Risk/Reward of this infantry unit.
+                                      HOUSEF_JP | HOUSEF_GOOD | HOUSEF_NEUTRAL, // Who can own this infantry unit.
                                       WEAPON_NONE,
                                       WEAPON_NONE,
                                       MPH_SLOW_ISH);
@@ -1701,7 +1675,10 @@ InfantryTypeClass::InfantryTypeClass(InfantryType type,
  *=============================================================================================*/
 ObjectClass* InfantryTypeClass::Create_One_Of(HouseClass* house) const
 {
-    return (new InfantryClass(Type, house->Class->House));
+    if (InfantryClass::New_Allowed()) {
+        return (new InfantryClass(Type, house->Class->House));
+    }
+    return NULL;
 }
 
 /***********************************************************************************************
@@ -1724,13 +1701,15 @@ ObjectClass* InfantryTypeClass::Create_One_Of(HouseClass* house) const
  *=============================================================================================*/
 bool InfantryTypeClass::Create_And_Place(CELL cell, HousesType house) const
 {
-    InfantryClass* i = new InfantryClass(Type, house);
-    if (i) {
-        COORDINATE coord = Map[cell].Closest_Free_Spot(Cell_Coord(cell));
-        if (coord) {
-            return (i->Unlimbo(coord, DIR_E));
-        } else {
-            delete i;
+    if (InfantryClass::New_Allowed()) {
+        InfantryClass* i = new InfantryClass(Type, house);
+        if (i) {
+            COORDINATE coord = Map[cell].Closest_Free_Spot(Cell_Coord(cell));
+            if (coord) {
+                return (i->Unlimbo(coord, DIR_E));
+            } else {
+                delete i;
+            }
         }
     }
     return (false);

@@ -171,7 +171,7 @@ bool Init_Game(int, char*[])
     **	Bootstrap enough of the system so that the error dialog box can sucessfully
     **	be displayed.
     */
-    CCDebugString("C&C95 - About to register CCLOCAL.MIX\n");
+    CCDebugString("C&C95 - About to register LOCAL.MIX\n");
 
     if (Is_Demo()) {
         CCDebugString("C&C95 - Detected running as demo, about to register DEMOL.MIX\n");
@@ -188,13 +188,9 @@ bool Init_Game(int, char*[])
         ** Windows CCLOCAL.MIX
         */
 
-        if (Get_Resolution_Factor()) {
-            new MFCD("CCLOCAL.MIX"); // Cached.
-            MFCD::Cache("CCLOCAL.MIX");
-        } else {
-            new MFCD("LOCAL.MIX"); // Cached.
-            MFCD::Cache("LOCAL.MIX");
-        }
+        new MFCD("LOCAL.MIX"); // Cached.
+        MFCD::Cache("LOCAL.MIX");
+
         CCDebugString("C&C95 - About to register UPDATE.MIX\n");
         new MFCD("UPDATE.MIX"); // Cached.
         new MFCD("UPDATA.MIX"); // Cached.
@@ -227,17 +223,10 @@ bool Init_Game(int, char*[])
     WhitePalette = new (MEM_CLEAR | MEM_REAL) unsigned char[768];
     memset(WhitePalette, 63, 768);
 
-    if (Get_Resolution_Factor()) {
-        MapFontPtr = Load_Alloc_Data(CCFileClass("8FAT.FNT"));
-        Green12FontPtr = Load_Alloc_Data(CCFileClass("12GREEN.FNT"));
-        Green12GradFontPtr = Load_Alloc_Data(CCFileClass("12GRNGRD.FNT"));
-        ScoreFontPtr = Load_Alloc_Data(CCFileClass("12GRNGRD.FNT"));
-    } else {
-        MapFontPtr = Font6Ptr; // Fixes ingame helpbox
-        Green12FontPtr = Font3Ptr;
-        Green12GradFontPtr = GradFont6Ptr;
-        ScoreFontPtr = GradFont6Ptr;
-    }
+    MapFontPtr = Load_Alloc_Data(CCFileClass("8FAT.FNT"));
+    Green12FontPtr = Load_Alloc_Data(CCFileClass("12GREEN.FNT"));
+    Green12GradFontPtr = Load_Alloc_Data(CCFileClass("12GRNGRD.FNT"));
+    ScoreFontPtr = Load_Alloc_Data(CCFileClass("12GRNGRD.FNT"));
 
     CCDebugString("C&C95 - About to set palette\n");
     memset(BlackPalette, 0x01, 768);
@@ -279,6 +268,7 @@ bool Init_Game(int, char*[])
         Keyboard->Check();
     } while (!GameInFocus);
     AllSurfaces.SurfacesRestored = false;
+    Keyboard::Check();
 
     CCDebugString("C&C95 - About to load the language file\n");
     /*
@@ -303,12 +293,12 @@ bool Init_Game(int, char*[])
         char buffer[255];
         Set_Palette(GamePalette);
 #ifdef GERMAN
-        sprintf(buffer, "Command & Conquer kann Ihren Maustreiber nicht finden..");
+        sprintf(buffer, "Sole Survivor kann Ihren Maustreiber nicht finden..");
 #else
 #ifdef FRENCH
-        sprintf(buffer, "Command & Conquer ne peut pas d�tecter votre gestionnaire de souris.");
+        sprintf(buffer, "Sole Survivor ne peut pas d�tecter votre gestionnaire de souris.");
 #else
-        sprintf(buffer, "Command & Conquer is unable to detect your mouse driver.");
+        sprintf(buffer, "Sole Survivor is unable to detect your mouse driver.");
 #endif
 #endif
         WWMessageBox().Process(buffer, TXT_OK);
@@ -401,44 +391,36 @@ bool Init_Game(int, char*[])
     /*
     **	Inform the file system of the various MIX files.
     */
-    if (Is_Demo()) {
-        CCDebugString("C&C95 - About to register DEMO.MIX\n");
-        new MFCD("DEMO.MIX");
-        ScoresPresent = false;
-        if (CCFileClass("DEMOM.MIX").Is_Available()) {
-            CCDebugString("C&C95 - About to register DEMOM.MIX\n");
-            if (!MoviesMix)
-                MoviesMix = new MFCD("DEMOM.MIX");
-            ScoresPresent = true;
-            ThemeClass::Scan();
-        }
-    } else {
-        CCDebugString("C&C95 - About to register CONQUER.MIX\n");
-        new MFCD("CONQUER.MIX"); // Cached.
-        CCDebugString("C&C95 - About to register TRANSIT.MIX\n");
-        new MFCD("TRANSIT.MIX");
 
-        CCDebugString("C&C95 - About to register GENERAL.MIX\n");
-        if (!GeneralMix)
-            GeneralMix = new MFCD("GENERAL.MIX"); // Never cached.
+    CCDebugString("C&C95 - About to register CONQUER.MIX\n");
+    new MFCD("CONQUER.MIX"); // Cached.
+    CCDebugString("C&C95 - About to register SOLE.MIX\n");
+    new MFCD("SOLE.MIX");
+    CCDebugString("C&C95 - About to register SOLEDISK.MIX\n");
+    new MFCD("SOLEDISK.MIX");
+    CCDebugString("C&C95 - About to register TRANSIT.MIX\n");
+    new MFCD("TRANSIT.MIX");
 
-        //	if (CCFileClass("MOVIES.MIX").Is_Available()) {
-        CCDebugString("C&C95 - About to register MOVIES.MIX\n");
-        if (!MoviesMix)
-            MoviesMix = new MFCD("MOVIES.MIX"); // Never cached.
-                                                //	}
+    CCDebugString("C&C95 - About to register GENERAL.MIX\n");
+    if (!GeneralMix)
+        GeneralMix = new MFCD("GENERAL.MIX"); // Never cached.
 
-        /*
+    //	if (CCFileClass("MOVIES.MIX").Is_Available()) {
+    CCDebugString("C&C95 - About to register MOVIES.MIX\n");
+    if (!MoviesMix)
+        MoviesMix = new MFCD("MOVIES.MIX"); // Never cached.
+                                            //	}
+
+    /*
         **	Register the score mixfile.
         */
-        CCDebugString("C&C95 - About to register SCORES.MIX\n");
-        ScoresPresent = false;
-        //	if (CCFileClass("SCORES.MIX").Is_Available()) {
-        ScoresPresent = true;
-        if (!ScoreMix) {
-            ScoreMix = new MFCD("SCORES.MIX");
-            ThemeClass::Scan();
-        }
+    CCDebugString("C&C95 - About to register SCORES.MIX\n");
+    ScoresPresent = false;
+    //	if (CCFileClass("SCORES.MIX").Is_Available()) {
+    ScoresPresent = true;
+    if (!ScoreMix) {
+        ScoreMix = new MFCD("SCORES.MIX");
+        ThemeClass::Scan();
     }
 
     /*
@@ -469,7 +451,13 @@ bool Init_Game(int, char*[])
     **	Initialize the animation system.
     */
     CCDebugString("C&C95 - About to initialise the animation system\n");
-    Anim_Init();
+    Anim_Init(false);
+
+    /*
+    **	Read game options, so the GameSpeed is initialized when multiplayer
+    ** dialogs are invoked.  (GameSpeed must be synchronized between systems.)
+    */
+    Options.Load_Settings();
 
     /*
     **	Play the introduction movies.
@@ -488,7 +476,7 @@ bool Init_Game(int, char*[])
     memset(CurrentPalette, 0x01, 768);
 
     if (!Special.IsFromInstall) {
-        Load_Title_Screen(TitlePicture, &HidPage, Palette);
+        Load_Title_Screen(TitlePicture, &UnknownViewport2, Palette);
         Blit_Hid_Page_To_Seen_Buff();
     }
 
@@ -501,17 +489,21 @@ bool Init_Game(int, char*[])
     }
     Call_Back();
 
-    if (Is_Demo()) {
-        MFCD::Cache("DEMO.MIX");
-        MFCD::Cache("SOUNDS.MIX");
-    } else {
-        /*
+    Set_Logic_Page(UnknownViewport1);
+    Fancy_Text_Print(Text_String(TXT_STAND_BY),
+                     UnknownViewport1.Get_Width() / 2,
+                     0x100u,
+                     3u,
+                     0,
+                     TPF_6PT_GRAD | TPF_FULLSHADOW | TPF_USE_GRAD_PAL | TPF_BRIGHT_COLOR | TPF_CENTER);
+    Show_Mouse();
+
+    /*
         **	Cache the main game data. This operation can take a very long time.
         */
-        MFCD::Cache("CONQUER.MIX");
-        if (SampleType != 0 && !Debug_Quiet) {
-            MFCD::Cache("SOUNDS.MIX");
-        }
+    MFCD::Cache("CONQUER.MIX");
+    if (SampleType != 0 && !Debug_Quiet) {
+        MFCD::Cache("SOUNDS.MIX");
     }
     Call_Back();
 
@@ -560,6 +552,12 @@ bool Init_Game(int, char*[])
     AircraftTypeClass::One_Time();
     HouseClass::One_Time();
 
+    if (DebugLogTeams) {
+        CCDebugString("*ClearTeamScore B:\n");
+    }
+
+    Clear_Team_Scores();
+
     /*
     **	Speech holding tank buffer. Since speech does not mix, it can be placed
     **	into a custom holding tank only as large as the largest speech file to
@@ -588,48 +586,14 @@ bool Init_Game(int, char*[])
 #endif
 
     /*
-    **	Initialize the multiplayer score values
-    */
-    MPlayerGamesPlayed = 0;
-    MPlayerNumScores = 0;
-    MPlayerCurGame = 0;
-    for (int i = 0; i < MAX_MULTI_NAMES; i++) {
-        MPlayerScore[i].Name[0] = '\0';
-        MPlayerScore[i].Wins = 0;
-        for (int j = 0; j < MAX_MULTI_GAMES; j++) {
-            MPlayerScore[i].Kills[j] = -1; // -1 = this player didn't play this round
-        }
-    }
-
-    /*
     ** Copy the title screen's palette into the GamePalette & OriginalPalette,
     ** because the options Load routine uses these palettes to set the brightness, etc.
     */
     memcpy(GamePalette, Palette, 768);
     memcpy(OriginalPalette, Palette, 768);
 
-    /*
-    **	Read game options, so the GameSpeed is initialized when multiplayer
-    ** dialogs are invoked.  (GameSpeed must be synchronized between systems.)
-    */
-    Options.Load_Settings();
-
-    /*
-    ** Now that conquer.ini has been read, we can check if we need zounds.mix.
-    */
-    if (!Is_Demo() && SampleType != 0 && !Debug_Quiet && Special.IsJuvenile) {
-        new MFCD("ZOUNDS.MIX");
-        MFCD::Cache("ZOUNDS.MIX");
-    }
-
-    /*
-    **	Dump a default copy of rules.ini.
-    */
-    if (!rulesIniFile.Is_Available()) {
-        Rule.Export(RuleINI);
-        CDFileClass ini_export("RULES.INI");
-        RuleINI.Save(ini_export, false);
-    }
+    Init_Voice_Themes();
+    Read_Host_Game_Params(&GameParams);
 
     return (true);
 }
@@ -680,6 +644,9 @@ void Uninit_Game(void)
 extern bool Do_The_Internet_Menu_Thang(void);
 extern int ShowCommand;
 
+int DefaultSpeedScale = 256;
+MainMenuSelection MenuSelection = SEL_NONE;
+
 /***********************************************************************************************
  * Select_Game -- The game's main menu                                                         *
  *                                                                                             *
@@ -695,30 +662,9 @@ extern int ShowCommand;
  * HISTORY:                                                                                    *
  *   06/05/1995 BRR : Created.                                                                 *
  *=============================================================================================*/
-extern int Com_Fake_Scenario_Dialog(void);
-extern int Com_Show_Fake_Scenario_Dialog(void);
-
 bool Select_Game(bool fade)
 {
-    enum
-    {
-        SEL_TIMEOUT = -1, // main menu timeout--go into attract mode
-#ifdef NEWMENU
-        SEL_NEW_SCENARIO, // Expansion scenario to play.
-#endif
-        SEL_START_NEW_GAME, // start a new game
-#ifdef BONUS_MISSIONS
-        SEL_BONUS_MISSIONS,
-#endif                        // BONUS_MISSIONS
-        SEL_LOAD_MISSION,     // load a saved game
-        SEL_MULTIPLAYER_GAME, // play modem/null-modem/network game
-        SEL_INTRO,            // replay the intro
-        SEL_EXIT,             // exit to DOS
-        SEL_FAME,             // view the hall of fame
-        SEL_NONE,             // placeholder default value
-    };
     bool gameloaded = false; // Has the game been loaded from the menu?
-    int selection;           // the default selection
     bool process = true;     // false = break out of while loop
     bool display = true;
     CountDownTimerClass count;
@@ -738,51 +684,22 @@ bool Select_Game(bool fade)
     PlayerWins = false;
     PlayerLoses = false;
     MPlayerObiWan = false;
-    Debug_Unshroud = false;
+
+    if (!Debug_Map)
+        Debug_Unshroud = false;
+
     Map.Set_Cursor_Shape(0);
     Map.PendingObjectPtr = 0;
     Map.PendingObject = 0;
     Map.PendingHouse = HOUSE_NONE;
 
-    /*
-    ** Initialize multiplayer-protocol-specific variables:
-    ** If CommProtocol MULTI_E_COMP is used, you must:
-    ** Init FrameSendRate to a sensible value (3 is good)
-    ** Init MPlayerMaxAhead to an even multiple of FrameSendRate, and it must
-    **   be at least 2 * MPlayerMaxAhead
-    */
-    CommProtocol = COMM_PROTOCOL_SINGLE_NO_COMP;
-
-    ProcessTicks = 0;
-    ProcessFrames = 0;
-    DesiredFrameRate = 30;
-    //#if(TIMING_FIX)
-    NewMaxAheadFrame1 = 0;
-    NewMaxAheadFrame2 = 0;
-    //#endif
-
-    /*
-    **	Init multiplayer game scores.  Let Wins accumulate; just init the current
-    ** Kills for this game.  Kills of -1 means this player didn't play this round.
-    */
-    for (int i = 0; i < MAX_MULTI_GAMES; i++) {
-        MPlayerScore[i].Kills[MPlayerCurGame] = -1;
-    }
+    WDTRadarAdded = false;
+    CratesDisabled = true;
 
     /*
     **	Set default mouse shape
     */
     Map.Set_Default_Mouse(MOUSE_NORMAL, false);
-
-    /*
-    **	If the last game we played was a multiplayer game, jump right to that
-    **	menu by pre-setting 'selection'.
-    */
-    if (GameToPlay == GAME_NORMAL) {
-        selection = SEL_NONE;
-    } else {
-        selection = SEL_MULTIPLAYER_GAME;
-    }
 
     /*
     **	Main menu processing; only do this if we're not in editor mode.
@@ -796,20 +713,15 @@ bool Select_Game(bool fade)
         Theme.Queue_Song(THEME_MAP1);
         ScenarioInit--;
 
-        /*
-        ** If we're playing back a recording, load all pertinant values & skip
-        ** the menu loop.  Hide the now-useless mouse pointer.
-        */
-        if (PlaybackGame && RecordFile.Is_Available()) {
-            if (RecordFile.Open(READ)) {
-                Load_Recording_Values();
-                process = false;
-                Theme.Fade_Out();
-            } else
-                PlaybackGame = false;
-        }
-
         while (process) {
+            bool choice_made;
+            ThemeType theme = Theme.What_Is_Playing();
+
+            if (theme != THEME_MAP1) {
+                Theme.Play_Song(THEME_NONE);
+                Theme.Queue_Song(THEME_MAP1);
+                Theme.AI();
+            }
 
             /*
             ** If we have just received input focus again after running in the background then
@@ -823,14 +735,14 @@ bool Select_Game(bool fade)
             /*
             **	Redraw the title page if needed
             */
-            if (display) {
+            if (display && MenuSelection) {
                 Hide_Mouse();
 
                 /*
                 **	Display the title page; fade it in if this is the first time
                 **	through the loop, and the 'fade' flag is true
                 */
-                Load_Title_Screen(TitlePicture, &HidPage, Palette);
+                Load_Title_Screen(TitlePicture, &UnknownViewport2, Palette);
                 memcpy(GamePalette, Palette, 768);
                 Blit_Hid_Page_To_Seen_Buff();
 
@@ -839,486 +751,184 @@ bool Select_Game(bool fade)
                     fade = false;
                 }
 
-                Set_Logic_Page(SeenBuff);
-
-                Fancy_Text_Print("%s",
-                                 SeenBuff.Get_Width() - 1,
-                                 SeenBuff.Get_Height() - 10,
-                                 GREEN,
-                                 TBLACK,
-                                 TPF_6POINT | TPF_FULLSHADOW | TPF_RIGHT,
-                                 VersionText);
+                Set_Logic_Page(UnknownViewport1);
 
                 display = false;
                 Show_Mouse();
-            } else {
-                if (RunningAsDLL) {
-                    return true;
-                    ;
-                }
             }
+
             /*
             **	Display menu and fetch selection from player.
             */
             if (Special.IsFromInstall) {
-                selection = SEL_START_NEW_GAME;
+                MenuSelection = SEL_START_NEW_GAME;
                 Theme.Queue_Song(THEME_NONE);
             }
 
-            if (selection == SEL_NONE) {
+            if (MenuSelection != SEL_OFFLINE) {
+                OfflineMode = false;
+            }
+
+            if (MenuSelection == SEL_NONE) {
                 //				selection = Main_Menu(0);
-                selection = Main_Menu(ATTRACT_MODE_TIMEOUT);
+                MenuSelection = (MainMenuSelection)Main_Menu(ATTRACT_MODE_TIMEOUT);
             }
             Call_Back();
 
-            switch (selection) {
+            switch (MenuSelection) {
+                GameEnum g;
 
-#ifdef NEWMENU
+            case SEL_OFFLINE:
+                OfflineMode = true;
 
-            /*
-            **	Pick an expansion scenario.
-            */
-            case SEL_NEW_SCENARIO:
-                Scen.CarryOverMoney = 0;
-                if (Expansion_Dialog()) {
-                    int difficulty = Fetch_Difficulty();
-                    if (difficulty != -1) {
-                        switch (difficulty) {
-                        case 0:
-                            Scen.CDifficulty = DIFF_HARD;
-                            Scen.Difficulty = DIFF_EASY;
-                            break;
+                GameParams.TimeLimit = Options.OfflineGametime;
+                GameParams.ScoreLimit = 0;
+                GameParams.LifeLimit = 0;
+                GameParams.IsCaptureTheFlag = 0;
+                GameParams.HealthBars = 0;
+                GameParams.FreeRadarForAll = 0;
+                GameParams.Football = 0;
+                GameParams.MinPlayers = 0;
+                GameParams.IonCannon = 0;
+                GameParams.TeamCrates = 0;
+                GameParams.SuperSeconds = 30;
+                GameParams.ArmageddonTimer = 400;
+                GameParams.NoReshroud = false;
+                GameParams.IsLadderGame = false;
+                GameParams.IsCrates = true;
+                GameParams.IsLamerCorrection = false;
+                GameParams.IsMaxNumAIsScaled = 0;
+                strcpy(GameParams.ChannelName, "Offline Practice");
+                GameParams.CrateDensityOverride = 0;
+                GameParams.IsAutoTeaming = 0;
+                GameParams.IsSquadChannel = 0;
+                GameParams.SuperInvuln = 1;
+                GameParams.NumTeams = 0;
+                WDTGameTimer.Set(0, 1);
 
-                        case 1:
-                            Scen.CDifficulty = DIFF_HARD;
-                            Scen.Difficulty = DIFF_NORMAL;
-                            break;
+                CratesDisabled = false;
+                Fade_Palette_To(BlackPalette, 0xFu, Call_Back);
+                Making_a_choice = true;
+                choice_made = Unit_Choice_Dialog();
+                Making_a_choice = false;
 
-                        case 2:
-                            Scen.CDifficulty = DIFF_NORMAL;
-                            Scen.Difficulty = DIFF_NORMAL;
-                            break;
-
-                        case 3:
-                            Scen.CDifficulty = DIFF_EASY;
-                            Scen.Difficulty = DIFF_NORMAL;
-                            break;
-
-                        case 4:
-                            Scen.CDifficulty = DIFF_EASY;
-                            Scen.Difficulty = DIFF_HARD;
-                            break;
-                        }
-
-                        Theme.Fade_Out();
-                        //						Theme.Queue_Song(THEME_AOI);
-                        GameToPlay = GAME_NORMAL;
-                        process = false;
-                    } else {
-                        display = true;
-                        selection = SEL_NONE;
-                    }
-                } else {
+                if (!choice_made) {
+                    MenuSelection = SEL_NONE;
                     display = true;
-                    selection = SEL_NONE;
-                }
-                break;
-
-#ifdef BONUS_MISSIONS
-
-            /*
-            **	User selected to play a bonus scenario.
-            */
-            case SEL_BONUS_MISSIONS:
-                CarryOverMoney = 0;
-
-                /*
-                ** Ensure that CD1 or CD2 is in the drive. These missions
-                ** are not on the covert CD.
-                */
-                cd_index = Get_CD_Index(CCFileClass::Get_CD_Drive(), 1 * 60);
-                /*
-                ** If cd_index == 2 then its a covert CD
-                */
-                if (cd_index == 2) {
-                    RequiredCD = 0;
-                    if (!Force_CD_Available(RequiredCD)) {
-                        Prog_End("Select_Game - CD not found", true);
-                        exit(EXIT_FAILURE);
-                    }
-                }
-
-                if (Bonus_Dialog()) {
-                    Theme.Fade_Out();
                     GameToPlay = GAME_NORMAL;
-                    process = false;
-                } else {
-                    display = true;
-                    selection = SEL_NONE;
-                }
-                break;
-
-#endif // BONUS_MISSIONS
-
-#endif
-
-            /*
-            **	SEL_START_NEW_GAME: Play the game
-            */
-            case SEL_START_NEW_GAME: {
-                int difficulty = 2;
-
-                if (!Special.IsFromInstall) {
-                    difficulty = Fetch_Difficulty();
+                    IsServerAdmin = false;
+                    break;
                 }
 
-                if (difficulty != -1) {
-                    switch (difficulty) {
-                    case 0:
-                        Scen.CDifficulty = DIFF_HARD;
-                        Scen.Difficulty = DIFF_EASY;
-                        break;
-
-                    case 1:
-                        Scen.CDifficulty = DIFF_HARD;
-                        Scen.Difficulty = DIFF_NORMAL;
-                        break;
-
-                    case 2:
-                        Scen.CDifficulty = DIFF_NORMAL;
-                        Scen.Difficulty = DIFF_NORMAL;
-                        break;
-
-                    case 3:
-                        Scen.CDifficulty = DIFF_EASY;
-                        Scen.Difficulty = DIFF_NORMAL;
-                        break;
-
-                    case 4:
-                        Scen.CDifficulty = DIFF_EASY;
-                        Scen.Difficulty = DIFF_HARD;
-                        break;
-                    }
-
-                    Scen.CarryOverMoney = 0;
-
-                    if (Is_Demo()) {
-                        Hide_Mouse();
-                        Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-                        Load_Title_Screen("PREPICK.CPS", &HidPage, Palette);
-                        Blit_Hid_Page_To_Seen_Buff();
-                        Fade_Palette_To(Palette, FADE_PALETTE_MEDIUM, Call_Back);
-                        Keyboard->Clear();
-                        Keyboard->Get();
-                        Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-                        Show_Mouse();
-                    }
-
-                    Scen.Scenario = 1;
-                    BuildLevel = 1;
-
-                    ScenPlayer = SCEN_PLAYER_GDI;
-                    ScenDir = SCEN_DIR_EAST;
-                    Whom = HOUSE_GOOD;
-
-                    if (!Is_Demo()) {
-                        Theme.Fade_Out();
-                        Choose_Side();
-                    }
-
-                    /*
-                    ** If user is playing special mode, do NOT change Whom; leave it set to
-                    ** GDI or NOD.  Ini.cpp will set the player's ActLike to mirror the
-                    ** Whom value.
-                    */
-                    if (Special.IsJurassic && AreThingiesEnabled) {
-                        ScenPlayer = SCEN_PLAYER_JP;
-                        ScenDir = SCEN_DIR_EAST;
-                    }
-
-                    GameToPlay = GAME_NORMAL;
-                    process = false;
-                } else {
-                    display = true;
-                    selection = SEL_NONE;
-                }
-                break;
-            }
-
-            /*
-            **	Load a saved game.
-            */
-            case SEL_LOAD_MISSION:
-                if (LoadOptionsClass(LoadOptionsClass::LOAD).Process()) {
-                    // Theme.Fade_Out();
-                    Theme.Queue_Song(THEME_AOI);
-                    process = false;
-                    gameloaded = true;
-                } else {
-                    display = true;
-                    selection = SEL_NONE;
-                }
-                break;
-
-            /*
-            **	SEL_MULTIPLAYER_GAME: set 'GameToPlay' to NULL-modem, modem, or
-            **	network play.
-            */
-            case SEL_MULTIPLAYER_GAME:
-                switch (GameToPlay) {
-
-                /*
-                **	If 'GameToPlay' isn't already set up for a multiplayer game,
-                **	we must prompt the user for which type of multiplayer game
-                **	they want.
-                */
-                case GAME_NORMAL:
-                    GameToPlay = Select_MPlayer_Game();
-                    if (GameToPlay == GAME_NORMAL) { // 'Cancel'
+                if (!Listener) {
+                    if (!Host_Init_Listener()) {
+                        CCMessageBox().Process("Unable to initialize server!", TXT_OK);
+                        MenuSelection = SEL_NONE;
                         display = true;
-                        selection = SEL_NONE;
+                        break;
                     }
-                    break;
-
-                case GAME_SKIRMISH:
-#ifndef REMASTER_BUILD
-                    if (!Com_Scenario_Dialog()) {
-                        GameToPlay = Select_MPlayer_Game();
-                        if (GameToPlay == GAME_NORMAL) { // user hit Cancel
-                            display = true;
-                            selection = SEL_NONE;
-                        }
-                    }
-#endif
-                    break;
-                case GAME_NULL_MODEM:
-                case GAME_MODEM:
-#if (0)
-                    if (NullModem.Num_Connections()) {
-                        NullModem.Init_Send_Queue();
-
-                        if ((GameToPlay == GAME_NULL_MODEM && ModemGameToPlay == MODEM_NULL_HOST)
-                            || (GameToPlay == GAME_MODEM && ModemGameToPlay == MODEM_DIALER)) {
-
-                            if (!Com_Scenario_Dialog()) {
-                                GameToPlay = Select_Serial_Dialog();
-                                if (GameToPlay == GAME_NORMAL) { // user hit Cancel
-                                    display = true;
-                                    selection = SEL_NONE;
-                                }
-                            }
-                        } else {
-                            if (!Com_Show_Scenario_Dialog()) {
-                                GameToPlay = Select_Serial_Dialog();
-                                if (GameToPlay == GAME_NORMAL) { // user hit Cancel
-                                    display = true;
-                                    selection = SEL_NONE;
-                                }
-                            }
-                        }
-                    } else {
-                        GameToPlay = Select_MPlayer_Game();
-                        if (GameToPlay == GAME_NORMAL) { // 'Cancel'
-                            display = true;
-                            selection = SEL_NONE;
-                        }
-                    }
-#endif
-                    break;
-
-#ifdef FORCE_WINSOCK
-                /*
-                ** Handle being spawned from WChat. Intermnet play based on IPX code now.
-                */
-                case GAME_INTERNET:
-                    break;
-
-#endif // FORCE_WINSOCK
                 }
 
-                switch (GameToPlay) {
-                /*
-                **	Internet, Modem or Null-Modem
-                */
-                case GAME_MODEM:
-                case GAME_NULL_MODEM:
-                case GAME_INTERNET:
-                    Theme.Fade_Out();
-                    ScenPlayer = SCEN_PLAYER_2PLAYER;
-                    ScenDir = SCEN_DIR_EAST;
-                    process = false;
-                    Options.ScoreVolume = 0;
-                    break;
-
-                case GAME_SKIRMISH:
-                    Theme.Fade_Out();
-                    ScenPlayer = SCEN_PLAYER_MPLAYER;
-                    ScenDir = SCEN_DIR_EAST;
-                    process = false;
-                    break;
-
-                /*
-                **	Network (IPX): start a new network game.
-                */
-                case GAME_IPX:
-                    DBG_LOG("C&C - Game type is IPX.\n");
-                    /*
-                    ** Init network system & remote-connect
-                    */
-#ifdef NETWORKING
-                    if (PacketTransport)
-                        delete PacketTransport;
-
-                    PacketTransport = new UDPInterfaceClass;
-                    assert(PacketTransport != NULL);
-
-                    DBG_LOG("C&C - About to call Init_Network.\n");
-                    if (GameToPlay == GAME_IPX && Init_Network() && Remote_Connect()) {
-                        Options.ScoreVolume = 0;
-                        ScenPlayer = SCEN_PLAYER_MPLAYER;
-                        ScenDir = SCEN_DIR_EAST;
-                        process = false;
-                        Theme.Fade_Out();
-                    } else { // user hit cancel, or init failed
-#endif
-                        GameToPlay = GAME_NORMAL;
-                        display = true;
-                        selection = SEL_NONE;
-#ifdef NETWORKING
-                        delete PacketTransport;
-                        PacketTransport = NULL;
-                    }
-#endif
-                    break;
-                }
-                break;
-
-            /*
-            **	Play a VQ
-            */
-            case SEL_INTRO:
-                Theme.Fade_Out();
-                Theme.Stop();
-                Call_Back();
-
-                Force_CD_Available(-1);
-                Play_Intro(false);
-                Hide_Mouse();
-
-                // verify existance of movie file before playing this sequence.
-                if (CCFileClass("TRAILER.VQA").Is_Available()) {
-                    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-                    VisiblePage.Clear();
-                    if (CCFileClass("ATTRACT2.CPS").Is_Available()) {
-                        Load_Uncompress(CCFileClass("ATTRACT2.CPS"), SysMemPage, SysMemPage, Palette);
-                        SysMemPage.Scale(SeenBuff, 0, 0, 0, 0, 320, 199, 640, 398);
-                        Fade_Palette_To(Palette, FADE_PALETTE_MEDIUM, Call_Back);
-                    }
-                    Keyboard->Clear();
-                    count.Set(TIMER_SECOND * 3);
-                    while (count.Time()) {
-                        Call_Back();
-                    }
-                    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-
-                    Play_Movie("TRAILER"); // Red Alert teaser.
-                }
-
-                if (CCFileClass("SIZZLE.VQA").Is_Available()) {
-                    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-                    VisiblePage.Clear();
-                    if (CCFileClass("ATTRACT2.CPS").Is_Available()) {
-                        Load_Uncompress(CCFileClass("ATTRACT2.CPS"), SysMemPage, SysMemPage, Palette);
-                        SysMemPage.Scale(SeenBuff, 0, 0, 0, 0, 320, 199, 640, 398);
-                        Fade_Palette_To(Palette, FADE_PALETTE_MEDIUM, Call_Back);
-                    }
-                    Keyboard->Clear();
-                    count.Set(TIMER_SECOND * 3);
-                    while (count.Time()) {
-                        Call_Back();
-                    }
-                    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-
-                    Play_Movie("SIZZLE"); // Red Alert teaser.
-                }
-
-                if (CCFileClass("SIZZLE2.VQA").Is_Available()) {
-                    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-                    VisiblePage.Clear();
-                    if (CCFileClass("ATTRACT2.CPS").Is_Available()) {
-                        Load_Uncompress(CCFileClass("ATTRACT2.CPS"), SysMemPage, SysMemPage, Palette);
-                        SysMemPage.Scale(SeenBuff, 0, 0, 0, 0, 320, 199, 640, 398);
-                        Fade_Palette_To(Palette, FADE_PALETTE_MEDIUM, Call_Back);
-                    }
-                    Keyboard->Clear();
-                    count.Set(TIMER_SECOND * 3);
-                    while (count.Time()) {
-                        Call_Back();
-                    }
-                    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-
-                    Play_Movie("SIZZLE2"); // Red Alert teaser.
-                }
-
-                Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-                VisiblePage.Clear();
-                if (CCFileClass("ATTRACT2.CPS").Is_Available()) {
-                    Load_Uncompress(CCFileClass("ATTRACT2.CPS"), SysMemPage, SysMemPage, Palette);
-                    SysMemPage.Scale(SeenBuff, 0, 0, 0, 0, 320, 199, 640, 398);
-                    Fade_Palette_To(Palette, FADE_PALETTE_MEDIUM, Call_Back);
-                }
-                Keyboard->Clear();
-                count.Set(TIMER_SECOND * 3);
-                while (count.Time()) {
-                    Call_Back();
-                }
-                Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-
-                Play_Movie("CC2TEASE");
-                Show_Mouse();
-
-                ScenarioInit++;
-                Theme.Play_Song(THEME_MAP1);
-                ScenarioInit--;
+                Read_MultiPlayer_Settings();
+                ScenPlayer = SCEN_PLAYER_MPLAYER;
+                ScenDir = SCEN_DIR_FIRST;
+                randomize();
+                Scenario = Host_Pick_Random_Map();
+                Whom = HOUSE_NEUTRAL;
+                GameToPlay = GAME_HOST;
                 display = true;
                 fade = true;
-                selection = SEL_NONE;
+                process = false;
                 break;
 
-            /*
-            **	Exit to DOS.
-            */
+            case SEL_ONLINE:
+                Read_MultiPlayer_Settings();
+                if (!UnreliableComm) {
+                    if (!Client_Connect_To_IP(Host)) {
+                        CCMessageBox().Process(Text_String(TXT_CANNOT_INIT_CLIENT), TXT_OK);
+                        MenuSelection = SEL_NONE;
+                        display = true;
+                        break;
+                    }
+                }
+                if (!Client_Wait_For_WDT_Connection()) {
+                    Client_Disconnect();
+                    MenuSelection = SEL_NONE;
+                    Tickle_WChat();
+                    display = true;
+                    break;
+                }
+
+                GameToPlay = GAME_CLIENT;
+                MenuSelection = SEL_NONE;
+                process = false;
+                break;
+
+                /*
+				**	Exit to DOS.
+				*/
             case SEL_EXIT:
-#ifdef JAPANESE
-                Hide_Mouse();
-#endif
                 Theme.Fade_Out();
                 Fade_Palette_To(BlackPalette, FADE_PALETTE_SLOW, NULL);
-#ifdef JAPANESE
-                VisiblePage.Clear();
-#endif
                 return (false);
 
-            /*
-            **	Display the hall of fame.
-            */
-            case SEL_FAME:
+            case SEL_TIMEOUT:
+                MenuSelection = SEL_NONE;
                 break;
 
-            case SEL_TIMEOUT:
-                if (AllowAttract && RecordFile.Is_Available()) {
-                    PlaybackGame = true;
-                    if (RecordFile.Open(READ)) {
-                        Load_Recording_Values();
-                        process = false;
-                        Theme.Fade_Out();
-                    } else {
-                        PlaybackGame = false;
-                        selection = SEL_NONE;
-                    }
-                } else {
-                    selection = SEL_NONE;
-                }
+            case SEL_HELP:
+                Help_Menu();
+                display = true;
+                fade = true;
+                MenuSelection = SEL_NONE;
+                break;
+
+            case SEL_SNEAK_PEEK:
+                g = GameToPlay;
+                GameToPlay = GAME_NORMAL;
+                Hide_Mouse();
+                Play_Movie("SIZZLE", THEME_NONE, 0, 0);
+                Play_Movie("SIZZLE2", THEME_NONE, 0, 0);
+                Show_Mouse();
+                GameToPlay = g;
+                display = true;
+                fade = true;
+                MenuSelection = SEL_NONE;
+                break;
+
+            case SEL_FIVE:
+                Hide_Mouse();
+                Fade_Palette_To(BlackPalette, 0xFu, 0);
+                VisiblePage.Clear();
+                ShowWindow(MainWindow, 6);
+                ShellExecuteA(0, 0, ButtonFiveURL, 0, 0, 1);
+                Show_Mouse();
+                display = true;
+                fade = true;
+                MenuSelection = SEL_NONE;
+                break;
+
+            case SEL_SIX:
+                Hide_Mouse();
+                Fade_Palette_To(BlackPalette, 0xFu, 0);
+                VisiblePage.Clear();
+                ShowWindow(MainWindow, 6);
+                ShellExecuteA(0, 0, ButtonSixURL, 0, 0, 1);
+                Show_Mouse();
+                display = true;
+                fade = true;
+                MenuSelection = SEL_NONE;
+                break;
+            case SEL_NEWS:
+                Hide_Mouse();
+                Fade_Palette_To(BlackPalette, 0xFu, 0);
+                VisiblePage.Clear();
+                ShowWindow(MainWindow, 6);
+                ShellExecuteA(0, 0, "ssnews.txt", 0, 0, 1);
+                Show_Mouse();
+                display = true;
+                fade = true;
+                MenuSelection = SEL_NONE;
                 break;
 
             default:
@@ -1327,22 +937,27 @@ bool Select_Game(bool fade)
         }
     } else {
 
-        /*
-        ** For Debug_Map (editor) mode, if JP option is on, set to load that scenario
-        */
-        Scen.Scenario = 1;
-        if (Special.IsJurassic && AreThingiesEnabled) {
+        if (Special.IsJurassic) {
             ScenPlayer = SCEN_PLAYER_JP;
             ScenDir = SCEN_DIR_EAST;
         }
+
+        if (GameToPlay == GAME_HOST) {
+            if (!Listener) {
+                if (!Host_Init_Listener()) {
+                    CCMessageBox().Process("Unable to initialize server!", TXT_OK);
+                    Prog_End();
+                    exit(0);
+                }
+            }
+
+            ScenPlayer = SCEN_PLAYER_MPLAYER;
+            ScenDir = SCEN_DIR_EAST;
+            randomize();
+            Scenario = Host_Pick_Random_Map();
+            Whom = HOUSE_NEUTRAL;
+        }
     }
-    CCDebugString("C&C95 - About to start game initialisation.\n");
-#ifdef FORCE_WINSOCK
-    if (GameToPlay == GAME_INTERNET) {
-        CommProtocol = COMM_PROTOCOL_MULTI_E_COMP;
-        FrameSendRate = 5; // 3;
-    }
-#endif // FORCE_WINSOCK
     /*
     **	Don't carry stray keystrokes into game.
     */
@@ -1352,18 +967,6 @@ bool Select_Game(bool fade)
     ** Initialize the random number generator(s)
     */
     Init_Random();
-
-    /*
-    ** Save initialization values if we're recording this game.
-    ** This must be done after 'Seed' has been initialized.
-    */
-    if (RecordGame) {
-        if (RecordFile.Open(WRITE)) {
-            Save_Recording_Values();
-        } else {
-            RecordGame = false;
-        }
-    }
 
     /*
     **	Load the scenario.  Specify variation 'A' for the editor; for the game,
@@ -1383,11 +986,9 @@ bool Select_Game(bool fade)
         */
         Hide_Mouse();
 
-        if (selection != SEL_START_NEW_GAME) {
-            Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
-            HiddenPage.Clear();
-            VisiblePage.Clear();
-        }
+        Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
+        HiddenPage.Clear();
+        VisiblePage.Clear();
         Show_Mouse();
 
         Special.IsFromInstall = 0;
@@ -1404,8 +1005,7 @@ bool Select_Game(bool fade)
     **	properly set.
     */
     CCDebugString("C&C95 - Initialising message system.\n");
-    int factor = (SeenBuff.Get_Width() == 320) ? 1 : 2;
-    Messages.Init(Map.TacPixelX, Map.TacPixelY, 6, MAX_MESSAGE_LENGTH, 6 * factor + 1);
+    Messages.Init(3, 401, 5, MAX_MESSAGE_LENGTH - 20, 6 * 2);
 
     /*
     **	Hide the SeenBuff; force the map to render one frame.  The caller can
@@ -1424,26 +1024,16 @@ bool Select_Game(bool fade)
     Hide_Mouse();
     Hide_Mouse();
     Hide_Mouse();
-    WWMouse->Erase_Mouse(&HidPage, true);
+    WWMouse->Erase_Mouse(&UnknownViewport2, true);
 
     Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, Call_Back);
     HiddenPage.Clear();
     VisiblePage.Clear();
-    Set_Logic_Page(SeenBuff);
+    Set_Logic_Page(UnknownViewport2);
     Map.Flag_To_Redraw();
     Call_Back();
     Map.Render();
     // Show_Mouse();
-
-    /*
-    ** Special hack initialization of 'MPlayerMaxAhead' to accommodate the
-    ** compression protocol technology.
-    */
-#ifdef FORCE_WINSOCK
-    if (CommProtocol == COMM_PROTOCOL_MULTI_E_COMP && GameToPlay != GAME_NORMAL) {
-        MPlayerMaxAhead = FrameSendRate * 3; // 2;
-    }
-#endif // FORCE_WINSOCK
 
     if (Debug_Map) {
         while (Get_Mouse_State() > 1) {
@@ -1451,6 +1041,61 @@ bool Select_Game(bool fade)
         }
     }
 
+    Clear_Packet_Data_Vectors();
+    ClientFPS = 30;
+    LastClientFrame = 0;
+    FramerateUpdateTimer.Set(120, 1);
+    SpeedScale = DefaultSpeedScale;
+    RecievedBytesSec = 0;
+    SentBytesSec = 0;
+    SentTCP = 0;
+    SentUDP = 0;
+    RecievedTCP = 0;
+    RecievedUDP = 0;
+    TransmisionStatsTimer.Set(120, 1);
+    CrateMaker = true;
+    CrateKeepTimer.Set(36000, 1);
+
+    if (GameParams.CrateDensityOverride > 0) {
+        CrateDensity = Map.MapCellHeight * Map.MapCellWidth / GameParams.CrateDensityOverride;
+    } else if (WDTCrateDensity > 0) {
+        CrateDensity = Map.MapCellHeight * Map.MapCellWidth / WDTCrateDensity;
+    } else {
+        CrateDensity = Map.MapCellHeight * Map.MapCellWidth;
+    }
+
+    if (CrateDensity > 1000) {
+        CrateDensity = 1000;
+    }
+
+    Map.Activate(true);
+
+    if (!OfflineMode && (IsServerAdmin || PlayerPtr->Class->House == HOUSE_SPECTATOR)) {
+        Debug_Unshroud = 1;
+        Map.Activate(true);
+        Add_WDT_Radar();
+
+        if (Debug_Map) {
+            Map.Activate(false);
+        }
+    }
+
+    if (GameParams.FreeRadarForAll && !WDTRadarAdded) {
+        Map.Activate(true);
+        Add_WDT_Radar();
+
+        if (Debug_Map) {
+            Map.Activate(false);
+        }
+
+        PlayerPtr->IsUnk2 = true;
+    }
+
+    if (GameToPlay == GAME_HOST && (GameParams.IsCaptureTheFlag || GameParams.Football)) {
+        Init_Flag_Homes();
+    }
+
+    ServerConnectionLost = false;
     return (true);
 }
 
@@ -1491,12 +1136,17 @@ static void Play_Intro(bool for_real)
         "NODFINAL", "NODFLEES", "NODLOSE",  "NODSWEEP", "NUKE",     "OBEL",     "PARATROP", "PINTLE",   "PLANECRA",
         "PODIUM",   "REFINT",   "RETRO",    "SABOTAGE", "SAMDIE",   "SAMSITE",  "SEIGE",    "SETHPRE",  "SPYCRASH",
         "STEALTH",  "SUNDIAL",  "TANKGO",   "TANKKILL", "TBRINFO1", "TBRINFO2", "TBRINFO3", "TIBERFX",  "TRTKIL_D",
-        "TURTKILL", "VISOR",    NULL};
+        "TURTKILL", "VISOR",    NULL,
+    };
 
+    GameEnum gtp = GameToPlay;
     Keyboard->Clear();
-    if (for_real || Is_Demo()) {
+    GameToPlay = GAME_NORMAL;
+
+    if (for_real) {
         Hide_Mouse();
-        Play_Movie("LOGO", THEME_NONE, false);
+        Play_Movie("WESTLOGO", THEME_NONE, false, true);
+        Play_Movie("LOGO", THEME_NONE, false, true);
         Show_Mouse();
     } else {
         if (!Debug_Flag) {
@@ -1508,12 +1158,14 @@ static void Play_Intro(bool for_real)
                 _counter = 0;
         }
         Hide_Mouse();
-        Play_Movie(_names[_counter], THEME_NONE);
+        Play_Movie(_names[_counter], THEME_NONE, false);
         Show_Mouse();
         if (!_names[_counter]) {
             _counter = -1;
         }
     }
+
+    GameToPlay = gtp;
 #endif
 }
 
@@ -1557,7 +1209,11 @@ void Anim_Init(void)
 
     AnimControl.DrawerCallback = VQ_Call_Back;
     AnimControl.ImageWidth = 320;
-    AnimControl.ImageHeight = 200;
+    if (unk) {
+        AnimControl.ImageHeight = 240;
+    } else {
+        AnimControl.ImageHeight = 200;
+    }
     AnimControl.Vmode = 0;
     AnimControl.ImageBuf = (unsigned char*)SysMemPage.Get_Offset();
     // AnimControl.VBIBit = VertBlank;
@@ -1630,6 +1286,7 @@ bool Parse_Command_Line(int argc, char* argv[])
     Debug_Map = false;
     //	Debug_Play_Map = false;
     Debug_Unshroud = false;
+    Debug_NEW = false;
 
     for (int index = 1; index < argc; index++) {
         char* string; // Pointer to argument.
@@ -1652,183 +1309,8 @@ bool Parse_Command_Line(int argc, char* argv[])
 
         // string = strupr(argv[index]);
 
-        /*
-        **	Print usage text only if requested.
-        */
-        if (stricmp("/?", string) == 0 || stricmp("-?", string) == 0 || stricmp("-h", string) == 0
-            || stricmp("/h", string) == 0) {
-            /*
-            **	Unrecognized command line parameter... Display usage
-            **	and then exit.
-            */
-#ifdef GERMAN
-            puts("Command & Conquer (c) 1995,1996 Westwood Studios\r\n"
-                 "Parameter:\r\n"
-                 //						"  -CD<Pfad> = Suchpfad f?r Daten-Dateien festlegen.\r\n"
-                 "  -DESTNET  = Netzwerkkennung des Zielrechners festlegen\r\n"
-                 "              (Syntax: DESTNETxx.xx.xx.xx)\r\n"
-                 "  -SOCKET   = Kennung des Netzwerk-Sockets (0 - 16383)\n"
-                 "  -STEALTH  = Namen im Mehrspieler-Modus verstecken (\"Boss-Modus\")\r\n"
-                 "  -MESSAGES = Mitteilungen von au�erhalb des Spiels zulassen\r\n"
-                 //					"  -ELITE    = Fortgeschrittene KI und Gefechtstechniken.\r\n"
-                 "\r\n");
-#else
-#ifdef FRENCH
-            puts("Command & Conquer (c) 1995, Westwood Studios\r\n"
-                 "Param�tres:\r\n"
-                 //						"  -CD<chemin d'acc�s> = Recherche des fichiers dans le\r\n"
-                 //						"                        r�pertoire indiqu�.\r\n"
-                 "  -DESTNET  = Sp�cifier le num�ro de r�seau du syst�me de destination\r\n"
-                 "              (Syntaxe: DESTNETxx.xx.xx.xx)\r\n"
-                 "  -SOCKET   = ID poste r�seau (0 � 16383)\r\n"
-                 "  -STEALTH  = Cacher les noms en mode multijoueurs (\"Mode Boss\")\r\n"
-                 "  -MESSAGES = Autorise les messages ext�rieurs � ce jeu.\r\n"
-                 "\r\n");
-#else
-            puts("Command & Conquer (c) 1995, 1996 Westwood Studios\r\n"
-                 "Parameters:\r\n"
-#ifdef NEVER
-                 "  CHEAT     = Enable debug keys.\r\n"
-                 "  -EDITOR    = Enable scenario editor.\r\n"
-#endif
-                 //						"  -CD<path> = Set search path for data files.\r\n"
-                 "  -DESTNET  = Specify Network Number of destination system\r\n"
-                 "              (Syntax: DESTNETxx.xx.xx.xx)\r\n"
-                 "  -STEALTH  = Hide multiplayer names (\"Boss mode\")\r\n"
-                 "  -MESSAGES = Allow messages from outside this game.\r\n"
-                 "  -o        = Enable compatability with version 1.07.\r\n"
-#ifdef JAPANESE
-                 "  -ENGLISH  = Enable English keyboard compatibility.\r\n"
-#endif
-//					"  -ELITE    = Advanced AI and combat characteristics.\r\n"
-#ifdef NEVER
-                 "  -O[options]= Special control options;\r\n"
-                 "     1 : Tiberium grows.\r\n"
-                 "     2 : Tiberium grows and spreads.\r\n"
-                 "     A : Aggressive player unit defense enabled.\r\n"
-                 "     B : Bargraphs always displayed.\r\n"
-                 "     C : Capture the flag mode.\r\n"
-                 "     E : Elite defense mode disable (attacker advantage).\r\n"
-                 "     D : Deploy reversal allowed for construction yard.\r\n"
-                 "     F : Fleeing from direct immediate threats is enabled.\r\n"
-                 "     H : Hussled recharge time.\r\n"
-                 "     G : Growth for Tiberium slowed in multiplay.\r\n"
-                 "     I : Inert weapons -- no damage occurs.\r\n"
-                 "     J : 7th grade sound effects.\r\n"
-                 "     M : Monochrome debug messages.\r\n"
-                 "     N : Name the civilians and buildings.\r\n"
-                 "     P : Path algorithm displayed as it works.\r\n"
-                 "     Q : Quiet mode (no sound).\r\n"
-                 "     R : Road pieces are not added to buildings.\r\n"
-                 "     T : Three point turns for wheeled vehicles.\r\n"
-                 "     U : U can target and burn trees.\r\n"
-                 "     V : Show target selection by opponent.\r\n"
-                 "     X : Make a recording of a multiplayer game.\r\n"
-                 "     Y : Play a recording of a multiplayer game.\r\n"
-                 "     Z : Disaster containment team.\r\n"
-#endif
-                 "\r\n");
-#endif
-#endif
-            return (false);
-        }
-
         bool processed = true;
         switch (Obfuscate(string)) {
-
-        /*
-        **	Signal that easy mode is active.
-        */
-        case PARM_EASY:
-            Special.IsEasy = true;
-            Special.IsDifficult = false;
-            break;
-
-        /*
-        **	Signal that hard mode is active.
-        */
-        case PARM_HARD:
-            Special.IsEasy = false;
-            Special.IsDifficult = true;
-            break;
-
-#ifdef VIRGIN_CHEAT_KEYS
-        case PARM_PLAYTEST:
-            Debug_Playtest = true;
-            break;
-#endif
-
-#ifdef PARM_CHEATERIK
-        case PARM_CHEATERIK:
-            Debug_Playtest = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-#ifdef PARM_CHEATADAM
-        case PARM_CHEATADAM:
-            Debug_Playtest = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-#ifdef PARM_CHEATMIKE
-        case PARM_CHEATMIKE:
-            Debug_Playtest = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-#ifdef PARM_CHEATDAVID
-        case PARM_CHEATDAVID:
-            Debug_Playtest = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-#ifdef PARM_CHEATPHIL
-        case PARM_CHEATPHIL:
-            Debug_Playtest = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-#ifdef PARM_CHEATBILL
-        case PARM_CHEATBILL:
-            Debug_Playtest = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-#ifdef PARM_CHEAT_STEVET
-
-        case PARM_CHEAT_STEVET:
-            Debug_Playtest = true;
-            Debug_Flag = true;
-            break;
-
-#endif
-
-#ifdef PARM_EDITORBILL
-        case PARM_EDITORBILL:
-            Debug_Map = true;
-            Debug_Unshroud = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-#ifdef PARM_EDITORERIK
-        case PARM_EDITORERIK:
-            Debug_Map = true;
-            Debug_Unshroud = true;
-            Debug_Flag = true;
-            break;
-#endif
-
-        case PARM_SPECIAL:
-            Special.IsJurassic = true;
-            AreThingiesEnabled = true;
-            break;
 
         /*
         ** Special flag - is C&C being run from the install program?
@@ -1857,55 +1339,6 @@ bool Parse_Command_Line(int argc, char* argv[])
 
 #endif
 
-        /*
-        **	Older version override.
-        */
-        if (stricmp(string, "-O") == 0 || stricmp(string, "-0") == 0) {
-            IsV107 = true;
-            continue;
-        }
-
-        /*
-        **	File search path override.
-        */
-        if (strstr(string, "-CD")) {
-            CCFileClass::Set_Search_Drives(&string[3]);
-            continue;
-        }
-#ifdef JAPANESE
-        /*
-        ** Enable english-compatible keyboard
-        */
-        if (!stricmp(string, "-ENGLISH")) {
-            ForceEnglish = true;
-            continue;
-        }
-#endif
-
-        /*
-        **	Set the Net Stealth option
-        */
-        if (strstr(string, "-STEALTH")) {
-            NetStealth = true;
-            continue;
-        }
-
-        /*
-        **	Set the Net Protection option
-        */
-        if (strstr(string, "-MESSAGES")) {
-            NetProtect = false;
-            continue;
-        }
-
-        /*
-        **	Allow "attract" mode
-        */
-        if (strstr(string, "-ATTRACT")) {
-            AllowAttract = true;
-            continue;
-        }
-
 #ifdef CHEAT_KEYS
         /*
         **	Allow solo net play
@@ -1924,219 +1357,16 @@ bool Parse_Command_Line(int argc, char* argv[])
         }
 #endif
 
-#ifdef NEVER
         /*
-        **	Handle the prog init differently in this case.
-        */
-        if (strstr(string, "-V")) {
-            continue;
-        }
-#endif
-
-        /*
-        **	Special command line control parsing.
-        */
-        if (strnicmp(string, "-X", strlen("-O")) == 0) {
-            string += strlen("-X");
-            while (*string) {
-                char code = *string++;
-                switch (toupper(code)) {
-
-#ifdef ONHOLD
-                /*
-                **	Should human generated sound effects be used?
-                */
-                case 'J':
-                    Special.IsJuvenile = true;
-                    break;
-#endif
-
-#ifdef CHEAT_KEYS
-                /*
-                **	Monochrome debug screen enable.
-                */
-                case 'M':
-                    Special.IsMonoEnabled = true;
-                    break;
-
-                /*
-                **	Inert weapons -- no units take damage.
-                */
-                case 'I':
-                    Special.IsInert = true;
-                    break;
-#endif
-
-#ifdef CHEAT_KEYS
-                /*
-                **	Hussled recharge timer.
-                */
-                case 'H':
-                    Special.IsSpeedBuild = true;
-                    break;
-
-                /*
-                **	Turn on super-record mode, which thrashes your disk terribly,
-                ** but is really really cool.  Well, sometimes it is, anyway.
-                ** At least, it can be.  Once in a while.
-                ** This flag tells the recording system to re-open the file for
-                ** each write, so the recording survives a crash.
-                */
-                case 'S':
-                    SuperRecord = 1;
-                    break;
-
-#endif
-                /*
-                **	"Record" a multi-player game
-                */
-                case 'X':
-                    RecordGame = 1;
-                    break;
-
-                /*
-                **	"Play Back" a multi-player game
-                */
-                case 'Y':
-                    PlaybackGame = 1;
-                    break;
-
-#ifdef ONHOLD
-                /*
-                **	Bonus scenario enable.
-                */
-                case 'Z':
-                    Special.IsJurassic = true;
-                    break;
-#endif
-
-                /*
-                **	Quiet mode override control.
-                */
-                case 'Q':
-                    Debug_Quiet = true;
-                    break;
-
-#ifdef CHEAT_KEYS
-                /*
-                **	Target selection by human opponent (network/modem play) will
-                **	be visible to the player?
-                */
-                case 'V':
-                    Special.IsVisibleTarget = true;
-                    break;
-#endif
-
-                default:
-#ifdef GERMAN
-                    puts("Ung?ltiger Parameter.\n");
-#else
-#ifdef FRENCH
-                    puts("Commande d'option invalide.\n");
-#else
-                    puts("Invalid option switch.\n");
-#endif
-#endif
-                    return (false);
-                }
-            }
-
-            if (Special.IsMonoEnabled) {
-                MonoClass::Enable();
-            }
+		**	Quiet mode override control.
+		*/
+        if (!stricmp(string, "NOSOUND")) {
+            Debug_Quiet = true;
             continue;
         }
     }
     return (true);
 }
-
-#ifdef ONHOLD
-/***********************************************************************************************
- * Parse_INI_File -- Parses CONQUER.INI for certain options                                    *
- *                                                                                             *
- * INPUT:                                                                                      *
- *		none. *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *		none. *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *		none. *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   08/18/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-void Parse_INI_File(void)
-{
-    char* buffer; // INI staging buffer pointer.
-    char buf[128];
-    static char section[40];
-    static char entry[40];
-    static char name[40];
-    int len;
-    int i;
-
-    /*
-    ** These arrays store the coded version of the names Geologic, Period, & Jurassic.
-    ** Decode them by subtracting 83.  For you curious types, the names look like:
-    ** ��¿º��
-    ** ��ż·
-    ** ?�Ŵ�Ƽ�
-    ** If these INI entries aren't found, the IsJurassic flag does nothing.
-    */
-    static char coded_section[] = {154, 184, 194, 191, 194, 186, 188, 182, 0};
-    static char coded_entry[] = {163, 184, 197, 188, 194, 183, 0};
-    static char coded_name[] = {157, 200, 197, 180, 198, 198, 188, 182, 0};
-
-    /*------------------------------------------------------------------------
-    Fetch working pointer to the INI staging buffer. Make sure that the buffer
-    is cleared out before proceeding.
-    ------------------------------------------------------------------------*/
-    buffer = _ShapeBuffer;
-    memset(buffer, '\0', _ShapeBufferSize);
-
-    /*------------------------------------------------------------------------
-    Decode the desired section, entry, & name
-    ------------------------------------------------------------------------*/
-    strcpy(section, coded_section);
-    len = strlen(coded_section);
-    for (i = 0; i < len; i++) {
-        section[i] -= 83;
-    }
-
-    strcpy(entry, coded_entry);
-    len = strlen(coded_entry);
-    for (i = 0; i < len; i++) {
-        entry[i] -= 83;
-    }
-
-    strcpy(name, coded_name);
-    len = strlen(coded_name);
-    for (i = 0; i < len; i++) {
-        name[i] -= 83;
-    }
-
-    /*------------------------------------------------------------------------
-    Create filename and read the file.
-    ------------------------------------------------------------------------*/
-    CCFileClass file("CONQUER.INI");
-    if (!file.Is_Available()) {
-        return;
-    } else {
-        file.Read(buffer, _ShapeBufferSize - 1);
-    }
-    file.Close();
-
-    WWGetPrivateProfileString(section, entry, "", buf, sizeof(buf), buffer);
-
-    if (!stricmp(buf, name))
-        AreThingiesEnabled = true;
-
-    memset(section, 0, sizeof(section));
-    memset(entry, 0, sizeof(entry));
-    memset(name, 0, sizeof(name));
-}
-#endif
 
 /***********************************************************************************************
  * Version_Number -- Determines the version number.                                            *
@@ -2156,6 +1386,7 @@ void Parse_INI_File(void)
  *=============================================================================================*/
 int Version_Number(void)
 {
+    static const int version = 0x105;
     const char* demo_text = Is_Demo() ? "DEMO " : "";
 
     // Only print the git tag version number if it starts with 'v'
@@ -2177,7 +1408,7 @@ int Version_Number(void)
                  GitShortSHA1);
     }
 
-    return (1);
+    return (version);
 }
 
 /***********************************************************************************************
@@ -2210,102 +1441,6 @@ void Init_CDROM_Access(void)
     **	call, the "?:\\" could not be filled in correctly.
     */
     RequiredCD = Force_CD_Available(-1) ? -1 : -2;
-}
-
-/***************************************************************************
- * Save_Recording_Values -- Saves recording values to a recording file     *
- *                                                                         *
- * INPUT:                                                                  *
- *      none.                                                              *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   05/15/1995 BRR : Created.                                             *
- *=========================================================================*/
-void Save_Recording_Values(void)
-{
-    RecordFile.Write(&GameToPlay, sizeof(GameToPlay));
-    RecordFile.Write(&ModemGameToPlay, sizeof(ModemGameToPlay));
-    RecordFile.Write(&BuildLevel, sizeof(BuildLevel));
-    RecordFile.Write(MPlayerName, sizeof(MPlayerName));
-    RecordFile.Write(&MPlayerPrefColor, sizeof(MPlayerPrefColor));
-    RecordFile.Write(&MPlayerColorIdx, sizeof(MPlayerColorIdx));
-    RecordFile.Write(&MPlayerHouse, sizeof(MPlayerHouse));
-    RecordFile.Write(&MPlayerLocalID, sizeof(MPlayerLocalID));
-    RecordFile.Write(&MPlayerCount, sizeof(MPlayerCount));
-    RecordFile.Write(&MPlayerBases, sizeof(MPlayerBases));
-    RecordFile.Write(&MPlayerCredits, sizeof(MPlayerCredits));
-    RecordFile.Write(&MPlayerTiberium, sizeof(MPlayerTiberium));
-    RecordFile.Write(&MPlayerGoodies, sizeof(MPlayerGoodies));
-    RecordFile.Write(&MPlayerGhosts, sizeof(MPlayerGhosts));
-    RecordFile.Write(&MPlayerUnitCount, sizeof(MPlayerUnitCount));
-    RecordFile.Write(MPlayerID, sizeof(MPlayerID));
-    RecordFile.Write(MPlayerHouses, sizeof(MPlayerHouses));
-    RecordFile.Write(&Seed, sizeof(Seed));
-    RecordFile.Write(&Scen.Scenario, sizeof(Scen.Scenario));
-    RecordFile.Write(&ScenPlayer, sizeof(ScenPlayer));
-    RecordFile.Write(&ScenDir, sizeof(ScenDir));
-    RecordFile.Write(&Whom, sizeof(Whom));
-    RecordFile.Write(&Special, sizeof(SpecialClass));
-    RecordFile.Write(&Options, sizeof(GameOptionsClass));
-    RecordFile.Write(&FrameSendRate, sizeof(FrameSendRate));
-    RecordFile.Write(&CommProtocol, sizeof(CommProtocol));
-
-    if (SuperRecord) {
-        RecordFile.Close();
-    }
-}
-
-/***************************************************************************
- * Load_Recording_Values -- Loads recording values from recording file     *
- *                                                                         *
- * INPUT:                                                                  *
- *      none.                                                              *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   05/15/1995 BRR : Created.                                             *
- *=========================================================================*/
-void Load_Recording_Values(void)
-{
-    Read_MultiPlayer_Settings();
-
-    RecordFile.Read(&GameToPlay, sizeof(GameToPlay));
-    RecordFile.Read(&ModemGameToPlay, sizeof(ModemGameToPlay));
-    RecordFile.Read(&BuildLevel, sizeof(BuildLevel));
-    RecordFile.Read(MPlayerName, sizeof(MPlayerName));
-    RecordFile.Read(&MPlayerPrefColor, sizeof(MPlayerPrefColor));
-    RecordFile.Read(&MPlayerColorIdx, sizeof(MPlayerColorIdx));
-    RecordFile.Read(&MPlayerHouse, sizeof(MPlayerHouse));
-    RecordFile.Read(&MPlayerLocalID, sizeof(MPlayerLocalID));
-    RecordFile.Read(&MPlayerCount, sizeof(MPlayerCount));
-    RecordFile.Read(&MPlayerBases, sizeof(MPlayerBases));
-    RecordFile.Read(&MPlayerCredits, sizeof(MPlayerCredits));
-    RecordFile.Read(&MPlayerTiberium, sizeof(MPlayerTiberium));
-    RecordFile.Read(&MPlayerGoodies, sizeof(MPlayerGoodies));
-    RecordFile.Read(&MPlayerGhosts, sizeof(MPlayerGhosts));
-    RecordFile.Read(&MPlayerUnitCount, sizeof(MPlayerUnitCount));
-    RecordFile.Read(MPlayerID, sizeof(MPlayerID));
-    RecordFile.Read(MPlayerHouses, sizeof(MPlayerHouses));
-    RecordFile.Read(&Seed, sizeof(Seed));
-    RecordFile.Read(&Scen.Scenario, sizeof(Scen.Scenario));
-    RecordFile.Read(&ScenPlayer, sizeof(ScenPlayer));
-    RecordFile.Read(&ScenDir, sizeof(ScenDir));
-    RecordFile.Read(&Whom, sizeof(Whom));
-    RecordFile.Read(&Special, sizeof(SpecialClass));
-    RecordFile.Read(&Options, sizeof(GameOptionsClass));
-    RecordFile.Read(&FrameSendRate, sizeof(FrameSendRate));
-    RecordFile.Read(&CommProtocol, sizeof(CommProtocol));
 }
 
 /***********************************************************************************************
@@ -2390,7 +1525,7 @@ unsigned Obfuscate(char const* string)
     **	Transform the buffer into a number. This transformation is character
     **	order dependant.
     */
-    int code = Calculate_CRC(buffer, length);
+    int code = Calculate_String_CRC(buffer, length);
 
     /*
     **	Record a copy of this initial transformation to be used in a later
@@ -2403,7 +1538,7 @@ unsigned Obfuscate(char const* string)
     **	This doubles the workload of trying to reverse engineer the CRC calculation.
     */
     strrev(buffer);
-    code ^= Calculate_CRC(buffer, length);
+    code ^= Calculate_String_CRC(buffer, length);
 
     /*
     **	Perform a self referential transformation. This makes a reverse engineering
@@ -2488,12 +1623,54 @@ unsigned Obfuscate(char const* string)
     **	Convert this final vector into a cypher key code to be
     **	returned by this routine.
     */
-    code = Calculate_CRC(buffer, length);
+    code = Calculate_String_CRC(buffer, length);
 
     /*
     **	Return the final code value.
     */
     return (code);
+}
+
+int Calculate_String_CRC(char* buffer, int length)
+{
+    unsigned int val;
+    unsigned int checksum;
+    char* src;
+
+    checksum = 0;
+    checksum = 0;
+    length = strlen(buffer);
+    src = buffer;
+
+    while ((unsigned int)length > 4) {
+        val = *(unsigned int*)src;
+        Add_CRC(&checksum, val);
+        src += 4;
+        length -= 4;
+    }
+
+    if (length > 0) {
+        val = 0;
+        memcpy(&val, src, length);
+        Add_CRC(&checksum, val);
+    }
+
+    return (int)checksum;
+}
+
+void Add_CRC(unsigned int* crc, unsigned int val)
+{
+    int hibit;
+
+    if ((*crc) & 0x80000000) {
+        hibit = 1;
+    } else {
+        hibit = 0;
+    }
+
+    (*crc) <<= 1;
+    (*crc) |= hibit;
+    (*crc) += val;
 }
 
 /***************************************************************************

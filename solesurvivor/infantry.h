@@ -112,7 +112,7 @@ public:
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
     */
-    static void* operator new(size_t size) noexcept;
+    static void* operator new(size_t size, int heap_index = -1) noexcept;
     static void* operator new(size_t, void* ptr)
     {
         return (ptr);
@@ -125,7 +125,7 @@ public:
     InfantryClass(NoInitClass const& x)
         : FootClass(x)
         , Class(this->Class)
-        , Comment(x){};
+        , Comment(x) {};
     InfantryClass(InfantryType classid, HousesType house);
     virtual ~InfantryClass(void);
     virtual RTTIType What_Am_I(void) const;
@@ -135,7 +135,7 @@ public:
     */
     static void Init(void);
 
-    virtual void Assign_Destination(TARGET);
+    virtual void Assign_Destination(TARGET, int = 0);
 
     /*
     **	Query functions.
@@ -181,11 +181,12 @@ public:
     virtual ActionType What_Action(ObjectClass* object) const;
     virtual ActionType What_Action(CELL cell) const;
     virtual void Assign_Mission(MissionType order);
-    virtual BulletClass* Fire_At(TARGET target, int which);
-    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0);
+    virtual BulletClass* Fire_At(TARGET target, int which, bool unk = false);
+    virtual ResultType
+    Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0, bool unk = false);
     virtual TARGET As_Target(void) const;
     virtual FireErrorType Can_Fire(TARGET target, int which) const;
-    virtual void Assign_Target(TARGET);
+    virtual void Assign_Target(TARGET, bool unk = false);
     virtual RadioMessageType Receive_Message(RadioClass* from, RadioMessageType message, int& param);
     virtual int Rearm_Delay(bool second) const;
     void Set_Occupy_Bit(COORDINATE coord)
@@ -248,6 +249,11 @@ public:
     int Validate(void) const;
 
     /*
+    **	Sole.
+    */
+    int Get_Fire_Something(void);
+
+    /*
     **	Translation table to convert facing into infantry shape number. This special
     **	table is needed since several facing stages are reused and flipped about the Y
     **	axis.
@@ -261,6 +267,29 @@ private:
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
+
+public:
+    static bool New_Allowed()
+    {
+        return IsNewAllowed;
+    }
+    virtual bool Delete_Allowed()
+    {
+        return IsDeleteAllowed;
+    }
+    virtual void Destruct();
+
+    static void Set_New_Allowed(bool allowed)
+    {
+        IsNewAllowed = allowed;
+    }
+    static void Set_Delete_Allowed(bool allowed)
+    {
+        IsDeleteAllowed = allowed;
+    }
+
+    static bool IsNewAllowed;
+    static bool IsDeleteAllowed;
 };
 
 #endif

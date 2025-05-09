@@ -50,9 +50,6 @@
 #include "ccini.h"
 
 /************************************* Prototypes *********************************************/
-static void Assign_Houses(void);
-static void Remove_AI_Players(void);
-static void Create_Units(void);
 static void Sort_Cells(CELL* cells, int numcells, CELL* outcells);
 static int Furthest_Cell(CELL* cells, int numcells, CELL* tcells, int numtcells);
 static CELL Clip_Scatter(CELL cell, int maxdist);
@@ -110,8 +107,8 @@ void Set_Scenario_Name(char* buf, int scenario, ScenarioPlayerType player, Scena
     **	Multi player scenario.
     */
     default:
-        c_player = HouseTypeClass::As_Reference(HOUSE_MULTI1).Prefix;
-        //			c_player = 'M';
+        //c_player = HouseTypeClass::As_Reference(HOUSE_MULTI1).Prefix;
+        c_player = 'S';
         break;
     }
 
@@ -209,14 +206,14 @@ bool Read_Scenario_Ini(char* root, bool fresh)
 {
     char fname[_MAX_FNAME + _MAX_EXT]; // full INI filename
     char buf[128];                     // Working string staging buffer.
-#ifndef USE_RA_AI
-    int rndmax;
-    int rndmin;
-#endif // USE_RA_AI
     int len;
     unsigned char val;
 
     ScenarioInit++;
+
+    char tmp[128];
+    sprintf(tmp, "Read_Scenario_Ini: %s\n", root);
+    CCDebugString(tmp);
 
     if (fresh) {
         Clear_Scenario();
@@ -319,7 +316,7 @@ bool Read_Scenario_Ini(char* root, bool fresh)
     **	Jurassic scenarios are allowed to build the full multiplayer set
     **	of objects.
     */
-    if (Special.IsJurassic && AreThingiesEnabled) {
+    if (Special.IsJurassic) {
         BuildLevel = 98;
     }
 
@@ -382,7 +379,42 @@ bool Read_Scenario_Ini(char* root, bool fresh)
             PlayerPtr->ActLike = Whom;
         }
 
-        PlayerPtr->Assign_Handicap(Scen.Difficulty);
+    } else if (GameToPlay == GAME_CLIENT) {
+        UnitClass::Set_New_Allowed(false);
+        InfantryClass::Set_New_Allowed(false);
+        BuildingClass::Set_New_Allowed(false);
+        AircraftClass::Set_New_Allowed(false);
+        UnitClass::Set_Delete_Allowed(false);
+        InfantryClass::Set_Delete_Allowed(false);
+        BuildingClass::Set_Delete_Allowed(false);
+        AircraftClass::Set_Delete_Allowed(false);
+        PlayerPtr = HouseClass::As_Pointer((HousesType)MPlayerLocalID);
+        PlayerPtr->IsHuman = true;
+        PlayerPtr->ActLike = MPlayerHouse;
+
+        if (MPlayerHouse == HOUSE_BLUE_TEAM || MPlayerHouse == HOUSE_ORANGE_TEAM || MPlayerHouse == HOUSE_GREEN_TEAM
+            || MPlayerHouse == HOUSE_GREY_TEAM) {
+            PlayerPtr->Int4 = MPlayerHouse - HOUSE_SPECTATOR;
+        } else {
+            PlayerPtr->Int4 = -1;
+        }
+        if (MPlayerHouse == HOUSE_GOOD || MPlayerHouse == HOUSE_BAD) {
+            if (PlayerPtr->IsHuman) {
+                PlayerPtr->Init_Data(REMAP_GOLD, MPlayerHouse, 0);
+            } else {
+                PlayerPtr->Init_Data(REMAP_RED, MPlayerHouse, 0);
+            }
+        }
+
+        HouseClass::As_Pointer(HOUSE_GOOD)->Init_Data(REMAP_RED, HOUSE_GOOD, 10000);
+        HouseClass::As_Pointer(HOUSE_BAD)->Init_Data(REMAP_RED, HOUSE_BAD, 10000);
+
+    } else if (GameToPlay == GAME_HOST) {
+        PlayerPtr = HouseClass::As_Pointer(HOUSE_ADMIN);
+        PlayerPtr->IsHuman = true;
+        strcpy(PlayerPtr->Name, "Server");
+        HouseClass::As_Pointer(HOUSE_GOOD)->Init_Data(REMAP_RED, HOUSE_GOOD, 10000);
+        HouseClass::As_Pointer(HOUSE_BAD)->Init_Data(REMAP_RED, HOUSE_BAD, 10000);
     } else {
 
 #ifdef OBSOLETE
@@ -466,399 +498,25 @@ bool Read_Scenario_Ini(char* root, bool fresh)
     SmudgeClass::Read_INI(ini);
     Call_Back();
 
-    /*
-    **	Read in any briefing text.
-    */
-    ini.Get_TextBlock("Briefing", Scen.BriefingText, sizeof(Scen.BriefingText));
-
-    /*
-    **	If the briefing text could not be found in the INI file, then search
-    **	the mission.ini file.
-    */
-    if (Scen.BriefingText[0] == '\0') {
-        INIClass mini;
-        CCFileClass missionIniFile("MISSION.INI");
-        mini.Load(missionIniFile);
-        mini.Get_TextBlock(root, Scen.BriefingText, sizeof(Scen.BriefingText));
-    }
-
-    /*
-    **	Perform a final overpass of the map. This handles smoothing of certain
-    **	types of terrain (tiberium).
-    */
-    Map.Overpass();
-    Call_Back();
-
-    /*
-    **	Special cases:
-    **		NOD7A cell 2795 - LAND_ROCK
-    **		NOD09A - delete airstrike trigger when radar destroyed
-    **		NOD10B cell 2015 - LAND_ROCK
-    **		NOD13B - trigger AI production when the player reaches the transports
-                   - fix repeating airstrike trigger
-    **		NOD13C - delete airstrike trigger when radar destroyed
-    */
-    if (_stricmp(Scen.ScenarioName, "scb07ea") == 0) {
-        Map[(CELL)2795].Override_Land_Type(LAND_ROCK);
-    }
-    if (_stricmp(Scen.ScenarioName, "scb09ea") == 0) {
-        for (int index = 0; index < Buildings.Count(); ++index) {
-            BuildingClass* building = Buildings.Ptr(index);
-            if (building != NULL && building->Owner() == HOUSE_GOOD && *building == STRUCT_RADAR) {
-                building->Trigger = TriggerClass::As_Pointer("dely");
-                if (building->Trigger) {
-                    building->Trigger->AttachCount++;
-                }
-                break;
-            }
-        }
-    }
-    if (_stricmp(Scen.ScenarioName, "scb10eb") == 0) {
-        Map[(CELL)2015].Override_Land_Type(LAND_ROCK);
-    }
-    if (_stricmp(Scen.ScenarioName, "scb13eb") == 0) {
-        TriggerClass* prod = new TriggerClass();
-        prod->Set_Name("prod");
-        prod->Event = EVENT_PLAYER_ENTERED;
-        prod->Action = TriggerClass::ACTION_BEGIN_PRODUCTION;
-        prod->House = HOUSE_BAD;
-
-        CellTriggers[276] = prod;
-        prod->AttachCount++;
-        CellTriggers[340] = prod;
-        prod->AttachCount++;
-        CellTriggers[404] = prod;
-        prod->AttachCount++;
-        CellTriggers[468] = prod;
-        prod->AttachCount++;
-
-        TriggerClass* xxxx = TriggerClass::As_Pointer("xxxx");
-        assert(xxxx != NULL);
-        xxxx->IsPersistant = TriggerClass::PERSISTANT;
-    }
-    if (_stricmp(Scen.ScenarioName, "scb13ec") == 0) {
-        for (int index = 0; index < Buildings.Count(); ++index) {
-            BuildingClass* building = Buildings.Ptr(index);
-            if (building != NULL && building->Owner() == HOUSE_GOOD && *building == STRUCT_RADAR
-                && building->Trigger == NULL) {
-                building->Trigger = TriggerClass::As_Pointer("delx");
-                if (building->Trigger) {
-                    building->Trigger->AttachCount++;
-                }
-                break;
-            }
-        }
-    }
-
-    /*
-    **	Scenario fix-up (applied on loaded games as well)
-    */
-    Fixup_Scenario();
-
-    /*
-    **	Multi-player last-minute fixups:
-    **	- If computer players are disabled, remove all computer-owned houses
-    ** - Otherwise, set MPlayerBlitz to 0 or 1, randomly
-    **	- If bases are disabled, create the scenario dynamically
-    **	- Remove any flag spot overlays lying around
-    **	- If capture-the-flag is enabled, assign flags to cells.
-    */
-    if (GameToPlay != GAME_NORMAL || ScenPlayer == SCEN_PLAYER_2PLAYER || ScenPlayer == SCEN_PLAYER_MPLAYER) {
-
-        /*
-        **	If Ghosts are disabled and we're not editing, remove computer players
-        **	(Must be done after all objects are read in from the INI)
-        */
-        if (!MPlayerGhosts && !Debug_Map) {
-            // Remove_AI_Players();		    // Done elsewhere now. ST - 6/25/2019 12:33PM
-        } else {
-
-            /*
-            ** If Ghosts are on, set up their houses for blitzing the humans
-            */
-#ifndef USE_RA_AI
-            MPlayerBlitz = IRandom(0, 1); // 1 = computer will blitz
-
-            if (MPlayerBlitz) {
-                if (MPlayerBases) {
-                    rndmax = 14000;
-                    rndmin = 10000;
-                } else {
-                    rndmax = 8000;
-                    rndmin = 4000;
-                }
-
-                for (int i = 0; i < MPlayerMax; i++) {
-                    HousesType house = (HousesType)(i + (int)HOUSE_MULTI1);
-                    HouseClass* housep = HouseClass::As_Pointer(house);
-                    if (housep) { // Added. ST - 6/25/2019 11:37AM
-                        housep->BlitzTime = IRandom(rndmin, rndmax);
-                    }
-                }
-            }
-#else  // USE_RA_AI
-            MPlayerBlitz = 0;
-#endif // USE_RA_AI
-        }
-
-        /*
-        **	Units must be created for each house.  If bases are ON, this routine
-        **	will create an MCV along with the units; otherwise, it will just create
-        **	a whole bunch of units.  MPlayerUnitCount is the total # of units
-        **	to create.
-        */
-        if (!Debug_Map) {
-            int save_init = ScenarioInit; // turn ScenarioInit off
-            ScenarioInit = 0;
-            Create_Units();
-            ScenarioInit = save_init; // turn ScenarioInit back on
-        }
-
-        /*
-        **	Place crates if MPlayerGoodies is on.
-        */
-        if (MPlayerGoodies) {
-            for (int index = 0; index < MPlayerCount; index++) {
-                // for (int index = 0; index < 200; index++) {  // Lots of crates for test
-                Map.Place_Random_Crate();
-            }
-        }
-
-#ifndef REMASTER_BUILD
-        /*
-        ** All this was originally done within Compute_Start_Pos.
-        */
-        int start_x = 0;
-        int start_y = 0;
-        Map.Compute_Start_Pos(start_x, start_y);
-        for (int i = 0; i < ARRAY_SIZE(Scen.Views); ++i) {
-            Scen.Views[i] = XY_Cell(start_x, start_y);
-        }
-        Scen.Waypoint[27] = XY_Cell(start_x, start_y);
-        COORDINATE pos = Cell_Coord(XY_Cell(start_x, start_y));
-        Map.Set_Tactical_Position(pos);
-#endif
-    }
-
-    Call_Back();
-
-    /*
-    **	Return with flag saying that the scenario file was read.
-    */
-    ScenarioInit--;
-    return (true);
-}
-
-/***********************************************************************************************
- * Read_Scenario_Ini_File -- Read specified scenario INI file.                                 *
- *                                                                                             *
- *    Read in the scenario INI file. This routine only sets the game                           *
- *    globals with that data that is explicitly defined in the INI file.                       *
- *    The remaining necessary interpolated data is generated elsewhere.                        *
- *                                                                                             *
- * INPUT: * scenario_file_name	path to the ini for the scenario										  *
- *																															  *
- *				bin_file_name			path to the bin for the scenario										  *
- *											 																				  *
- *          root      root filename for scenario file to read                                  *
- *                                                                                             *
- *          fresh      true = should the current scenario be cleared?                          *
- *                                                                                             *
- * OUTPUT:  bool; Was the scenario read successful?                                            *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/28/2019 JAS : Created.                                                                 *
- *=============================================================================================*/
-bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const char* root, bool fresh)
-{
-    ScenarioInit++;
-
-    char buf[128];
-    int len;
-    unsigned char val;
-
-    CCINIClass ini;
-    CCFileClass file(scenario_file_name);
-
-    int result = ini.Load(file, true);
-    if (result == 0) {
-        GlyphX_Debug_Print("Failed to load scenario file");
-        GlyphX_Debug_Print(scenario_file_name);
-        return (false);
-    } else {
-
-        GlyphX_Debug_Print("Opened scenario file");
-        GlyphX_Debug_Print(scenario_file_name);
-    }
-
-    /*
-    ** Init the Scenario CRC value
-    */
-    ScenarioCRC = ini.Get_Unique_ID();
-
-    /*
-    **	Fetch the appropriate movie names from the INI file.
-    */
-    ini.Get_String("Basic", "Intro", "x", IntroMovie, sizeof(IntroMovie));
-    ini.Get_String("Basic", "Brief", "x", BriefMovie, sizeof(BriefMovie));
-    ini.Get_String("Basic", "Win", "x", WinMovie, sizeof(WinMovie));
-    ini.Get_String("Basic", "Win2", "x", WinMovie2, sizeof(WinMovie2));
-    ini.Get_String("Basic", "Win3", "x", WinMovie3, sizeof(WinMovie3));
-    ini.Get_String("Basic", "Win4", "x", WinMovie4, sizeof(WinMovie4));
-    ini.Get_String("Basic", "Lose", "x", LoseMovie, sizeof(LoseMovie));
-    ini.Get_String("Basic", "Action", "x", ActionMovie, sizeof(ActionMovie));
-
-    /*
-    **	For single-player scenarios, 'BuildLevel' is the scenario number.
-    **	This must be set before any buildings are created (if a factory is created,
-    **	it needs to know the BuildLevel for the sidebar.)
-    */
-    if (GameToPlay == GAME_NORMAL) {
-        /*
-        ** In this function we are only dealing with custom maps, so set based on the BuildLevel from the map, or 98 if
-        *none.
-        ** ST - 4/22/2020 5:14PM
-        */
-        BuildLevel = ini.Get_Int("Basic", "BuildLevel", 98);
-    }
-
-    /*
-    **	Jurassic scenarios are allowed to build the full multiplayer set
-    **	of objects.
-    */
-    if (Special.IsJurassic && AreThingiesEnabled) {
-        BuildLevel = 98;
-    }
-
-    /*
-    **	Fetch the transition theme for this scenario.
-    */
-    Scen.TransitTheme = ini.Get_ThemeType("Basic", "Theme", THEME_NONE);
-
-    /*
-    **	Read in the team-type data. The team types must be created before any
-    **	triggers can be created.
-    */
-    TeamTypeClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in the specific information for each of the house types.  This creates
-    **	the houses of different types.
-    */
-    HouseClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in the trigger data. The triggers must be created before any other
-    **	objects can be initialized.
-    */
-    TriggerClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in the map control values. This includes dimensions
-    **	as well as theater information.
-    */
-    Map.Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Assign PlayerPtr by reading the player's house from the INI;
-    **	Must be done before any TechnoClass objects are created.
-    */
-    if (GameToPlay == GAME_NORMAL) {
-        Scen.CarryOverPercent = ini.Get_Int("Basic", "CarryOverMoney", 100);
-        Scen.CarryOverPercent = Cardinal_To_Fixed(100, Scen.CarryOverPercent);
-        Scen.CarryOverCap = ini.Get_Int("Basic", "CarryOverCap", -1);
-
-        PlayerPtr = HouseClass::As_Pointer(ini.Get_HousesType("Basic", "Player", HOUSE_GOOD));
-        PlayerPtr->IsHuman = true;
-        int carryover;
-        if (Scen.CarryOverCap != -1) {
-            carryover = MIN((int)Fixed_To_Cardinal(Scen.CarryOverMoney, Scen.CarryOverPercent), Scen.CarryOverCap);
-        } else {
-            carryover = Fixed_To_Cardinal(Scen.CarryOverMoney, Scen.CarryOverPercent);
-        }
-        PlayerPtr->Credits += carryover;
-        PlayerPtr->InitialCredits += carryover;
-
-        if (Special.IsJurassic) {
-            PlayerPtr->ActLike = Whom;
-        }
-
-        if (Special.IsEasy) {
-            PlayerPtr->Assign_Handicap(DIFF_EASY);
-        } else if (Special.IsDifficult) {
-            PlayerPtr->Assign_Handicap(DIFF_HARD);
-        }
-    } else {
-#ifdef REMASTER_BUILD
-        // Call new Assign_Houses function. ST - 6/25/2019 11:07AM
-        // Assign_Houses();
-        GlyphX_Assign_Houses();
-#else
-        Assign_Houses();
-#endif
-    }
-
-    /*
-    **	Attempt to read the map's binary image file; if fails, read the
-    **	template data from the INI, for backward compatibility
-    */
-    if (fresh) {
-        if (!Map.Read_Binary_File(bin_file_name, &ScenarioCRC)) {
-            TemplateClass::Read_INI(ini);
-        }
-    }
-    Call_Back();
-
-    /*
-    **	Read in and place the 3D terrain objects.
-    */
-    TerrainClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in and place the units (all sides).
-    */
-    UnitClass::Read_INI(ini);
-    Call_Back();
-
-    AircraftClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in and place the infantry units (all sides).
-    */
-    InfantryClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in and place all the buildings on the map.
-    */
-    BuildingClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in the AI's base information.
-    */
-    Base.Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in any normal overlay objects.
-    */
-    OverlayClass::Read_INI(ini);
-    Call_Back();
-
-    /*
-    **	Read in any smudge overlays.
-    */
-    SmudgeClass::Read_INI(ini);
-    Call_Back();
+    WDTCrateShares[WDT_CRATE_STRENGTH] = ini.Get_Int("Crates", "AddStrength", 100);
+    WDTCrateShares[WDT_CRATE_WEAPON] = ini.Get_Int("Crates", "AddWeapon", 100);
+    WDTCrateShares[WDT_CRATE_SPEED] = ini.Get_Int("Crates", "AddSpeed", 150);
+    WDTCrateShares[WDT_CRATE_RELOAD] = ini.Get_Int("Crates", "RapidReload", 100);
+    WDTCrateShares[WDT_CRATE_RANGE] = ini.Get_Int("Crates", "AddRange", 100);
+    WDTCrateShares[WDT_CRATE_HEAL] = ini.Get_Int("Crates", "Heal", 200);
+    WDTCrateShares[WDT_CRATE_BOMB] = ini.Get_Int("Crates", "Bomb", 200);
+    WDTCrateShares[WDT_CRATE_STEALTH] = ini.Get_Int("Crates", "Stealth", 50);
+    WDTCrateShares[WDT_CRATE_TELEPORT] = ini.Get_Int("Crates", "Teleport", 50);
+    WDTCrateShares[WDT_CRATE_KILL] = ini.Get_Int("Crates", "Kill", 0);
+    WDTCrateShares[WDT_CRATE_UNCLOAK_ALL] = ini.Get_Int("Crates", "UncloakAll", 10);
+    WDTCrateShares[WDT_CRATE_RESHOUD] = ini.Get_Int("Crates", "Reshroud", 5);
+    WDTCrateShares[WDT_CRATE_UNSHROUD] = ini.Get_Int("Crates", "Unshroud", 5);
+    WDTCrateShares[WDT_CRATE_RADAR] = ini.Get_Int("Crates", "Radar", 20);
+    WDTCrateShares[WDT_CRATE_ARMAGEDDON] = ini.Get_Int("Crates", "Armageddon", 1);
+    WDTCrateShares[WDT_CRATE_SUPER] = ini.Get_Int("Crates", "Super", 1);
+    WDTCrateDensity = ini.Get_Int("Crates", "Density", 200);
+    WDTCrateIonFactor = ini.Get_Int("Crates", "IonFactor", 400);
+    WDTCrateTimerVal = ini.Get_Int("Crates", "CrateTimer", 300);
 
     /*
     **	Read in any briefing text.
@@ -883,197 +541,18 @@ bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const
     Map.Overpass();
     Call_Back();
 
-    /*
-    **	Scenario fix-up (applied on loaded games as well)
-    */
-    Fixup_Scenario();
-
-    /*
-    **	Multi-player last-minute fixups:
-    **	- If computer players are disabled, remove all computer-owned houses
-    ** - Otherwise, set MPlayerBlitz to 0 or 1, randomly
-    **	- If bases are disabled, create the scenario dynamically
-    **	- Remove any flag spot overlays lying around
-    **	- If capture-the-flag is enabled, assign flags to cells.
-    */
-    if (GameToPlay != GAME_NORMAL || ScenPlayer == SCEN_PLAYER_2PLAYER || ScenPlayer == SCEN_PLAYER_MPLAYER) {
-
-        /*
-        **	If Ghosts are disabled and we're not editing, remove computer players
-        **	(Must be done after all objects are read in from the INI)
-        */
-        if (!MPlayerGhosts && !Debug_Map) {
-            // Remove_AI_Players();		    // Done elsewhere now. ST - 6/25/2019 12:33PM
-        } else {
-
-            /*
-            ** If Ghosts are on, set up their houses for blitzing the humans
-            */
-#ifndef USE_RA_AI
-            MPlayerBlitz = IRandom(0, 1); // 1 = computer will blitz
-
-            if (MPlayerBlitz) {
-                if (MPlayerBases) {
-                    rndmax = 14000;
-                    rndmin = 10000;
-                } else {
-                    rndmax = 8000;
-                    rndmin = 4000;
-                }
-
-                for (int i = 0; i < MPlayerMax; i++) {
-                    HousesType house = (HousesType)(i + (int)HOUSE_MULTI1);
-                    HouseClass* housep = HouseClass::As_Pointer(house);
-                    if (housep) { // Added. ST - 6/25/2019 11:37AM
-                        housep->BlitzTime = IRandom(rndmin, rndmax);
-                    }
-                }
-            }
-#else  // USE_RA_AI
-            MPlayerBlitz = 0;
-#endif // USE_RA_AI
-        }
-
-        /*
-        **	Units must be created for each house.  If bases are ON, this routine
-        **	will create an MCV along with the units; otherwise, it will just create
-        **	a whole bunch of units.  MPlayerUnitCount is the total # of units
-        **	to create.
-        */
-        if (!Debug_Map) {
-            int save_init = ScenarioInit; // turn ScenarioInit off
-            ScenarioInit = 0;
-            Create_Units();
-            ScenarioInit = save_init; // turn ScenarioInit back on
-        }
-
-        /*
-        **	Place crates if MPlayerGoodies is on.
-        */
-        if (MPlayerGoodies) {
-            for (int index = 0; index < MPlayerCount; index++) {
-                // for (int index = 0; index < 200; index++) {  // Lots of crates for test
-                Map.Place_Random_Crate();
-            }
-        }
+    if (GameToPlay == GAME_HOST) {
+        MPlayerCredits = 500;
+        MPlayerBases = 0;
+        MPlayerTiberium = 0;
+        MPlayerGoodies = 1;
+        MPlayerGhosts = 0;
+        BuildLevel = 7;
+        MPlayerUnitCount = 1;
+        Special.IsTGrowth = false;
+        Special.IsTSpread = false;
+        Special.IsJurassic = true;
     }
-
-    Call_Back();
-
-    /*
-    **	Return with flag saying that the scenario file was read.
-    */
-    ScenarioInit--;
-    return (true);
-}
-
-/***********************************************************************************************
- * Read_Movies_From_Scenario_Ini -- Reads just the movie files from the scenario.              *
- *                                                                                             *
- *                                                                                             *
- * INPUT:                                                                                      *
- *          root      root filename for scenario file to read                                  *
- *                                                                                             *
- *          fresh      true = should the current scenario be cleared?                          *
- *                                                                                             *
- * OUTPUT:  bool; Was the scenario read successful?                                            *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   10/14/2019 JAS : Created.                                                                 *
- *=============================================================================================*/
-bool Read_Movies_From_Scenario_Ini(char* root, bool fresh)
-{
-    char fname[_MAX_FNAME + _MAX_EXT]; // full INI filename
-#ifndef USE_RA_AI
-    int rndmax;
-    int rndmin;
-#endif // USE_RA_AI
-    int len;
-    unsigned char val;
-
-    ScenarioInit++;
-
-    if (fresh) {
-        Clear_Scenario();
-    }
-
-    /*
-    ** If we are not dealing with scenario 1, or a multi player scenario
-    ** then make sure the correct disk is in the drive.
-    */
-    if (RequiredCD != -2) {
-        if (Scen.Scenario >= 20 && Scen.Scenario < 60 && GameToPlay == GAME_NORMAL) {
-            RequiredCD = 2;
-        } else {
-            if (Scen.Scenario != 1) {
-                if (Scen.Scenario >= 60) {
-                    RequiredCD = -1;
-                } else {
-                    switch (ScenPlayer) {
-                    case SCEN_PLAYER_GDI:
-                        RequiredCD = 0;
-                        break;
-                    case SCEN_PLAYER_NOD:
-                        RequiredCD = 1;
-                        break;
-                    default:
-                        RequiredCD = -1;
-                        break;
-                    }
-                }
-            } else {
-                RequiredCD = -1;
-            }
-        }
-    }
-    if (!Force_CD_Available(RequiredCD)) {
-        Prog_End("Read_Scenario_Ini - CD not found", true);
-        if (!RunningAsDLL) {
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    /*
-    **	Create scenario filename and read the file.
-    */
-
-    sprintf(fname, "%s.INI", root);
-    CCFileClass file(fname);
-    CCINIClass ini;
-    int result = ini.Load(file, false);
-    if (result != 0) {
-        GlyphX_Debug_Print("Failed to load scenario file");
-        GlyphX_Debug_Print(fname);
-        return (false);
-    } else {
-
-        GlyphX_Debug_Print("Opened scenario file");
-        GlyphX_Debug_Print(fname);
-    }
-
-    /*
-    ** Init the Scenario CRC value
-    */
-    ScenarioCRC = ini.Get_Unique_ID();
-
-    /*
-    **	Fetch the appropriate movie names from the INI file.
-    */
-    ini.Get_String("Basic", "Intro", "x", IntroMovie, sizeof(IntroMovie));
-    ini.Get_String("Basic", "Brief", "x", BriefMovie, sizeof(BriefMovie));
-    ini.Get_String("Basic", "Win", "x", WinMovie, sizeof(WinMovie));
-    ini.Get_String("Basic", "Win2", "x", WinMovie2, sizeof(WinMovie2));
-    ini.Get_String("Basic", "Win3", "x", WinMovie3, sizeof(WinMovie3));
-    ini.Get_String("Basic", "Win4", "x", WinMovie4, sizeof(WinMovie4));
-    ini.Get_String("Basic", "Lose", "x", LoseMovie, sizeof(LoseMovie));
-    ini.Get_String("Basic", "Action", "x", ActionMovie, sizeof(ActionMovie));
-
-    /*
-    **	Fetch the transition theme for this scenario.
-    */
-    Scen.TransitTheme = ini.Get_ThemeType("Basic", "Theme", THEME_NONE);
 
     /*
     **	Return with flag saying that the scenario file was read.
@@ -1161,673 +640,211 @@ void Write_Scenario_Ini(char* root)
 #endif
 }
 
-/***********************************************************************************************
- * Assign_Houses -- Assigns multiplayer houses to various players                              *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      none.                                                                                  *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/09/1995 BRR : Created.                                                                 *
- *   07/14/1995 JLB : Records name of player in house structure.                               *
- *=============================================================================================*/
-static void Assign_Houses(void)
+bool Make_Player_Unit(int player_index)
 {
-    HousesType house;
-    HousesType pref_house;
-    HouseClass* housep;
-    bool house_used[MAX_PLAYERS]; // true = this house is in use
-    bool color_used[16]; // true = this color is in use. We have more than 6 color options now, so bumped this to 16. ST
-                         // - 6/19/2019 5:18PM
-    int i;
-    PlayerColorType color;
-    HousesType house2;
-    HouseClass* housep2;
+    TechnoClass* tptr;
+    const TechnoTypeClass* ttptr;
+    AircraftClass* spawn;
+    int x;
+    int y;
+    int index;
+    int waypoint;
+    CELL cell;
 
-    /*
-    **	Init the 'used' flag for all houses & colors to 0
-    */
-    for (i = 0; i < MAX_PLAYERS; i++) {
-        house_used[i] = false;
-    }
-    for (i = 0; i < 16; i++) {
-        color_used[i] = false;
+    ttptr = Fetch_Techno_Type(ActivePlayers[player_index]->RTTI, ActivePlayers[player_index]->Type);
+
+    if (ttptr == NULL) {
+        return false;
     }
 
+    waypoint = ActivePlayers[player_index]->HousePtr->Int4 - 1;
+
     /*
-    **	For each player, randomly pick a house
-    */
-    for (i = 0; i < MPlayerCount; i++) {
-        /*
-        **	If this house was already selected, decrement 'i' & keep looping.
-        */
-        if (house_used[i]) {
-            i--;
-            continue;
+	** Decide where to put the new unit.
+	*/
+    if (GameParams.IsCaptureTheFlag && waypoint >= 0 && waypoint <= 3) {
+        cell = FlagHomes[waypoint];
+    } else if (GameParams.Football && waypoint >= 0 && waypoint <= 3 && WDTGameTimer.Time() < 600) {
+        int i = 0;
+        do {
+            int rx;
+            int ry;
+            ry = Random_Pick(-6, 7);
+            rx = Random_Pick(-6, 6);
+            cell = FlagHomes[waypoint] + ry + (rx << 7);
+            i++;
+        } while (i <= 100
+                 && (!Map.In_Radar(cell) || Distance(cell, FlagHomes[waypoint]) < 5
+                     || Distance(cell, FlagHomes[waypoint]) > 8));
+
+        if (i > 100) {
+            cell = FlagHomes[waypoint];
         }
-
-        /*
-        **	Set the house, preferred house (GDI/NOD), color, and actual house;
-        **	get a pointer to the house instance
-        */
-        house = (HousesType)(i + (int)HOUSE_MULTI1);
-        pref_house = MPlayerID_To_HousesType(MPlayerID[i]);
-        color = MPlayerID_To_ColorIndex(MPlayerID[i]);
-        housep = HouseClass::As_Pointer(house);
-        MPlayerHouses[i] = house;
-
-        /*
-        **	Mark this house & color as used
-        */
-        house_used[i] = true;
-        color_used[color] = true;
-
-        /*
-        **	Set the house's IsHuman, Credits, ActLike, & RemapTable
-        */
-        memset((char*)housep->Name, 0, MPLAYER_NAME_MAX);
-        strncpy((char*)housep->Name, MPlayerNames[i], MPLAYER_NAME_MAX - 1);
-        housep->IsHuman = true;
-        housep->Init_Data(color, pref_house, MPlayerCredits);
-
-        /*
-        **	If this ID is for myself, set up PlayerPtr
-        */
-        if (MPlayerID[i] == MPlayerLocalID) {
-            PlayerPtr = housep;
-        }
-
-        housep->Assign_Handicap(Scen.Difficulty);
+    } else {
+        x = Random_Pick(0, Map.MapCellWidth - 2) + Map.MapCellX;
+        y = Random_Pick(0, Map.MapCellHeight - 1) + Map.MapCellY;
+        cell = XY_Cell(x, y);
     }
 
     /*
-    **	For all houses not assigned to a player, set them up for computer use
-    */
-    for (i = MPlayerCount; i < MPlayerCount + MPlayerGhosts; i++) {
-        if (house_used[i] == false) {
+	** Place the new unit.
+	*/
+    for (index = 0; index < ActivePlayers[player_index]->NumStartingUnits; index++) {
+        tptr = (TechnoClass*)ttptr->Create_One_Of(ActivePlayers[player_index]->HousePtr);
 
-            /*
-            **	Set the house, preferred house (GDI/NOD), and color; get a pointer
-            **	to the house instance
-            */
-            house = (HousesType)(i + (int)HOUSE_MULTI1);
-            pref_house = (HousesType)(Random_Pick(0, 1) + (int)HOUSE_GOOD);
-            for (;;) {
-                color = Random_Pick(REMAP_FIRST, REMAP_LAST);
-                if (color_used[color] == false) {
-                    break;
-                }
+        if (tptr != NULL) {
+            if (!Try_Place_Object(tptr, cell, GameParams.IsCaptureTheFlag)) {
+                DELETE_OBJ(tptr, sizeof(AbstractClass));
             }
-            housep = HouseClass::As_Pointer(house);
 
-            /*
-            **	Mark this house & color as used
-            */
-            house_used[i] = true;
-            color_used[color] = true;
-
-            /*
-            **	Set the house's IsHuman, Credits, ActLike, & RemapTable
-            */
-            housep->IsHuman = false;
-            housep->Init_Data(color, pref_house, MPlayerCredits);
-
-            DiffType difficulty = Scen.CDifficulty;
-
-            if (Players.Count() > 1 && Rule.IsCompEasyBonus && difficulty > DIFF_EASY) {
-                difficulty = (DiffType)(difficulty - 1);
-            }
-            housep->Assign_Handicap(difficulty);
+            ActivePlayers[player_index]->Technos.Add(tptr);
         }
     }
 
-    for (int i = 0; i < MAX_PLAYERS; i++) {
-
-        if (house_used[i]) {
-            continue;
-        }
-
-        house = (HousesType)(i + (int)HOUSE_MULTI1);
-        housep = HouseClass::As_Pointer(house);
-        if (housep) {
-            housep->Clobber_All();
-        }
-    }
-}
-
-/***********************************************************************************************
- * Remove_AI_Players -- Removes the computer AI houses & their units                           *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      none.                                                                                  *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/09/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-static void Remove_AI_Players(void)
-{
-    int i;
-    HousesType house;
-    HouseClass* housep;
-
-    for (i = 0; i < MAX_PLAYERS; i++) {
-        house = (HousesType)(i + (int)HOUSE_MULTI1);
-        housep = HouseClass::As_Pointer(house);
-        if (housep->IsHuman == false) {
-            housep->Clobber_All();
-        }
-    }
-}
-
-#ifdef REMASTER_BUILD
-#define USE_GLYPHX_START_LOCATIONS 1
-#endif
-
-/***********************************************************************************************
- * Create_Units -- Creates infantry & units, for non-base multiplayer                          *
- *                                                                                             *
- * This routine uses data tables to determine which units to create for either                 *
- * a GDI or NOD house, and how many of each.                                                   *
- *                                                                                             *
- * It also sets each house's FlagHome & FlagLocation to the Waypoint selected                  *
- * as that house's "home" cell.                                                                *
- *                                                                                             *
- *   ------------------ Unit Summary: -------------------------------                          *
- *   UNIT_MTANK               Medium tank (M1).            GDI      7                          *
- *   UNIT_JEEP               4x4 jeep replacement.      GDI      5                             *
- *   UNIT_MLRS               MLRS rocket launcher.      GDI      99                            *
- *   UNIT_APC                  APC.                        GDI      10                         *
- *   UNIT_HTANK               Heavy tank (Mammoth).      GDI      13                           *
- *                                                                                             *
- *   UNIT_LTANK               Light tank ('Bradly').      NOD      5                           *
- *   UNIT_BUGGY               Rat patrol dune buggy type NOD      5                            *
- *   UNIT_ARTY               Artillery unit.            NOD      10                            *
- *   UNIT_FTANK               Flame thrower tank.         NOD      11                          *
- *   UNIT_STANK               Stealth tank (Romulan).      NOD      13                         *
- *   UNIT_BIKE               Nod recon motor-bike.      NOD      99                            *
- *                                                                                             *
- *   ~1/3 chance of getting: {UNIT_MHQ,               Mobile Head Quarters.                    *
- *                                                                                             *
- *   ------------------ Infantry Summary: -------------------------------                      *
- *   INFANTRY_E1,            Mini-gun armed.            GDI/NOD                                *
- *   INFANTRY_E2,            Grenade thrower.            GDI                                   *
- *   INFANTRY_E3,            Rocket launcher.            NOD                                   *
- *   INFANTRY_E6,            Rocket launcher             GDI                                   *
- *   INFANTRY_E4,            Flame thrower equipped.      NOD                                  *
- *   INFANTRY_RAMBO,         Commando.                  GDI/NOD                                *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      none.                                                                                  *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/09/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-static int ReserveInfantryIndex = 0;
-static void Reserve_Infantry()
-{
-    if (Infantry.Count() == Infantry.Length()) {
-        delete Infantry.Ptr(ReserveInfantryIndex);
-        ReserveInfantryIndex = (ReserveInfantryIndex + 1) % Infantry.Length();
-    }
-}
-
-static int ReserveUnitIndex = 0;
-static void Reserve_Unit()
-{
-    if (Units.Count() == Units.Length()) {
-        delete Units.Ptr(ReserveUnitIndex);
-        ReserveUnitIndex = (ReserveUnitIndex + 1) % Units.Length();
-    }
-}
-
-static void Create_Units(void)
-{
-    enum
-    {
-        NUM_UNIT_CATEGORIES = 8,
-        NUM_INFANTRY_CATEGORIES = 5,
-    };
-
-    static struct
-    {
-        int MinLevel;
-        int GDICount;
-        UnitType GDIType;
-        int NODCount;
-        UnitType NODType;
-    } utable[] = {
-        {0, 1, UNIT_MTANK, 2, UNIT_LTANK},
-        {2, 1, UNIT_JEEP, 1, UNIT_BUGGY},
-        {3, 1, UNIT_MLRS, 1, UNIT_ARTY},
-        {4, 1, UNIT_APC, 2, UNIT_BUGGY},
-        {5, 1, UNIT_JEEP, 1, UNIT_BIKE},
-        {5, 2, UNIT_JEEP, 1, UNIT_FTANK},
-        {6, 1, UNIT_MSAM, 1, UNIT_MSAM},
-        {7, 1, UNIT_HTANK, 2, UNIT_STANK},
-    };
-    static int num_units[NUM_UNIT_CATEGORIES]; // # of each type of unit to create
-    int tot_units;                             // total # units to create
-
-    static struct
-    {
-        int MinLevel;
-        int GDICount;
-        InfantryType GDIType;
-        int NODCount;
-        InfantryType NODType;
-    } itable[] = {
-        {0, 1, INFANTRY_E1, 1, INFANTRY_E1},
-        {1, 1, INFANTRY_E2, 1, INFANTRY_E3},
-        {3, 1, INFANTRY_E3, 1, INFANTRY_E3},
-        {5, 1, INFANTRY_E3, 1, INFANTRY_E4},
-        {7, 1, INFANTRY_RAMBO, 1, INFANTRY_RAMBO},
-    };
-    static int num_infantry[NUM_INFANTRY_CATEGORIES]; // # of each type of infantry to create
-    int tot_infantry;                                 // total # infantry to create
-
-    CELL waypts[26];
-    CELL sorted_waypts[26];
-    int num_waypts;
-
-    HousesType h;     // house loop counter
-    HouseClass* hptr; // ptr to house being processed
-
-    CELL centroid; // centroid of this house's stuff
-    int try_count; // # times we've tried to select a centroid
-    CELL centerpt; // centroid for a category of objects, as a CELL
-
-    int u_limit;      // last allowable index of units for this BuildLevel
-    int i_limit;      // last allowable index of infantry for this BuildLevel
-    TechnoClass* obj; // newly-created object
-    int i, j, k;      // loop counters
-    int scaleval;     // value to scale # units or infantry
-
-    ReserveInfantryIndex = ReserveUnitIndex = 0;
-
-    /*------------------------------------------------------------------------
-    For the current BuildLevel, find the max allowable index into the tables
-    ------------------------------------------------------------------------*/
-    for (i = 0; i < NUM_UNIT_CATEGORIES; i++) {
-        if (BuildLevel >= (unsigned)utable[i].MinLevel)
-            u_limit = i;
-    }
-    for (i = 0; i < NUM_INFANTRY_CATEGORIES; i++) {
-        if (BuildLevel >= (unsigned)utable[i].MinLevel)
-            i_limit = i;
-    }
-
-    /*------------------------------------------------------------------------
-    Compute how many of each buildable category to create
-    ------------------------------------------------------------------------*/
-    /*........................................................................
-    Compute allowed # units
-    ........................................................................*/
-    tot_units = (MPlayerUnitCount * 2) / 3;
-    //	tot_units = MAX(tot_units, 1);
-
-    /*........................................................................
-    Init # of each category to 0
-    ........................................................................*/
-    for (i = 0; i <= u_limit; i++)
-        num_units[i] = 0;
-
-    /*........................................................................
-    Increment # of each category, until we've used up all units
-    ........................................................................*/
-    j = 0;
-    for (i = 0; i < tot_units; i++) {
-        num_units[j]++;
-        j++;
-        if (j > u_limit)
-            j = 0;
-    }
-
-    /*........................................................................
-    Compute allowed # infantry
-    ........................................................................*/
-    tot_infantry = MPlayerUnitCount - tot_units;
-
-    /*........................................................................
-    Init # of each category to 0
-    ........................................................................*/
-    for (i = 0; i <= i_limit; i++)
-        num_infantry[i] = 0;
-
-    /*........................................................................
-    Increment # of each category, until we've used up all infantry
-    ........................................................................*/
-    j = 0;
-    for (i = 0; i < tot_infantry; i++) {
-        num_infantry[j]++;
-        j++;
-        if (j > i_limit)
-            j = 0;
-    }
-
-    /*------------------------------------------------------------------------
-    Now sort all the Waypoints on the map by distance.
-    ------------------------------------------------------------------------*/
-    num_waypts = 0; // counts # waypoints
-
-    /*........................................................................
-    First, copy all valid waytpoints into my 'waypts' array
-    ........................................................................*/
-    for (i = 0; i < 26; i++) {
-        if (Scen.Waypoint[i] != -1) {
-            waypts[num_waypts] = Scen.Waypoint[i];
-            num_waypts++;
-        }
-    }
-
-    /*........................................................................
-    Now sort the 'waypts' array
-    ........................................................................*/
-#ifndef USE_GLYPHX_START_LOCATIONS
-    Sort_Cells(waypts, num_waypts, sorted_waypts);
-#endif
-
-    /*------------------------------------------------------------------------
-    Loop through all houses.  Computer-controlled houses, with MPlayerBases
-    ON, are treated as though bases are OFF (since we have no base-building
-    AI logic.)
-    ------------------------------------------------------------------------*/
-    for (h = HOUSE_MULTI1; h < (HOUSE_MULTI1 + MPlayerMax); h++) {
-
-        /*.....................................................................
-        Get a pointer to this house; if there is none, go to the next house
-        .....................................................................*/
-        hptr = HouseClass::As_Pointer(h);
-        if (!hptr)
-            continue;
-
-#ifdef USE_GLYPHX_START_LOCATIONS
-        /*
-        ** New code that respects the start locations passed in from GlyphX.
-        **
-        ** ST - 1/8/2020 3:39PM
-        */
-        centroid = waypts[hptr->StartLocationOverride];
-
-#else  // USE_GLYPHX_START_LOCATIONS
-        /*
-        ** Original start position logic.
-        */
-
-        /*.....................................................................
-        Pick a random waypoint; if the chosen waypoint isn't valid, try again.
-        'centroid' will be the centroid of all this house's stuff.
-        .....................................................................*/
-        try_count = 0;
-        while (true) {
-            j = Random_Pick(0, MPlayerMax - 1);
-            if (sorted_waypts[j] != -1) {
-                centroid = sorted_waypts[j];
-                sorted_waypts[j] = -1;
-                break;
-            }
-            try_count++;
-
-            /*..................................................................
-            OK, we've tried enough; just pick any old cell at random, as long
-            as it's mappable.
-            ..................................................................*/
-            if (try_count > 200) {
-                while (true) {
-                    centroid = Random_Pick(0, MAP_CELL_TOTAL - 1);
-                    if (Map.In_Radar(centroid))
-                        break;
-                }
-                break;
-            }
-        }
-#endif // USE_GLYPHX_START_LOCATIONS
-
-        /*---------------------------------------------------------------------
-        If Bases are ON, human & computer houses are treated differently
-        ---------------------------------------------------------------------*/
-        if (MPlayerBases) {
-            /*..................................................................
-            - For a human-controlled house:
-              - Set 'scaleval' to 1
-              - Create an MCV
-              - Attach a flag to it for capture-the-flag mode
-            ..................................................................*/
-            if (hptr->IsHuman) {
-                scaleval = 1;
-
-#ifndef USE_RA_AI // Moved to below. ST - 7/25/2019 11:21AM
-                obj = new UnitClass(UNIT_MCV, h);
-                if (!obj->Unlimbo(Cell_Coord(centroid), DIR_N)) {
-                    if (!Scan_Place_Object(obj, centroid)) {
-                        delete obj;
-                        obj = NULL;
-                    }
-                }
-                if (obj) {
-                    hptr->FlagHome = 0;
-                    hptr->FlagLocation = 0;
-                    if (Special.IsCaptureTheFlag) {
-                        hptr->Flag_Attach((UnitClass*)obj, true);
-                    }
-                }
-#endif // USE_RA_AI
-            } else {
-
-                /*..................................................................
-                - For computer-controlled house:
-                  - Set 'scaleval' to 3
-                  - Create a Mobile HQ for capture-the-flag mode
-                ..................................................................*/
-                // Added fix for divide by zero. ST - 6/26/2019 10:40AM
-                int ai_player_count = MPlayerMax - MPlayerCount;
-                // scaleval = 3 / (MPlayerMax - MPlayerCount);
-                // scaleval = max(ai_player_count, 1);
-                scaleval = 1; // Set to 1 since EA QA can't beat skirmish with scaleval set higher.
-
-                // if (scaleval==0) {
-                //	scaleval = 1;
-                //}
-
-#ifndef USE_RA_AI // Give the AI an MCV below. ST - 7/25/2019 11:22AM
-                if (Special.IsCaptureTheFlag) {
-                    obj = new UnitClass(UNIT_MHQ, h);
-                    if (!obj->Unlimbo(Cell_Coord(centroid), DIR_N)) {
-                        if (!Scan_Place_Object(obj, centroid)) {
-                            delete obj;
-                            obj = NULL;
-                        }
-                    }
-                    hptr->FlagHome = 0; // turn house's flag off
-                    hptr->FlagLocation = 0;
-                }
-#endif // USE_RA_AI
-            }
-
-#ifdef USE_RA_AI
-            /*
-            ** Moved HQ code down here, so the AI player gets one too. ST - 7/25/2019 11:21AM
-            */
-            Reserve_Unit();
-            obj = new UnitClass(UNIT_MCV, h);
-            if (!obj->Unlimbo(Cell_Coord(centroid), DIR_N)) {
-                if (!Scan_Place_Object(obj, centroid)) {
-                    delete obj;
-                    obj = NULL;
-                }
-            }
-            if (obj) {
-                hptr->FlagHome = 0;
-                hptr->FlagLocation = 0;
-                if (Special.IsCaptureTheFlag) {
-                    hptr->Flag_Attach((UnitClass*)obj, true);
-                }
-            }
-#endif // USE_RA_AI
-
+    /*
+	** Handle special Aircraft logic.
+	*/
+    if (tptr != NULL && ActivePlayers[player_index]->RTTI == RTTI_BUILDINGTYPE
+        && ActivePlayers[player_index]->Type == STRUCT_HELIPAD) {
+        if (ActivePlayers[player_index]->HousePtr->ActLike == HOUSE_GOOD) {
+            spawn = new AircraftClass(AIRCRAFT_ORCA, ActivePlayers[player_index]->HousePtr->Class->House);
         } else {
-
-            /*---------------------------------------------------------------------
-            If bases are OFF, set 'scaleval' to 1 & create a Mobile HQ for
-            capture-the-flag mode.
-            ---------------------------------------------------------------------*/
-            scaleval = 1;
-            if (Special.IsCaptureTheFlag) {
-                Reserve_Unit();
-                obj = new UnitClass(UNIT_MHQ, h);
-                obj->Unlimbo(Cell_Coord(centroid), DIR_N);
-                hptr->FlagHome = 0; // turn house's flag off
-                hptr->FlagLocation = 0;
-            }
+            spawn = new AircraftClass(AIRCRAFT_HELICOPTER, ActivePlayers[player_index]->HousePtr->Class->House);
         }
 
-#ifndef USE_RA_AI // This prevents the AI from building vehicles when the RA AI is used in Skirmish. (Tore)
-        /*---------------------------------------------------------------------
-        Set the house's max # units (this is used in the Mission_Timed_Hunt())
-        ---------------------------------------------------------------------*/
-        hptr->MaxUnit = MPlayerUnitCount * scaleval;
-#endif // USE_RA_AI
-
-        /*---------------------------------------------------------------------
-        Create units for this house
-        ---------------------------------------------------------------------*/
-        for (i = 0; i <= u_limit; i++) {
-            /*..................................................................
-            Find the center point for this category.
-            ..................................................................*/
-            centerpt = Clip_Scatter(centroid, 4);
-
-            /*..................................................................
-            Place objects; loop through all unit in this category
-            ..................................................................*/
-            for (j = 0; j < num_units[i] * scaleval; j++) {
-                /*...............................................................
-                Create a GDI unit
-                ...............................................................*/
-                if (hptr->ActLike == HOUSE_GOOD) {
-                    for (k = 0; k < utable[i].GDICount; k++) {
-                        Reserve_Unit();
-                        obj = new UnitClass(utable[i].GDIType, h);
-                        if (!Scan_Place_Object(obj, centerpt)) {
-                            delete obj;
-                        } else {
-
-                            /*
-                            ** Don't use MISSION_TIMED_HUNT since it can trigger blitz behavior. ST - 2/28/2020 10:51AM
-                            */
-                            // if (!hptr->IsHuman) {
-                            //	obj->Set_Mission(MISSION_TIMED_HUNT);
-                            //}
-                            if (!hptr->IsHuman) {
-                                obj->Set_Mission(MISSION_GUARD_AREA);
-                            }
-                        }
-                    }
-                } else {
-
-                    /*...............................................................
-                    Create a NOD unit
-                    ...............................................................*/
-                    for (k = 0; k < utable[i].NODCount; k++) {
-                        Reserve_Unit();
-                        obj = new UnitClass(utable[i].NODType, h);
-                        if (!Scan_Place_Object(obj, centerpt)) {
-                            delete obj;
-                        } else {
-                            /*
-                            ** Don't use MISSION_TIMED_HUNT since it can trigger blitz behavior. ST - 2/28/2020 10:51AM
-                            */
-                            // if (!hptr->IsHuman) {
-                            //	obj->Set_Mission(MISSION_TIMED_HUNT);
-                            //}
-                            if (!hptr->IsHuman) {
-                                obj->Set_Mission(MISSION_GUARD_AREA);
-                            }
-                        }
-                    }
-                }
-            }
+        if (spawn != NULL) {
+            ScenarioInit++;
+            spawn->Unlimbo(tptr->Docking_Coord(), (spawn)->Pose_Dir());
+            spawn->Assign_Mission(MISSION_GUARD);
+            ScenarioInit--;
+            ActivePlayers[player_index]->Technos.Add(spawn);
+            spawn->Select();
         }
+    }
 
-        /*---------------------------------------------------------------------
-        Create infantry
-        ---------------------------------------------------------------------*/
-        for (i = 0; i <= i_limit; i++) {
-            /*..................................................................
-            Find the center point for this category.
-            ..................................................................*/
-            centerpt = Clip_Scatter(centroid, 4);
+    return true;
+}
 
-            /*..................................................................
-            Place objects; loop through all unit in this category
-            ..................................................................*/
-            for (j = 0; j < num_infantry[i] * scaleval; j++) {
-                /*...............................................................
-                Create GDI infantry (Note: Unlimbo calls Enter_Idle_Mode(), which
-                assigns the infantry to HUNT; we must use Set_Mission() to override
-                this state.)
-                ...............................................................*/
-                if (hptr->ActLike == HOUSE_GOOD) {
-                    for (k = 0; k < itable[i].GDICount; k++) {
-                        Reserve_Infantry();
-                        obj = new InfantryClass(itable[i].GDIType, h);
-                        if (!Scan_Place_Object(obj, centerpt)) {
-                            delete obj;
-                        } else {
-                            /*
-                            ** Don't use MISSION_TIMED_HUNT since it can trigger blitz behavior. ST - 2/28/2020 10:51AM
-                            */
-                            // if (!hptr->IsHuman) {
-                            //	obj->Set_Mission(MISSION_TIMED_HUNT);
-                            //}
-                            if (!hptr->IsHuman) {
-                                obj->Set_Mission(MISSION_GUARD_AREA);
-                            }
-                        }
-                    }
-                } else {
+bool Try_Place_Unknown(int, int, char)
+{
+    return true;
+}
 
-                    /*...............................................................
-                    Create NOD infantry
-                    ...............................................................*/
-                    for (k = 0; k < itable[i].NODCount; k++) {
-                        Reserve_Infantry();
-                        obj = new InfantryClass(itable[i].NODType, h);
-                        if (!Scan_Place_Object(obj, centerpt)) {
-                            delete obj;
-                        } else {
-                            /*
-                            ** Don't use MISSION_TIMED_HUNT since it can trigger blitz behavior. ST - 2/28/2020 10:51AM
-                            */
-                            // if (!hptr->IsHuman) {
-                            //	obj->Set_Mission(MISSION_TIMED_HUNT);
-                            //}
-                            if (!hptr->IsHuman) {
-                                obj->Set_Mission(MISSION_GUARD_AREA);
-                            }
-                        }
-                    }
+// Matching
+bool Try_Place_Object(ObjectClass* obj, CELL cell, bool is_ctf)
+{
+    int fcounter;
+    int new_y;
+    int new_x;
+    int dist;
+    TechnoClass* techno;
+    int cell_y;
+    int cell_x;
+    int tryval;
+    CELL newcell;
+    int offx[] = {1, 0, -1, 0};
+    int offy[] = {0, 1, 0, -1};
+
+    tryval = 0; // TODO unneeded.
+    cell_x = Cell_X(cell);
+    cell_y = Cell_Y(cell);
+
+    /*------------------------------------------------------------------------
+	First try to unlimbo the object in the given cell.
+	------------------------------------------------------------------------*/
+    if (!is_ctf) {
+        if (Map.In_Radar(cell)) {
+            techno = Map[cell].Cell_Techno();
+            if (!techno || (techno->What_Am_I() == RTTI_INFANTRY && obj->What_Am_I() == RTTI_INFANTRY)) {
+                if (obj->Unlimbo(Cell_Coord(cell), DIR_N)) {
+                    return true;
                 }
             }
         }
     }
+
+    for (dist = 1; dist < 20; dist++) {
+        new_x = cell_x - dist;
+        new_y = cell_y - dist;
+
+        for (tryval = 0; tryval <= 3; tryval++) {
+            for (fcounter = 0; fcounter < 2 * dist; fcounter++) {
+                newcell = XY_Cell(new_x, new_y);
+
+                if (Map.In_Radar(newcell)) {
+                    techno = Map[newcell].Cell_Techno();
+                    if (!techno || (techno->What_Am_I() == RTTI_INFANTRY && obj->What_Am_I() == RTTI_INFANTRY)) {
+                        if (obj->Unlimbo(Cell_Coord(newcell), DIR_N)) {
+                            return true;
+                        }
+                    }
+                }
+
+                new_x += offx[tryval];
+                new_y += offy[tryval];
+            }
+        }
+    }
+
+    return false;
+}
+
+// Matching
+CELL Try_Place_Overlay(OverlayType overlay, CELL cell)
+{
+    int fcounter;
+    int new_y;
+    int new_x;
+    int dist;
+    CellClass* cellc;
+    int cell_y;
+    int cell_x;
+    int tryval;
+    CELL newcell;
+    int offx[] = {1, 0, -1, 0};
+    int offy[] = {0, 1, 0, -1};
+
+    tryval = 0; // TODO unneeded.
+    cell_x = Cell_X(cell);
+    cell_y = Cell_Y(cell);
+
+    if (Map.In_Radar(cell)) {
+        cellc = &Map[cell];
+
+        if (cellc->Is_Generally_Clear() && cellc->Overlay == OVERLAY_NONE) {
+            cellc->Overlay = overlay;
+            cellc->OverlayData = 0;
+            cellc->Redraw_Objects();
+            return cell;
+        }
+    }
+
+    for (dist = 1; dist < 20; dist++) {
+        new_x = cell_x - dist;
+        new_y = cell_y - dist;
+
+        for (tryval = 0; tryval <= 3; tryval++) {
+            for (fcounter = 0; fcounter < 2 * dist; fcounter++) {
+                newcell = XY_Cell(new_x, new_y);
+
+                if (Map.In_Radar(newcell)) {
+                    cellc = &Map[newcell];
+
+                    if (cellc->Is_Generally_Clear() && cellc->Overlay == OVERLAY_NONE) {
+                        cellc->Overlay = overlay;
+                        cellc->OverlayData = 0;
+                        cellc->Redraw_Objects();
+                        return newcell;
+                    }
+                }
+
+                new_x += offx[tryval];
+                new_y += offy[tryval];
+            }
+        }
+    }
+
+    return -1;
 }
 
 /***********************************************************************************************
@@ -2214,4 +1231,215 @@ static CELL Clip_Move(CELL cell, FacingType facing, int dist)
         y = ymin;
 
     return (XY_Cell(x, y));
+}
+
+bool Init_Flag_Homes()
+{
+    int allocated[20];  // [esp+0h] [ebp-60h]
+    int waypoint_check; // [esp+54h] [ebp-Ch]
+    int try_count;      // [esp+58h] [ebp-8h]
+    int index;          // [esp+5Ch] [ebp-4h]
+
+    index = 0;
+    for (waypoint_check = 0; waypoint_check < 20; waypoint_check++) {
+        allocated[waypoint_check] = 0;
+    }
+    for (index = 0; index < 4; index++) {
+        for (try_count = 0; try_count < 100; try_count++) {
+            waypoint_check = WDT_Random_Pick(0, 9);
+            if (Waypoint[waypoint_check + 4] != -1 && !allocated[waypoint_check]) {
+                FlagHomes[index] = Waypoint[waypoint_check + 4];
+                allocated[waypoint_check] = 1;
+                break;
+            }
+        }
+        if (try_count == 100) {
+            for (waypoint_check = 0; waypoint_check < 10; waypoint_check++) {
+                if (Waypoint[waypoint_check + 4] != -1 && !allocated[waypoint_check]) {
+                    FlagHomes[index] = Waypoint[waypoint_check + 4];
+                    allocated[waypoint_check] = 1;
+                    break;
+                }
+            }
+            if (waypoint_check == 10) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+// Matching
+void Setup_House_Flags(HousesType house)
+{
+    HouseClass* h;
+    CELL rr3;
+    CELL rr2;
+    CELL rr1;
+    int i;
+    HouseClass* hptr;
+
+    int team = house - 6;
+    if (team >= 0 && team <= 3) {
+        hptr = HouseClass::As_Pointer(house);
+        if (hptr) {
+            if (hptr->FlagHome == 0) {
+                if (GameParams.IsCaptureTheFlag) {
+                    hptr->Flag_Attach(FlagHomes[team], 0);
+                    hptr->Make_CTF_Packet_Dropped(FlagHomes[team]);
+                } else if (GameParams.Football) {
+                    FootballCells[team] = FlagHomes[team == 0] + team;
+                    hptr->Make_CTF_Packet_Dropped(FootballCells[team]);
+
+                    if (GameParams.FootballNumFlags == 2) {
+                        i = 0;
+                        do {
+                            rr1 = Random_Pick(-6, 7);
+                            rr2 = Random_Pick(-6, 6);
+                            rr3 = FlagHomes[team] + rr1 + (rr2 << 7);
+                            i++;
+                        } while (i <= 100
+                                 && (!Map.In_Radar((CELL)rr3) || Distance((CELL)rr3, (CELL)FlagHomes[team]) < 5
+                                     || Distance((CELL)rr3, (CELL)FlagHomes[team]) > 8));
+                        if (i > 100) {
+                            rr3 = FlagHomes[team];
+                        }
+                        hptr->Flag_Attach(rr3, 0);
+                    } else if (team == 1) {
+                        h = HouseClass::As_Pointer(HOUSE_GREEN_TEAM);
+                        h->Flag_Attach(Cell_Mid(FlagHomes[0], FlagHomes[1]), 0);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Matching
+void Clear_Flags_Of_House(HousesType house)
+{
+    HouseClass* h;
+    HouseClass* hptr;
+    int team;
+
+    team = house - 6;
+    if (team >= 0 && team <= 3) {
+        hptr = HouseClass::As_Pointer(house);
+        if (hptr) {
+            if (hptr->FlagHome != 0) {
+                if (GameParams.Football && GameParams.FootballNumFlags == 1) {
+                    if (team == 1) {
+                        h = HouseClass::As_Pointer(HOUSE_GREEN_TEAM);
+                        h->Flag_Remove(h->FlagLocation);
+                    }
+                } else {
+                    hptr->Flag_Remove(hptr->FlagLocation);
+                }
+                if (GameParams.Football) {
+                    hptr->Make_CTF_Packet_Picked_Up(FootballCells[team]);
+                } else {
+                    hptr->Make_CTF_Packet_Picked_Up(FlagHomes[team]);
+                }
+            }
+        }
+    }
+}
+
+// Matching
+void Fortify_Flag_Home(HousesType house)
+{
+    int i;
+    HouseClass* hptr;
+    int team;
+    BuildingClass* bptr;
+
+    bptr = NULL;
+    team = house - 6;
+
+    if (team >= 0 && team <= 3) {
+        hptr = HouseClass::As_Pointer(house);
+        if (!hptr) {
+            CCDebugString("ERROR: Fortify_FlagHome error 1\n");
+        } else if (hptr->FlagHome == 0) {
+            CCDebugString("ERROR: Fortify_FlagHome error 2\n");
+        } else {
+            for (i = 0; i < GameParams.NumCTFStructures; i++) {
+                bptr = Create_Building(true, house, (HousesType)(GameParams.NumCTFStructures / 2 > i));
+
+                if (bptr) {
+                    if (!Try_Place_Object(bptr, hptr->FlagHome, 1)) {
+                        CCDebugString("ERROR: Fortify_FlagHome error 3\n");
+                        DELETE_OBJ(bptr, sizeof(AbstractClass));
+                    }
+
+                    bptr->Mod1 = sole_array[0][2] / 2;
+                    bptr->Strength = bptr->Class_Of().MaxStrength + bptr->Mod1;
+                    bptr->Mod5 = sole_array[4][2];
+                } else {
+                    CCDebugString("ERROR: Fortify_FlagHome error 4\n");
+                }
+            }
+
+            hptr->IsHuman = true;
+        }
+    }
+}
+
+// Matching
+void Clear_Buildings_Of_House(HousesType house)
+{
+    BuildingClass* bptr;
+
+    for (int i = 0; i < Buildings.Count(); i++) {
+        bptr = Buildings.Ptr(i);
+        if (bptr->IsActive && bptr->Owner() == house) {
+            DELETE_OBJ(bptr, sizeof(AbstractClass));
+            i--;
+        }
+    }
+}
+
+void Setup_Flags_Of_House(HousesType house)
+{
+    int idx2;
+    int idx1;
+    int state[20];
+    int index;
+    int team;
+
+    team = house - HOUSE_FIRST_TEAM;
+    if (team >= 0 && team <= 3) {
+        for (index = 0; index < 20; index++) {
+            state[index] = 0;
+        }
+
+        Clear_Flags_Of_House(house);
+
+        for (idx1 = 0; idx1 < 4; idx1++) {
+            if (idx1 != team) {
+                for (index = 0; index < 10; index++) {
+                    if (FlagHomes[idx1] == Waypoint[index + 4]) {
+                        state[index] = 1;
+                        break;
+                    }
+                }
+            }
+        }
+        for (idx2 = 0; idx2 < 100; idx2++) {
+            index = WDT_Random_Pick(0, 9);
+            if (Waypoint[index + 4] != -1 && !state[index]) {
+                FlagHomes[team] = Waypoint[index + 4];
+                break;
+            }
+        }
+        if (idx2 == 100) {
+            for (index = 0; index < 10; index++) {
+                if (Waypoint[index + 4] != -1 && !state[index]) {
+                    FlagHomes[team] = Waypoint[index + 4];
+                    break;
+                }
+            }
+        }
+        Setup_House_Flags(house);
+    }
 }

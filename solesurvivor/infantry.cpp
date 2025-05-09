@@ -86,6 +86,10 @@ int const InfantryClass::HumanShape[32] = {0, 0, 7, 7, 7, 7, 6, 6, 6, 6, 5, 5, 5
 
 int Infantry_Kick_Damage[] = {10, 15};
 int Infantry_Punch_Damage[] = {4, 7};
+bool InfantryClass::IsNewAllowed;
+bool InfantryClass::IsDeleteAllowed;
+
+int infweapondata[11] = {100, 90, 81, 70, 61, 52, 44, 37, 31, 25, 20};
 
 /***************************************************************************
 ** This is the array of constant data associated with infantry maneuvers. It
@@ -212,7 +216,7 @@ void InfantryClass::Debug_Dump(MonoClass* mono) const
 #endif
 
 InfantryClass::InfantryClass(void)
-    : Class(0){}; // Default constructor does nothing.
+    : Class(0) {}; // Default constructor does nothing.
 
 /***********************************************************************************************
  * InfantryClass::InfantryClass -- The constructor for infantry objects.                       *
@@ -252,19 +256,12 @@ InfantryClass::InfantryClass(InfantryType classid, HousesType house)
     IsStoked = false;
     IsBoxing = false;
     IsTechnician = false;
-    Strength = Class->MaxStrength;
+    Strength = Class->MaxStrength + Mod1;
 
     /*
     **	Civilians carry much less ammo than soldiers do.
     */
     Ammo = Class->MaxAmmo;
-
-    /*
-    ** Keep count of the number of units created. Dont track civilians.
-    */
-    if (!Class->IsCivilian && GameToPlay == GAME_INTERNET) {
-        House->InfantryTotals.Increment_Unit_Total((int)classid);
-    }
 
 #ifdef USE_RA_AI
     //
@@ -302,8 +299,28 @@ InfantryClass::~InfantryClass(void)
 #endif // USE_RA_AI
         Limbo();
     }
-    if (GameActive && Team)
+
+    if (GameActive && Team) {
         Team->Remove(this);
+        Team = NULL;
+    }
+}
+
+void InfantryClass::Destruct()
+{
+    if (GameActive && Class) {
+        Limbo();
+    }
+
+    if (GameActive && Team) {
+        Team->Remove(this);
+        Team = NULL;
+    }
+
+    if (GameActive && House)
+        --House->CurUnits;
+
+    IsActive = false;
 }
 
 /***********************************************************************************************
@@ -324,9 +341,23 @@ InfantryClass::~InfantryClass(void)
  *=============================================================================================*/
 void* InfantryClass::operator new(size_t) noexcept
 {
-    void* ptr = Infantry.Allocate();
+    TARGET target;
+    NewDeletePacketData* data;
+
+    if (!IsNewAllowed)
+        return NULL;
+
+    void* ptr = Infantry.Allocate(heap_index);
     if (ptr) {
-        ((InfantryClass*)ptr)->Set_Active();
+        ((InfantryClass*)ptr)->IsActive = true;
+    }
+
+    if (GameToPlay == GAME_HOST) {
+        target = Build_Target(KIND_INFANTRY, Infantry.ID((InfantryClass*)ptr));
+        data = new NewDeletePacketData;
+        data->IsDeletePacket = false;
+        data->Whom = target;
+        NewDeletePacketDatas.Add(data);
     }
     return (ptr);
 }
@@ -347,12 +378,26 @@ void* InfantryClass::operator new(size_t) noexcept
  *=============================================================================================*/
 void InfantryClass::operator delete(void* ptr)
 {
-    if (ptr) {
-        ((InfantryClass*)ptr)->IsActive = false;
-    }
-    Infantry.Free((InfantryClass*)ptr);
+    TARGET target;
+    NewDeletePacketData* data;
 
-    // Map.Validate();
+    int unused = 0;
+
+    if (IsDeleteAllowed) {
+        if (ptr) {
+            if (GameToPlay == GAME_HOST) {
+                data = new NewDeletePacketData;
+                target = Build_Target(KIND_INFANTRY, Infantry.ID((InfantryClass*)ptr));
+                data->Whom = target;
+                data->IsDeletePacket = true;
+                NewDeletePacketDatas.Add(data);
+            }
+            ((InfantryClass*)ptr)->IsActive = false;
+        }
+        Infantry.Free((InfantryClass*)ptr);
+    } else {
+        unused = 1;
+    }
 }
 
 /***********************************************************************************************
@@ -379,7 +424,7 @@ void InfantryClass::operator delete(void* ptr)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   03/31/1995 JLB : Revenge factor.                                                          *
  *=============================================================================================*/
-ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
     Validate();
     ResultType res = RESULT_NONE;
@@ -397,7 +442,7 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
     // Mono_Printf("Infantry Take_Damage(%d, %d, %d, %p)\r", damage, distance, warhead, source);
     // Get_Key();
 
-    res = FootClass::Take_Damage(damage, distance, warhead, source);
+    res = FootClass::Take_Damage(damage, distance, warhead, source, unk);
 
     /*
     **	Flame thrower guys take more damage because of the exposed pilot light
@@ -405,7 +450,7 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
     */
     if (damage && res != RESULT_DESTROYED && *this == INFANTRY_E4) {
         damage = 5;
-        ResultType newres = FootClass::Take_Damage(damage, distance, warhead, source);
+        ResultType newres = FootClass::Take_Damage(damage, distance, warhead, source, unk);
         res = MAX(res, newres);
     }
 
@@ -460,8 +505,8 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         case WARHEAD_FEEDME:
             if (source) {
                 source->Strength += 30;
-                if (source->Strength > source->Class_Of().MaxStrength) {
-                    source->Strength = source->Class_Of().MaxStrength;
+                if (source->Strength > source->Class_Of().MaxStrength + source->Mod1) {
+                    source->Strength = source->Class_Of().MaxStrength + source->Mod1;
                 }
             }
             // Fall thru to WARHEAD_SA:
@@ -643,6 +688,17 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window)
     //	CC_Draw_Shape(shapefile, shapenum, x, y, window, SHAPE_FADING|SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_GHOST,
     //House->Remap_Table(IsBlushing, true), Map.UnitShadow);
 
+    if (Flagged != HOUSE_NONE) {
+        CC_Draw_Shape(MixFileClass::Retrieve("FLAGFLY.SHP"),
+                      Frame % 14,
+                      x + 13,
+                      y - 8,
+                      window,
+                      SHAPE_CENTER | SHAPE_FADING | SHAPE_GHOST,
+                      HouseClass::As_Pointer(Flagged)->Remap_Table(false, false),
+                      Map.UnitShadow);
+    }
+
     FootClass::Draw_It(x, y, window);
 }
 
@@ -668,6 +724,9 @@ void InfantryClass::Per_Cell_Process(bool center)
 {
     Validate();
     CellClass* cellptr = &Map[Coord_Cell(Coord)];
+    PerCellPacketData* data;
+    int intval = 0;
+    CELL cell = Coord_Cell(Coord);
 
     /*
     **	If the infantry unit is entering a cell that contains the building it is trying to
@@ -704,7 +763,7 @@ void InfantryClass::Per_Cell_Process(bool center)
         && techno == As_Techno(NavCom)) {
         if (Transmit_Message(RADIO_IM_IN) == RADIO_ATTACH) {
             Limbo();
-            techno->Attach(this);
+            techno->Add_To_Cargo(this);
         }
         return;
     }
@@ -731,6 +790,31 @@ void InfantryClass::Per_Cell_Process(bool center)
             Scatter(building->Center_Coord(), true); // RUN AWAY!
             Special.IsScatter = temp;
             return;
+        }
+    }
+
+    if (*this == INFANTRY_RAMBO) {
+        if (cellptr->Cell_Occupier() != NULL) {
+            ObjectClass* obj = cellptr->Cell_Occupier();
+            if (obj && obj->Is_Techno() && obj->IsActive && obj->What_Am_I() == RTTI_UNIT) {
+                UnitClass* unit = (UnitClass*)obj;
+                if (unit && unit->As_Target() == NavCom) {
+                    int temp = Special.IsScatter;
+
+                    unit->IsGoingToBlow = true;
+                    unit->Clicked_As_Target(20);
+                    unit->CountDown.Set(20);
+                    unit->WhomToRepay = As_Target();
+                    unit->Make_Techno_Packet_Data(TECHNO_PACKET_DATA_DEMOLITION, 1);
+                    Special.IsScatter = true;
+                    NavCom = TARGET_NONE;
+                    Do_Uncloak();
+                    Arm = Rearm_Delay(true);
+                    Scatter(unit->Center_Coord(), true); // RUN AWAY!
+                    Special.IsScatter = temp;
+                    return;
+                }
+            }
         }
     }
 
@@ -763,6 +847,17 @@ void InfantryClass::Per_Cell_Process(bool center)
         }
     }
 
+    if (center && GameToPlay == GAME_HOST && Map[cell].Overlay == OVERLAY_ROAD1) {
+        data = new PerCellPacketData;
+        data->Whom = As_Target();
+        data->Owner = Owner();
+        data->Cell = cell;
+        data->Number = WDT_CRATE_TELEPORT;
+        intval = Process_Crate_Pickup(WDT_CRATE_TELEPORT, cell, this, Owner(), 0xFFFF);
+        data->_IntNumber = intval;
+        PerCellPacketDatas.Add(data);
+    }
+
     /*
     **	When the infantry reaches the center of the cell, it may begin a new mission.
     */
@@ -770,7 +865,13 @@ void InfantryClass::Per_Cell_Process(bool center)
         Commence();
     }
 
-    Look(true);
+    if (IsPlanningToLook) {
+        IsPlanningToLook = false;
+        Look(false);
+    } else {
+        Look(true);
+    }
+
     FootClass::Per_Cell_Process(center);
 
     /*
@@ -848,7 +949,13 @@ TARGET InfantryClass::As_Target(void) const
  *=============================================================================================*/
 void InfantryClass::Init(void)
 {
+    IsNewAllowed = true;
+    IsDeleteAllowed = true;
     Infantry.Free_All();
+
+    for (int i = 0; i < Infantry.Length(); i++) {
+        Infantry.Raw_Ptr(i)->IsActive = false;
+    }
 }
 
 /***********************************************************************************************
@@ -875,9 +982,8 @@ void InfantryClass::Look(bool incremental)
     int sight; // Number of cells to sight.
 
     if (!IsInLimbo) {
-        // if (IsOwnedByPlayer) {			// Changed for multiple player mapping. ST - 3/6/2019 1:27PM
-        if (House->IsHuman || GameToPlay != GAME_NORMAL) {
-            sight = Class->SightRange;
+        if (IsOwnedByPlayer || PlayerPtr->Is_Ally(Owner())) {
+            sight = (Mod5 / 256) + Class->SightRange;
 
             if (sight) {
                 Map.Sight_From(House,
@@ -905,7 +1011,7 @@ void InfantryClass::Look(bool incremental)
  * HISTORY:                                                                                    *
  *   09/08/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void InfantryClass::Assign_Destination(TARGET target)
+void InfantryClass::Assign_Destination(TARGET target, int)
 {
     Validate();
     /*
@@ -959,10 +1065,14 @@ void InfantryClass::Assign_Destination(TARGET target)
                 }
             }
         } else {
-            Path[0] = FACING_NONE;
+            if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                Path[0] = FACING_NONE;
+            }
         }
     } else {
-        Path[0] = FACING_NONE;
+        if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+            Path[0] = FACING_NONE;
+        }
     }
     FootClass::Assign_Destination(target);
 }
@@ -984,11 +1094,13 @@ void InfantryClass::Assign_Destination(TARGET target)
  *   09/08/1994 JLB : Created.                                                                 *
  *   06/30/1995 JLB : Tries to capture target if possible.                                     *
  *=============================================================================================*/
-void InfantryClass::Assign_Target(TARGET target)
+void InfantryClass::Assign_Target(TARGET target, bool unk)
 {
     Validate();
-    Path[0] = FACING_NONE;
-    FootClass::Assign_Target(target);
+    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+        Path[0] = FACING_NONE;
+    }
+    FootClass::Assign_Target(target, unk);
 
     /*
     **	If this is an infantry that can only capture, then also assign its destination to the
@@ -996,7 +1108,8 @@ void InfantryClass::Assign_Target(TARGET target)
     */
     if (!Target_Legal(NavCom) && Class->IsCapture && Class->Primary == WEAPON_NONE) {
         BuildingClass const* building = As_Building(target);
-        if (building && building->Can_Capture()) {
+        if (building && building->Can_Capture()
+            && (GameToPlay != GAME_NORMAL || *building != STRUCT_EYE && Scenario < 13)) {
             Assign_Destination(target);
         }
     }
@@ -1019,8 +1132,15 @@ void InfantryClass::Assign_Target(TARGET target)
  *=============================================================================================*/
 void InfantryClass::AI(void)
 {
+    int maxspeed;
+    int dist;
+    COORDINATE hcoord;
+
     Validate();
     FootClass::AI();
+
+    if (!IsActive)
+        return;
 
     if (IsUnloading)
         Mark(MARK_CHANGE);
@@ -1196,7 +1316,9 @@ void InfantryClass::AI(void)
                 */
                 if (TarCom == NavCom) {
                     NavCom = TARGET_NONE;
-                    Path[0] = FACING_NONE;
+                    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                        Path[0] = FACING_NONE;
+                    }
                 }
 #ifdef BOXING
             }
@@ -1299,16 +1421,18 @@ void InfantryClass::AI(void)
             /*
             **	When in guard mode, never allow a valid navcom.
             */
+#if 0 // SOLE
             if (Mission == MISSION_GUARD && MissionQueue == MISSION_NONE && Target_Legal(NavCom)) {
                 Assign_Destination(TARGET_NONE);
                 //				if (IsTethered) Scatter(0, true);
             }
+#endif
 
             /*
             **	A head to coordinate is needed. If there is no path
             **	available, then create one.
             */
-            if (Target_Legal(NavCom) && Strength && Mission != MISSION_GUARD) {
+            if (Target_Legal(NavCom) && Strength) {
 
                 /*
                 **	Determine if the next cell in the list is available
@@ -1317,7 +1441,9 @@ void InfantryClass::AI(void)
                 */
                 if (Path[0] != FACING_NONE
                     && Can_Enter_Cell(Adjacent_Cell(Coord_Cell(Center_Coord()), Path[0])) != MOVE_OK) {
-                    Path[0] = FACING_NONE;
+                    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                        Path[0] = FACING_NONE;
+                    }
                 }
 
                 /*
@@ -1327,8 +1453,10 @@ void InfantryClass::AI(void)
                 **	than the distance to the target.
                 */
                 int d = Lepton_To_Cell(Distance(NavCom));
-                if (d < CONQUER_PATH_MAX) {
-                    Path[d] = FACING_NONE;
+                if (d < CONQUER_PATH_MAX / 2) {
+                    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                        Path[d] = FACING_NONE;
+                    }
                 }
 
                 /*
@@ -1406,14 +1534,31 @@ void InfantryClass::AI(void)
                         }
                     }
 
-                    Path[0] = FACING_NONE;
+                    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                        Path[0] = FACING_NONE;
+                    }
+
                     Stop_Driver();
                     if (IsNewNavCom)
                         Sound_Effect(VOC_SCOLD);
                     IsNewNavCom = false;
 
                 } else {
+                    if (Head_To_Coord()) {
+                        hcoord = Head_To_Coord();
+                    } else {
+                        hcoord = Coord;
+                    }
+
                     if (Start_Driver(acoord)) {
+                        if (!IsActive) {
+                            return;
+                        }
+
+                        if (GameToPlay == GAME_HOST) {
+                            Add_Movement_Packet(Coord_Cell(hcoord), Path[0]);
+                        }
+
                         PrimaryFacing.Set(Direction8(Center_Coord(), Head_To_Coord()));
                         Set_Speed(0xFF);
                         if (IsProne) {
@@ -1421,6 +1566,10 @@ void InfantryClass::AI(void)
                         } else {
                             Do_Action(DO_WALK);
                         }
+                    }
+
+                    if (!IsActive) {
+                        return;
                     }
                 }
             }
@@ -1452,7 +1601,9 @@ void InfantryClass::AI(void)
                         Enter_Idle_Mode();
                     }
                     // Stop_Driver();
-                    Path[0] = FACING_NONE;
+                    if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                        Path[0] = FACING_NONE;
+                    }
                 }
             } else {
                 int movespeed = Speed;
@@ -1471,6 +1622,17 @@ void InfantryClass::AI(void)
                     }
                 }
 
+                maxspeed = Class->MaxSpeed;
+                maxspeed = ((maxspeed * SpeedScale) / 256) + Mod2;
+
+                int maxdist = Fixed_To_Cardinal(maxspeed, movespeed);
+
+                dist = Distance(Head_To_Coord());
+
+                if (maxdist > dist) {
+                    maxdist = dist;
+                }
+
                 if (IsTethered) {
                     Transmit_Message(RADIO_REDRAW);
                 }
@@ -1479,11 +1641,15 @@ void InfantryClass::AI(void)
                 **	Advance the infantry as far as it should go.
                 */
                 MPHType maxspeed = MPHType(min((unsigned)(Class->MaxSpeed * House->GroundspeedBias), MPH_LIGHT_SPEED));
-                Coord = Coord_Move(Coord, Direction(Head_To_Coord()), Fixed_To_Cardinal(maxspeed, movespeed));
+                Coord = Coord_Move(Coord, Direction(Head_To_Coord()), maxdist);
             }
             Mark(MARK_DOWN);
         }
         IsNewNavCom = false;
+    }
+
+    if (Cloak == CLOAKED && Flagged != HOUSE_NONE) {
+        Do_Shimmer();
     }
 }
 
@@ -1589,6 +1755,10 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
     if ((unsigned)cell >= MAP_CELL_TOTAL)
         return (MOVE_NO);
 
+    if (GameToPlay == GAME_CLIENT) {
+        return (MOVE_OK);
+    }
+
     /*
     **	If moving off the edge of the map, then consider that an illegal move.
     */
@@ -1642,6 +1812,11 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
                         && (obj->As_Target() == NavCom || obj->As_Target() == TarCom)) {
                         return (MOVE_OK);
                     }
+                }
+
+                if (*this == INFANTRY_RAMBO && Mission == MISSION_SABOTAGE && obj->What_Am_I() == RTTI_UNIT
+                    && (obj->As_Target() == NavCom || obj->As_Target() == TarCom)) {
+                    return (MOVE_OK);
                 }
 
                 /*
@@ -1749,7 +1924,12 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
     ** if a unit has the cell reserved then we just can't go in there.
     */
     if (retval == MOVE_OK && cellptr->Flag.Occupy.Vehicle) {
-        return (MOVE_NO);
+        if ((Mission == MISSION_SABOTAGE && *this == INFANTRY_RAMBO)
+            && (cellptr->As_Target() == NavCom || cellptr->As_Target() == TarCom)) {
+            //cut code?
+        } else {
+            return (MOVE_NO);
+        }
     }
 
     /*
@@ -1806,9 +1986,32 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
 short const* InfantryClass::Overlap_List(void) const
 {
     Validate();
-    // return(Coord_Spillage_List(Coord, 24 + ((IsSelected || Doing > DO_WALK)?12:0)));
-    return (Coord_Spillage_List(Coord, 24 + ((Doing > DO_WALK || Is_Selected_By_Player()) ? 12 : 0)));
-    //	return(Coord_Spillage_List(Coord, (IsSelected ? 24 : 14))+1);
+    int size;
+    int len;
+    HouseClass* hptr;
+
+    size = 24 + ((Doing > DO_WALK || IsSelected) ? 12 : 0);
+
+    if (TechnoUnk1 && (ShowNames == 1 || IsSelected)
+        && (Cloak != CLOAKED || House->Is_Ally(PlayerPtr) || (IsServerAdmin && !OfflineMode)
+            || PlayerPtr->Class->House == HOUSE_SPECTATOR)) {
+        if (PlayerNameDrawStyle == 3) {
+            Fancy_Text_Print("", 0, 0, 15, 0, TPF_3POINT | TPF_CENTER | TPF_FULLSHADOW);
+        } else {
+            Fancy_Text_Print("", 0, 0, 15, 0, TPF_8POINT | TPF_CENTER | TPF_FULLSHADOW);
+        }
+
+        hptr = HouseClass::As_Pointer(Owner());
+        if (hptr) {
+            len = String_Pixel_Width(hptr->Name) + 14;
+        } else {
+            len = 0;
+        }
+        size += FontHeight + 6;
+        size = MAX(len, size);
+    }
+
+    return Coord_Spillage_List(Coord, size);
 }
 
 /***********************************************************************************************
@@ -2173,6 +2376,10 @@ bool InfantryClass::Do_Action(DoType todo, bool force)
         }
         Set_Stage(0);
 
+        if (todo == DO_FIRE_WEAPON || todo == DO_FIRE_PRONE) {
+            Set_Stage(Get_Fire_Something());
+        }
+
         /*
         **	Kludge to make sure that if infantry is in the dying animation, it isn't still
         **	moving as well.
@@ -2202,7 +2409,9 @@ bool InfantryClass::Do_Action(DoType todo, bool force)
         case DO_ON_GUARD:
             IsBoxing = true;
             PrimaryFacing.Set(Direction8(Center_Coord(), As_Coord(TarCom)));
-            Path[0] = FACING_NONE;
+            if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                Path[0] = FACING_NONE;
+            }
             break;
 
         default:
@@ -2379,7 +2588,7 @@ bool InfantryClass::Limbo(void)
  * HISTORY:                                                                                    *
  *   12/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-BulletClass* InfantryClass::Fire_At(TARGET target, int which)
+BulletClass* InfantryClass::Fire_At(TARGET target, int which, bool unk)
 {
     Validate();
     BulletClass* bullet = NULL;
@@ -2410,7 +2619,7 @@ BulletClass* InfantryClass::Fire_At(TARGET target, int which)
     } else {
 #endif
 
-        bullet = FootClass::Fire_At(target, which);
+        bullet = FootClass::Fire_At(target, which, unk);
         if (bullet) {
 
             /*
@@ -2556,7 +2765,8 @@ TARGET InfantryClass::Greatest_Threat(ThreatType threat) const
     */
     case WEAPON_RIFLE:
         if (House->IsHuman && (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA)) {
-            return (TARGET_NONE);
+            TARGET target = TechnoClass::Greatest_Threat(threat | THREAT_VEHICLES);
+            return target;
         }
         return (TechnoClass::Greatest_Threat(threat | THREAT_INFANTRY | THREAT_BUILDINGS));
     }
@@ -2822,15 +3032,69 @@ RadioMessageType InfantryClass::Receive_Message(RadioClass* from, RadioMessageTy
  * HISTORY:                                                                *
  *   01/16/1995 BWG : Created.                                             *
  *=========================================================================*/
-int InfantryClass::Rearm_Delay(bool second) const
+int InfantryClass::Rearm_Delay(bool /*second*/) const
 {
+    int rof;
+    int value1;
+    int value2;
+    int value3;
+    int value4;
+    int value5;
+
     Validate();
 #ifdef BOXING
     if (IsBoxing) {
         return (Random_Pick(5, 50));
     }
 #endif
-    return (FootClass::Rearm_Delay(second));
+
+    rof = Weapons[Techno_Type_Class()->Primary].ROF;
+    value4 = Class->FireLaunch;
+
+    if (IsProne) {
+        value4 = Class->ProneLaunch;
+    }
+
+    value1 = rof + value4;
+    value2 = 100 * Mod4 / sole_array[SOLE_ARRAY_ROF][2];
+    value2 = infweapondata[value2 / 10];
+    value3 = (value1 * value2) / 100;
+
+    value5 = value3 - value4;
+    if (value5 < 0) {
+        value5 = 0;
+    }
+
+    return value5;
+}
+
+int InfantryClass::Get_Fire_Something(void)
+{
+    int rof;
+    int value1;
+    int value2;
+    int value3;
+    int value4;
+    int value5;
+
+    rof = Weapons[Techno_Type_Class()->Primary].ROF;
+    value4 = Class->FireLaunch;
+
+    if (IsProne) {
+        value4 = Class->ProneLaunch;
+    }
+
+    value1 = rof + value4;
+    value2 = 100 * Mod4 / sole_array[SOLE_ARRAY_ROF][2];
+    value2 = infweapondata[value2 / 10];
+    value3 = (value1 * value2) / 100;
+
+    value5 = value3 - value4;
+    if (value5 > 0) {
+        return 0;
+    }
+
+    return -value5;
 }
 
 /***********************************************************************************************
@@ -2880,10 +3144,20 @@ ActionType InfantryClass::What_Action(ObjectClass* object) const
     ActionType action = FootClass::What_Action(object);
 
     /*
-    **	First see if it's a commando, and if he's attacking a building, have him return ACTION_SABOTAGE instead
-    */
-    if (*this == INFANTRY_RAMBO && action == ACTION_ATTACK && object->What_Am_I() == RTTI_BUILDING) {
-        return (ACTION_SABOTAGE);
+    **	First see if it's a commando, and if he's attacking a building or unit, have him return ACTION_SABOTAGE instead
+	*/
+    if (*this == INFANTRY_RAMBO && action == ACTION_ATTACK) {
+        if (object->What_Am_I() == RTTI_BUILDING) {
+            bool control = Keyboard::Down(KN_LCTRL) || Keyboard::Down(KN_RCTRL);
+            if (control) {
+                return (ACTION_SABOTAGE);
+            }
+        } else if (object->What_Am_I() == RTTI_UNIT) {
+            bool control = Keyboard::Down(KN_LCTRL) || Keyboard::Down(KN_RCTRL);
+            if (control) {
+                return (ACTION_SABOTAGE);
+            }
+        }
     }
 
     /*
@@ -2980,7 +3254,11 @@ void InfantryClass::Read_INI(CCINIClass& ini)
             if (classid != INFANTRY_NONE) {
 
                 if (HouseClass::As_Pointer(inhouse) != NULL) {
-                    infantry = new InfantryClass(classid, inhouse);
+                    if (New_Allowed()) {
+                        infantry = new InfantryClass(classid, inhouse);
+                    } else {
+                        infantry = NULL;
+                    }
                     if (infantry) {
 
                         /*
@@ -3027,7 +3305,7 @@ void InfantryClass::Read_INI(CCINIClass& ini)
                                                && *infantry == INFANTRY_CHAN;
 
                         if (!is_scb10ea_chan && infantry->Unlimbo(coord, dir)) {
-                            infantry->Strength = Fixed_To_Cardinal(infantry->Class_Of().MaxStrength, strength);
+                            infantry->Strength = Fixed_To_Cardinal(infantry->Class_Of().MaxStrength + infantry->Mod1, strength);
                             if (GameToPlay == GAME_NORMAL || infantry->House->IsHuman) {
                                 infantry->Assign_Mission(mission);
                                 infantry->Commence();
