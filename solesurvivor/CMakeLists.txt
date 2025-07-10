@@ -62,11 +62,13 @@ set(SURVIVOR_SRC
     iomap.cpp
     ioobj.cpp
     jshell.cpp
+    langfilt.cpp
     layer.cpp
     lib.cpp
     list.cpp
     loaddlg.cpp
     logic.cpp
+    lprotocol.cpp
     map.cpp
     mapeddlg.cpp
     mapedit.cpp

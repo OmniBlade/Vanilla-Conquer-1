@@ -177,6 +177,11 @@ void LogicClass::Debug_Dump(MonoClass* mono) const
  *=============================================================================================*/
 void LogicClass::AI(void)
 {
+    #define Crate_Player_Divisor 45.45454545454545 //5000 / HOUSE_COUNT?
+	#define Crate_Player_Nudge 0.33
+
+	double density_scale;
+	int count;
     int index;
 
     FramesPerSecond++;
@@ -184,9 +189,29 @@ void LogicClass::AI(void)
     /*
     **	Crate regeneration is handled here.
     */
-    if (GameToPlay != GAME_NORMAL && CrateMaker && CrateTimer.Expired()) {
+    if (GameToPlay != GAME_NORMAL && CrateMaker && CrateTimer.Expired()&& GameParams.IsCrates) {
         Map.Place_Random_Crate();
-        CrateTimer = TICKS_PER_MINUTE * Random_Pick(7, 15);
+        count = ActivePlayers.Count() ;
+		density_scale = count / Crate_Player_Divisor;
+		density_scale += Crate_Player_Nudge;
+
+		if (density_scale > 1.0) {
+			density_scale = 1.0;
+		}
+
+		count = CrateDensity * density_scale;
+
+		if (CrateCount < count) {
+			CrateTimer = 1;
+		} else {
+			CrateTimer = WDTCrateTimerVal;
+		}
+	}
+
+	if (GameToPlay == GAME_HOST && !CrateKeepTimer.Time()) {
+		Remove_All_Crates();
+		CrateTimer = 1;
+		CrateKeepTimer.Set(36000, true);
     }
 
     /*
@@ -203,6 +228,13 @@ void LogicClass::AI(void)
     */
     for (index = 0; index < Count(); index++) {
         ObjectClass* obj = (*this)[index];
+
+        if (!obj->IsActive) {
+			Delete(obj);
+			index--;
+			continue;
+		}
+        
         int count = Count();
 
         obj->AI();

@@ -311,6 +311,7 @@ int LoadOptionsClass::Process(void)
             if (InMainLoop) {
                 HiddenPage.Clear();
                 Map.Flag_To_Redraw(true);
+                Map.IsToDrawUnknown = true;
                 Map.Render();
             } else {
                 HiddenPage.Clear();

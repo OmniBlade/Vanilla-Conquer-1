@@ -76,7 +76,7 @@
  * HISTORY:          01/05/1995 MML : Created.                             *
  *=========================================================================*/
 ListClass::ListClass(int id, int x, int y, int w, int h, TextPrintType flags, void const* up, void const* down)
-    : ControlClass(id, x, y, w, h, LEFTPRESS | LEFTRELEASE | KEYBOARD, false)
+    : ControlClass(id, x, y, w, h, LEFTUP | LEFTPRESS | LEFTRELEASE | KEYBOARD, false)
     , UpGadget(0, up, x + w, y)
     , DownGadget(0, down, x + w, y + h)
     , ScrollGadget(0, x + w, y, 0, h, true)
@@ -257,6 +257,11 @@ void ListClass::Remove_Item(char const* text)
  *=========================================================================*/
 int ListClass::Action(unsigned flags, KeyNumType& key)
 {
+    if (flags & LEFTUP) {
+        Map.Set_Default_Mouse(MOUSE_NORMAL);
+        return (true);
+    }
+
     if (flags & LEFTRELEASE) {
         key = KN_NONE;
         flags &= (~LEFTRELEASE);
