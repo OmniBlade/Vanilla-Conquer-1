@@ -101,10 +101,6 @@ int MissionClass::Mission_Hunt(void)
 {
     return TICKS_PER_SECOND * 30;
 };
-int MissionClass::Mission_Timed_Hunt(void)
-{
-    return TICKS_PER_SECOND * 30;
-};
 int MissionClass::Mission_Move(void)
 {
     return TICKS_PER_SECOND * 30;
@@ -145,7 +141,10 @@ int MissionClass::Mission_Missile(void)
 {
     return TICKS_PER_SECOND * 30;
 };
-
+int MissionClass::Mission_Find_Crate(void)
+{
+    return TICKS_PER_SECOND * 30;
+};
 /***********************************************************************************************
  * MissionClass::Set_Mission -- Sets the mission to the specified value.                       *
  *                                                                                             *
@@ -248,6 +247,7 @@ void MissionClass::AI(void)
         default:
         case MISSION_STICKY:
         case MISSION_SLEEP:
+        case MISSION_TIMED_HUNT:
             Timer = Mission_Sleep();
             break;
 
@@ -309,10 +309,6 @@ void MissionClass::AI(void)
             Timer = Mission_Hunt();
             break;
 
-        case MISSION_TIMED_HUNT:
-            Timer = Mission_Timed_Hunt();
-            break;
-
         case MISSION_UNLOAD:
             Timer = Mission_Unload();
             break;
@@ -323,6 +319,10 @@ void MissionClass::AI(void)
 
         case MISSION_MISSILE:
             Timer = Mission_Missile();
+            break;
+
+        case MISSION_FIND_CRATE:
+            Timer = Mission_Find_Crate();
             break;
         }
     }

@@ -242,12 +242,21 @@ int WWMessageBox::Process(const char* msg, const char* b1txt, const char* b2txt,
         /*
         **	Draw the caption.
         */
-        Fancy_Text_Print(buffer,
-                         x + (20 * factor),
-                         y + (25 * factor),
-                         CC_GREEN,
-                         TBLACK,
-                         TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+        if (InMainLoop == 1) {
+            Fancy_Text_Print(buffer,
+                             x + (20 * factor),
+                             y + (25 * factor),
+                             CC_GREEN,
+                             TBLACK,
+                             TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+        } else {
+            Fancy_Text_Print(buffer,
+                             x + (20 * factor),
+                             y + (25 * factor),
+                             CC_GREEN,
+                             TBLACK,
+                             TPF_BRIGHT_COLOR | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+        }
 #ifdef JAPANESE
     }
 #endif
@@ -294,12 +303,21 @@ int WWMessageBox::Process(const char* msg, const char* b1txt, const char* b2txt,
                     /*
                     **	Draw the caption.
                     */
-                    Fancy_Text_Print(buffer,
-                                     x + (20 * factor),
-                                     y + (25 * factor),
-                                     CC_GREEN,
-                                     TBLACK,
-                                     TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    if (InMainLoop == 1) {
+                        Fancy_Text_Print(buffer,
+                                         x + (20 * factor),
+                                         y + (25 * factor),
+                                         CC_GREEN,
+                                         TBLACK,
+                                         TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    } else {
+                        Fancy_Text_Print(buffer,
+                                         x + (20 * factor),
+                                         y + (25 * factor),
+                                         CC_GREEN,
+                                         TBLACK,
+                                         TPF_BRIGHT_COLOR | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+                    }
 #ifdef JAPANESE
                 }
 #endif

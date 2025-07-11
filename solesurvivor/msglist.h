@@ -64,48 +64,80 @@ public:
     **	Initialization
     */
     void Init(int x, int y, int max_msg, int maxchars, int height);
-    TextLabelClass* Add_Message(char* txt,
-                                int color,
-                                TextPrintType style,
-                                int timeout,
-                                unsigned short magic_number,
-                                unsigned short crc);
+    void Add_Message(const char* txt, int color, TextPrintType style, int timeout);
 
     /*
     **	Message-editing routines
     */
-    TextLabelClass* Add_Edit(int color, TextPrintType style, char* to, int width);
-    char* Get_Edit_Buf(void);
+    void Add_Edit(int x, int y, int color, TextPrintType style, char* to);
+    char* Get_Edit_Buf(void)
+    {
+        return EditBuf;
+    }
+
+    void Add_Team_Message(int index);
+
+    void Add_Private_Message(const char* message);
+    void Make_Message_Private(void);
+    bool Is_Private_Message()
+    {
+        return PrivateMessageBuffer[0] == 0;
+    }
 
     /*
     **	Maintenance routines
     */
     int Manage(void);
     int Input(KeyNumType& input);
-    void Draw(void);
-    int Num_Messages(void);
-    void Set_Width(int width);
+    void Draw(GraphicViewPortClass& viewport);
+
+    void Move_Old_Messages(int index);
+
+    bool Is_To_Redraw(void)
+    {
+        return ToRedraw;
+    }
+    bool Is_Editing(void)
+    {
+        return IsEditing;
+    }
+    void Flag_To_Redraw(void)
+    {
+        ToRedraw = true;
+    }
 
 private:
-    TextLabelClass* MessageList; // list of messages
-    int MessageX;                // x-coord of upper-left
-    int MessageY;                // y-coord of upper-left
-    int MaxMessages;             // max messages allowed
-    int MaxChars;                // max allowed chars per message
-    int Height;                  // height in pixels
-    TextLabelClass* EditLabel;   // ptr to current edit label
-    char* EditBuf;               // ptr to current edit buffer
-    int EditCurPos;              // current edit position
-    int EditInitPos;             // initial edit position
-    int Width;                   // Maximum width in pixels of editable string
+    int MessageX;    // x-coord of upper-left
+    int MessageY;    // y-coord of upper-left
+    int MaxMessages; // max messages allowed
+    int MessageIndex;
+    int MaxChars; // max allowed chars per message
+    int Height;   // height in pixels
+    bool IsEditing;
+    int EditCurPos; // current edit position
+    int EditCurX;
+    int EditCurY;
+    TextPrintType EditCurStyle;
+    int EditCurColor;
+
+    int ToRedraw;
+
+    int MessageTiming[MAX_NUM_MESSAGES];
+    int MessageTimingIndex;
+    int EditInitPos; // initial edit position
+    int Width;       // Maximum width in pixels of editable string
 
     /*
     ** Static buffers provided for messages.  They must be long enough for
     ** both the message, and for the "To" prefix on edited messages, or
     ** the "From:" prefix on received messages.
     */
-    static char MessageBuffers[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH + 30];
-    static char BufferAvail[MAX_NUM_MESSAGES];
+    static char MessageBuffers[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH];
+
+    static char EditBuf[MAX_MESSAGE_LENGTH];
+    static char ToBuf[MAX_MESSAGE_LENGTH];
+
+    static char PrivateMessageBuffer[52];
 };
 
 #endif

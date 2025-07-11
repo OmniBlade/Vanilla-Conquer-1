@@ -452,509 +452,328 @@ int Do_Menu(char const** strings, bool blue)
  * HISTORY:                                                                *
  *   05/17/1995 BRR : Created.                                             *
  *=========================================================================*/
-int Main_Menu(unsigned int timeout)
+int Main_Menu(unsigned long timeout)
 {
-    int scale_factor = Get_Resolution_Factor() + 1;
+	enum {
+		D_DIALOG_W = 152*2,
+		D_DIALOG_H = 136*2,
+		D_DIALOG_X = 85*2,
+		D_DIALOG_Y = 0,
+		D_DIALOG_CX = D_DIALOG_X + (D_DIALOG_W / 2),
 
-    int D_DIALOG_W = 152 * scale_factor, D_DIALOG_H = 136 * scale_factor, D_DIALOG_X = 85 * scale_factor,
-        D_DIALOG_Y = 0, D_DIALOG_CX = D_DIALOG_X + (D_DIALOG_W / scale_factor),
+		D_OFFLINE_W = 125*2,
+		D_OFFLINE_H = 9*2,
+		D_OFFLINE_X = 195,
+		D_OFFLINE_Y = 167,
 
-        D_START_W = 125 * scale_factor, D_START_H = 9 * scale_factor, D_START_X = 98 * scale_factor,
-        D_START_Y = 35 * scale_factor,
+		D_ONLINE_W = 125*2,
+		D_ONLINE_H = 9*2,
+		D_ONLINE_X = 195,
+		D_ONLINE_Y = 195,
+		
+		D_HELP_W = 125*2,
+		D_HELP_H = 9*2,
+		D_HELP_X = 195,
+		D_HELP_Y = 223,
 
-#ifdef BONUS_MISSIONS
-        D_BONUS_W = 125 * scale_factor, D_BONUS_H = 9 * scale_factor, D_BONUS_X = 98 * scale_factor, D_BONUS_Y = 0,
-#endif // BONUS_MISSIONS
+		D_SNEAK_W = 125*2,
+		D_SNEAK_H = 9*2,
+		D_SNEAK_X = 195,
+		D_SNEAK_Y = 251,
 
-        D_INTERNET_W = 125 * scale_factor, D_INTERNET_H = 9 * scale_factor, D_INTERNET_X = 98 * scale_factor,
-        D_INTERNET_Y = 36 * scale_factor,
+		D_FIVE_W = 125*2,
+		D_FIVE_H = 9*2,
+		D_FIVE_X = 195,
+		D_FIVE_Y = 279,
 
-        D_LOAD_W = 125 * scale_factor, D_LOAD_H = 9 * scale_factor, D_LOAD_X = 98 * scale_factor,
-        D_LOAD_Y = 53 * scale_factor,
+		D_SIX_W = 125*2,
+		D_SIX_H = 9*2,
+		D_SIX_X = 195,
+		D_SIX_Y = 307,
 
-        D_MULTI_W = 125 * scale_factor, D_MULTI_H = 9 * scale_factor, D_MULTI_X = 98 * scale_factor,
-        D_MULTI_Y = 71 * scale_factor,
+		D_NEWS_W = 125*2,
+		D_NEWS_H = 9*2,
+		D_NEWS_X = 195,
+		D_NEWS_Y = 335,	
 
-        D_INTRO_W = 125 * scale_factor, D_INTRO_H = 9 * scale_factor, D_INTRO_X = 98 * scale_factor,
-        D_INTRO_Y = 89 * scale_factor,
-#if (GERMAN | FRENCH)
-        D_EXIT_W = 83 * scale_factor,
-#else
-        D_EXIT_W = 63 * scale_factor,
-#endif
-        D_EXIT_H = 9 * scale_factor,
-#if (GERMAN | FRENCH)
-        D_EXIT_X = 118 * scale_factor,
-#else
-        D_EXIT_X = 128 * scale_factor,
-#endif
-        D_EXIT_Y = 111 * scale_factor;
+		D_EXIT_W = 83*2,
+		D_EXIT_H = 9*2,
+		D_EXIT_X = 237,
+		D_EXIT_Y = 363,
 
-#ifdef NEWMENU
-    int starty = 25 * scale_factor;
-#endif
+	};
+	enum {
+		BUTTON_OFFLINE=100*2,
+		BUTTON_ONLINE,
+		BUTTON_HELP,
+		BUTTON_SNEAK,
+		BUTTON_FIVE,
+		BUTTON_SIX,
+		BUTTON_NEWS,
+		BUTTON_EXIT,
+	};
 
-    // Make sure any changes to buttons here are also reflected in the enum and handling in Select_Game in init.cpp.
-    enum
-    {
+	//needed for matching bss, not sure if this was this function's static, but it's a static
+	static char unknown[256];
 
-#ifdef NEWMENU
-        BUTTON_EXPAND = 100 * 2,
-        BUTTON_START,
-#ifdef BONUS_MISSIONS
-        BUTTON_BONUS,
-#endif // BONUS_MISSIONS
-#else
-        BUTTON_START = 100 * 2,
-#endif
-        BUTTON_LOAD,
-        BUTTON_MULTI,
-        BUTTON_INTRO,
-        BUTTON_EXIT,
-    };
+	KeyNumType input;								// input from user
+	static int retval = SEL_NONE;					// return value
+	static int curbutton;
+	TextButtonClass *buttons[8];
+	unsigned long starttime;
 
-#ifdef NEWMENU
-    bool expansions = Expansion_Present();
-#endif
-    KeyNumType input; // input from user
-    int retval;       // return value
-    int curbutton;
-#ifdef NEWMENU
-#ifdef BONUS_MISSIONS
-    TextButtonClass* buttons[8];
-#else
-    TextButtonClass* buttons[7];
-#endif // BONUS_MISSIONS
-#else
-    TextButtonClass* buttons[5];
-#endif
-    //	unsigned int starttime;
+	int numbuttons = 8;
+	ControlClass *commands = NULL;				// the button list
+	int butt = 0;
 
-    ControlClass* commands = NULL; // the button list
+	TextButtonClass offlinebtn (BUTTON_OFFLINE, TXT_PRACTICE,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_OFFLINE_X, D_OFFLINE_Y, D_OFFLINE_W, D_OFFLINE_H);
 
-#ifdef NEWMENU
-#ifdef BONUS_MISSIONS
-    int ystep = 13 * scale_factor;
-#else
-    int ystep = 15 * scale_factor;
-#endif // BONUS_MISSIONS
+	TextButtonClass onlinebtn (BUTTON_ONLINE, TXT_PLAY_ONLINE,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_ONLINE_X, D_ONLINE_Y, D_ONLINE_W, D_ONLINE_H);
 
-    if (expansions)
-        ystep -= 2 * 2;
-    TextButtonClass expandbtn(BUTTON_EXPAND,
-                              TXT_NEW_MISSIONS,
-                              TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                              D_START_X,
-                              starty,
-                              D_START_W,
-                              D_START_H);
-    if (expansions)
-        starty += ystep;
+	TextButtonClass helpbtn (BUTTON_HELP, TXT_HELP,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_HELP_X, D_HELP_Y, D_HELP_W, D_HELP_H);
 
-    TextButtonClass startbtn(BUTTON_START,
-                             TXT_START_NEW_GAME,
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_START_X,
-                             starty,
-                             D_START_W,
-                             D_START_H);
-    starty += ystep;
+	TextButtonClass sneakbtn (BUTTON_SNEAK, TXT_SNEAK_PEEK,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_SNEAK_X, D_SNEAK_Y, D_SNEAK_W, D_SNEAK_H);
 
-#ifdef BONUS_MISSIONS
-    TextButtonClass bonusbtn(BUTTON_BONUS,
-                             TXT_BONUS_MISSIONS,
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_BONUS_X,
-                             starty,
-                             D_BONUS_W,
-                             D_BONUS_H);
-    starty += ystep;
-#endif // BONUS_MISSIONS
+	TextButtonClass fivebtn (BUTTON_FIVE, ButtonFiveText,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_FIVE_X, D_FIVE_Y, D_FIVE_W, D_FIVE_H);
 
-    TextButtonClass loadbtn(BUTTON_LOAD,
-                            TXT_LOAD_MISSION,
-                            TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                            D_LOAD_X,
-                            starty,
-                            D_LOAD_W,
-                            D_LOAD_H);
-    starty += ystep;
-#else
+	TextButtonClass sixbtn (BUTTON_SIX, ButtonSixText,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_SIX_X, D_SIX_Y, D_SIX_W, D_SIX_H);
 
-    TextButtonClass startbtn(BUTTON_START,
-                             TXT_START_NEW_GAME,
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_START_X,
-                             D_START_Y,
-                             D_START_W,
-                             D_START_H);
+	TextButtonClass newsbtn (BUTTON_NEWS, TXT_NEWS,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_NEWS_X, D_NEWS_Y, D_NEWS_W, D_NEWS_H);
 
-    TextButtonClass loadbtn(BUTTON_LOAD,
-                            TXT_LOAD_MISSION,
-                            TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                            D_LOAD_X,
-                            D_LOAD_Y,
-                            D_LOAD_W,
-                            D_LOAD_H);
+	TextButtonClass exitbtn (BUTTON_EXIT, TXT_EXIT_GAME,
+		TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_FULLSHADOW,
+		D_EXIT_X, D_EXIT_Y, D_EXIT_W, D_EXIT_H);
 
-#endif
+	/*
+	**	Initialize
+	*/
+	Set_Logic_Page(UnknownViewport1);
+	Keyboard::Clear();
+	starttime = TickCount.Time();
+	/*
+	**	Create the list
+	*/
+	commands = &offlinebtn;
 
-#ifdef DEMO
-    TextButtonClass multibtn(BUTTON_MULTI,
-                             TXT_ORDER_INFO,
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_MULTI_X,
-                             D_MULTI_Y,
-                             D_MULTI_W,
-                             D_MULTI_H);
-#else
+	onlinebtn.Add_Tail(*commands);
+	helpbtn.Add_Tail(*commands);
+	sneakbtn.Add_Tail(*commands);
+	fivebtn.Add_Tail(*commands);
+	sixbtn.Add_Tail(*commands);
+	newsbtn.Add_Tail(*commands);
+	exitbtn.Add_Tail(*commands);
 
-#ifdef NEWMENU
-    TextButtonClass multibtn(BUTTON_MULTI,
-                             TXT_MULTIPLAYER_GAME,
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_MULTI_X,
-                             starty,
-                             D_MULTI_W,
-                             D_MULTI_H);
-    starty += ystep;
+	/*
+	**	Fill array of button ptrs
+	*/
+	butt = 0;
 
-    // TextButtonClass internetbutton(BUTTON_INTERNET, TXT_INTERNET,
-    //	TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-    //	D_INTERNET_X, starty, D_INTERNET_W, D_INTERNET_H);
-    // starty += ystep;
-#else
-    TextButtonClass multibtn(BUTTON_MULTI,
-                             TXT_MULTIPLAYER_GAME,
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_MULTI_X,
-                             D_MULTI_Y,
-                             D_MULTI_W,
-                             D_MULTI_H);
-#endif
-#endif
+	buttons[butt++] = &offlinebtn;
+	buttons[butt++] = &onlinebtn;
+	buttons[butt++] = &helpbtn;
+	buttons[butt++] = &sneakbtn;
+	buttons[butt++] = &fivebtn;
+	buttons[butt++] = &sixbtn;
+	buttons[butt++] = &newsbtn;
+	buttons[butt++] = &exitbtn;
+	
+	buttons[curbutton]->Turn_On();
+	buttons[curbutton]->Flag_To_Redraw();
 
-#ifdef NEWMENU
-#ifdef DEMO
-    TextButtonClass introbtn(BUTTON_INTRO,
-                             TXT_JUST_INTRO,
-#else  // DEMO
-    TextButtonClass introbtn(BUTTON_INTRO,
-                             TXT_INTRO,
-#endif // DEMO
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_INTRO_X,
-                             starty,
-                             D_INTRO_W,
-                             D_INTRO_H);
-    starty += ystep;
+	Keyboard::Clear();
 
-    TextButtonClass exitbtn(BUTTON_EXIT,
-                            TXT_EXIT_GAME,
-                            TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-#if (GERMAN | FRENCH)
-                            // D_EXIT_X, starty);
-                            D_EXIT_X,
-                            starty,
-                            D_EXIT_W,
-                            D_EXIT_H);
-#else
-                            D_EXIT_X,
-                            starty,
-                            D_EXIT_W,
-                            D_EXIT_H);
-#endif
-    starty += ystep;
+	Fancy_Text_Print(TXT_NONE, 0, 0, CC_GREEN, TBLACK, TPF_CENTER|TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW);
 
-#else
+	/*
+	**	Main Processing Loop.
+	*/
+	bool display = true;
+	bool process = true;
+	while (process) {
 
-#ifdef DEMO
-    TextButtonClass introbtn(BUTTON_INTRO,
-                             TXT_JUST_INTRO,
-#else  // DEMO
-    TextButtonClass introbtn(BUTTON_INTRO,
-                             TXT_INTRO,
-#endif // DEMO
-                             TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-                             D_INTRO_X,
-                             D_INTRO_Y,
-                             D_INTRO_W,
-                             D_INTRO_H);
+		CountDownTimerClass timer(BT_SYSTEM, (long)0);
+		/*
+		** If we have just received input focus again after running in the background then
+		** we need to redraw.
+		*/
+		if (AllSurfaces.SurfacesRestored){
+			AllSurfaces.SurfacesRestored=FALSE;
+			display=TRUE;
+		}
 
-    TextButtonClass exitbtn(BUTTON_EXIT,
-                            TXT_EXIT_GAME,
-                            TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW,
-#if (GERMAN | FRENCH)
-                            // D_EXIT_X, D_EXIT_Y);
-                            D_EXIT_X,
-                            D_EXIT_Y,
-                            D_EXIT_W,
-                            D_EXIT_H);
-#else
-                            D_EXIT_X,
-                            D_EXIT_Y,
-                            D_EXIT_W,
-                            D_EXIT_H);
-#endif
-#endif
+		/*
+		**	If timeout expires, bail
+		*/
+		if (timeout && TickCount.Time() - starttime > timeout) {
+			retval = SEL_TIMEOUT;
+			process = false;
+		}
 
-    /*
-    **	Initialize
-    */
-    Set_Logic_Page(SeenBuff);
-    Keyboard->Clear();
-#if (0) // PG_TO_FIX
-    starttime = WinTickCount.Time();
-#endif
-    /*
-    **	Create the list
-    */
-    commands = &startbtn;
-#ifdef NEWMENU
-    if (expansions) {
-        expandbtn.Add_Tail(*commands);
-    }
-#endif
-#ifdef BONUS_MISSIONS
-    bonusbtn.Add_Tail(*commands);
-#endif // BONUS_MISSIONS
+		/*
+		**	Invoke game callback.
+		*/
+		Call_Back();
 
-    loadbtn.Add_Tail(*commands);
-    multibtn.Add_Tail(*commands);
-    introbtn.Add_Tail(*commands);
-    exitbtn.Add_Tail(*commands);
+		/*
+		**	Refresh display if needed.
+		*/
+		if (display) {
 
-    /*
-    **	Fill array of button ptrs
-    */
-#ifdef NEWMENU
-    if (expansions) {
-        curbutton = 0;
-    } else {
-        curbutton = 1;
-    }
-    int butt = 0;
+			Hide_Mouse();
+			/*
+			**	Load the background picture.
+			*/
+			Load_Title_Screen("HTITLE.PCX", &UnknownViewport2, Palette);
+			Set_Logic_Page(UnknownViewport2);
+			Set_Palette(Palette);
+			UnknownViewport2.Blit(UnknownViewport1);
 
-    buttons[butt++] = &expandbtn;
-    buttons[butt++] = &startbtn;
-#ifdef BONUS_MISSIONS
-    buttons[butt++] = &bonusbtn;
-#endif // BONUS_MISSIONS
-    buttons[butt++] = &loadbtn;
-    buttons[butt++] = &multibtn;
-    buttons[butt++] = &introbtn;
-    buttons[butt++] = &exitbtn;
-#else
-    curbutton = 0;
-    buttons[0] = &startbtn;
-    buttons[1] = &loadbtn;
-    buttons[2] = &multibtn;
-    buttons[3] = &introbtn;
-    buttons[4] = &exitbtn;
-#endif
-    buttons[curbutton]->Turn_On();
+			/*
+			**	Display the title and text overlay for the menu.
+			*/
+			Set_Logic_Page(UnknownViewport1);
+			offlinebtn.Draw_All();
+			Show_Mouse();
+			display = false;
+		}
 
-    Keyboard->Clear();
+		Color_Cycle_Button_Text(timer, Palette);
 
-    Fancy_Text_Print(TXT_NONE, 0, 0, CC_GREEN, TBLACK, TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
-    while (Get_Mouse_State() > 0)
-        Show_Mouse();
+		/*
+		**	Get and process player input.
+		*/
+		input = commands->Input();
+		switch (input) {
 
-    /*
-    **	Main Processing Loop.
-    */
-    bool display = true;
-    bool process = true;
-    while (process) {
+			case (BUTTON_ONLINE | KN_BUTTON):
+				buttons[curbutton]->Turn_Off();
+				buttons[curbutton]->Draw_Me(true);
+				retval = SEL_NONE;
+				curbutton = (input & 0x7FFF) - BUTTON_OFFLINE;
+				buttons[curbutton]->IsPressed = true;
+				Hide_Mouse();
+				buttons[curbutton]->Draw_Me(true);
+				Show_Mouse();
+				process = false;
+				if (SetMenuChoiceTo1) {
+					retval = SEL_ONLINE;
+					process = false;
+				} else if (!Spawn_WChat()) {
+					CCMessageBox().Process(Text_String(TXT_CANNOT_FIND_WOL), TXT_OK);
+				}
+				break;
 
-        /*
-        ** If we have just received input focus again after running in the background then
-        ** we need to redraw.
-        */
-        if (AllSurfaces.SurfacesRestored) {
-            AllSurfaces.SurfacesRestored = false;
-            display = true;
-        }
+			case (BUTTON_OFFLINE | KN_BUTTON):
+			case (BUTTON_HELP | KN_BUTTON):
+			case (BUTTON_SNEAK | KN_BUTTON):
+			case (BUTTON_FIVE | KN_BUTTON):
+			case (BUTTON_SIX | KN_BUTTON):
+			case (BUTTON_NEWS | KN_BUTTON):
+			case (BUTTON_EXIT | KN_BUTTON):
+				buttons[curbutton]->Turn_Off();
+				buttons[curbutton]->Draw_Me(true);
+				retval = (input & 0x7FFF) - BUTTON_OFFLINE;
+				curbutton = retval;
+				buttons[curbutton]->IsPressed = true;
+				Hide_Mouse();
+				buttons[curbutton]->Draw_Me(true);
+				Show_Mouse();
+				process = false;
+				break;
 
-        /*
-        **	If timeout expires, bail
-        */
-// PG_TO_FIX
-#if (0)
-        if (timeout && WinTickCount.Time() - starttime > timeout) {
-            retval = -1;
-            process = false;
-        }
-#endif
-        /*
-        **	Invoke game callback.
-        */
-        Call_Back();
+			case KN_UP:
+				Hide_Mouse();
+				buttons[curbutton]->Turn_Off();
+				buttons[curbutton]->Draw_Me(true);
+				curbutton--;
 
-        /*
-        **	Refresh display if needed.
-        */
-        if (display) {
+				if (curbutton < 0) {
+					curbutton = numbuttons - 1;
+				}
+				buttons[curbutton]->Turn_On();
+				buttons[curbutton]->Draw_Me(true);
+				Show_Mouse();
+				break;
 
-            /*
-            **	Load the background picture.
-            */
-            Load_Title_Screen(TitlePicture, &HidPage, Palette);
-            Blit_Hid_Page_To_Seen_Buff();
+			case KN_DOWN:
+				Hide_Mouse();
+				buttons[curbutton]->Turn_Off();
+				buttons[curbutton]->Draw_Me(true);
+				curbutton++;
 
-            /*
-            **	Display the title and text overlay for the menu.
-            */
-            Set_Logic_Page(HidPage);
-            Dialog_Box(D_DIALOG_X, D_DIALOG_Y, D_DIALOG_W, D_DIALOG_H);
-            Draw_Caption(TXT_NONE, D_DIALOG_X, D_DIALOG_Y, D_DIALOG_W);
+				if (curbutton > numbuttons - 1) {
+					curbutton = 0;
+				}
 
-            Version_Number();
+				buttons[curbutton]->Turn_On();
+				buttons[curbutton]->Draw_Me(true);
+				Show_Mouse();
+				break;
 
-            Fancy_Text_Print("%s",
-                             D_DIALOG_X + D_DIALOG_W - 5 * 2,
-                             D_DIALOG_Y + D_DIALOG_H - 10 * 2,
-                             GREEN,
-                             TBLACK,
-                             TPF_6POINT | TPF_FULLSHADOW | TPF_RIGHT,
-                             VersionText);
+			case KN_RETURN:
+				if (curbutton == SEL_ONLINE) {
+					retval = SEL_NONE;
+					buttons[curbutton]->IsPressed = true;
+					Hide_Mouse();
+					buttons[curbutton]->Draw_Me(true);
+					Show_Mouse();
+					process = false;
+					if (!Spawn_WChat()) {
+						CCMessageBox().Process(Text_String(TXT_CANNOT_FIND_WOL), TXT_OK);
+					}
+				} else {
+					buttons[curbutton]->IsPressed = true;
+					Hide_Mouse();
+					buttons[curbutton]->Draw_Me(true);
+					Show_Mouse();
+					retval = curbutton;
+					process = false;
+				}
+				break;
 
-            /*
-            **	Copy the menu to the visible page.
-            */
-            Hide_Mouse();
-            Blit_Hid_Page_To_Seen_Buff();
-            Show_Mouse();
+			default:
+				break;
+		}
+		
+		Sleep(50);
+		if (DDEShutdown) {
+			process = false;
+			retval = SEL_EXIT;
+		}
+		
+		if (Read_Game_Options(NULL)) {
+			ThemeType theme = Theme.What_Is_Playing();
+			if (theme != THEME_MAP1) {
+				Theme.Play_Song(THEME_NONE);
+				Theme.AI();
+			}
+			
+			if (!SpawnedFromWChat) {
+				Fade_Palette_To(BlackPalette, 0xF, 0);
+				VisiblePage.Clear();
+				ShowWindow(Get_WChat_Handle(), 6);
+				ShowWindow(MainWindow, 9);
+			}
+			retval = SEL_ONLINE;
+			process = false;
+		}
+	}
+	
 
-            Set_Logic_Page(SeenBuff);
-            startbtn.Draw_All();
-            if (ScreenWidth == 320) {
-                // ST - 1/2/2019 5:27PM
-                // ModeX_Blit (SeenBuff.Get_Graphic_Buffer());
-            }
-            display = false;
-        } else {
-            if (RunningAsDLL) {
-                retval = -1;
-                process = false;
-            }
-        }
-
-        /*
-        **	Get and process player input.
-        */
-        input = commands->Input();
-        switch (input) {
-#ifdef NEWMENU
-        case (BUTTON_EXPAND | KN_BUTTON):
-            retval = (input & 0x7FFF) - BUTTON_EXPAND;
-            process = false;
-            break;
-
-#else
-#define BUTTON_EXPAND BUTTON_START
-#endif
-
-        case (BUTTON_START | KN_BUTTON):
-            retval = (input & 0x7FFF) - BUTTON_EXPAND;
-            process = false;
-            break;
-
-#ifdef BONUS_MISSIONS
-        case (BUTTON_BONUS | KN_BUTTON):
-            retval = (input & 0x7FFF) - BUTTON_EXPAND;
-            process = false;
-            break;
-#endif // BONUS_MISSIONS
-
-        case (BUTTON_LOAD | KN_BUTTON):
-            retval = (input & 0x7FFF) - BUTTON_EXPAND;
-#ifdef DEMO
-            retval += 1;
-#endif // DEMO
-            process = false;
-            break;
-
-        case (BUTTON_MULTI | KN_BUTTON):
-            retval = (input & 0x7FFF) - BUTTON_EXPAND;
-#ifdef DEMO
-            retval += 1;
-#endif // DEMO
-            process = false;
-            break;
-
-        case (BUTTON_INTRO | KN_BUTTON):
-            retval = (input & 0x7FFF) - BUTTON_EXPAND;
-#ifdef DEMO
-            retval += 1;
-#endif // DEMO
-            process = false;
-            break;
-
-        case (BUTTON_EXIT | KN_BUTTON):
-            retval = (input & 0x7FFF) - BUTTON_EXPAND;
-#ifdef DEMO
-            retval += 1;
-#endif // DEMO
-            process = false;
-            break;
-
-        case KN_UP:
-            buttons[curbutton]->Turn_Off();
-            buttons[curbutton]->Flag_To_Redraw();
-            curbutton--;
-#ifdef NEWMENU
-            if (expansions) {
-                if (curbutton < 0) {
-                    curbutton = 5;
-                }
-            } else {
-                if (curbutton < 1) {
-                    curbutton = 5;
-                }
-            }
-#else
-            if (curbutton < 0) {
-                curbutton = 4;
-            }
-#endif
-            buttons[curbutton]->Turn_On();
-            buttons[curbutton]->Flag_To_Redraw();
-            break;
-
-        case KN_DOWN:
-            buttons[curbutton]->Turn_Off();
-            buttons[curbutton]->Flag_To_Redraw();
-            curbutton++;
-#ifdef NEWMENU
-            if (curbutton > 5) {
-                if (expansions) {
-                    curbutton = 0;
-                } else {
-                    curbutton = 1;
-                }
-            }
-#else
-            if (curbutton > 4) {
-                curbutton = 0;
-            }
-#endif
-            buttons[curbutton]->Turn_On();
-            buttons[curbutton]->Flag_To_Redraw();
-            break;
-
-        case KN_RETURN:
-            buttons[curbutton]->IsPressed = true;
-            buttons[curbutton]->Draw_Me(true);
-            retval = curbutton;
-            process = false;
-            break;
-
-        default:
-            break;
-        }
-
-        Frame_Limiter();
-    }
-    return (retval);
+	SpawnedFromWChat = false;
+	return(retval);
 }

@@ -95,7 +95,6 @@ public:
     virtual int Mission_Guard_Area(void);
     virtual int Mission_Harvest(void);
     virtual int Mission_Hunt(void);
-    virtual int Mission_Timed_Hunt(void);
     virtual int Mission_Move(void);
     virtual int Mission_Retreat(void);
     virtual int Mission_Return(void);
@@ -106,6 +105,7 @@ public:
     virtual int Mission_Deconstruction(void);
     virtual int Mission_Repair(void);
     virtual int Mission_Missile(void);
+    virtual int Mission_Find_Crate(void);
     virtual void Set_Mission(MissionType mission);
 
     static char const* Mission_Name(MissionType order);

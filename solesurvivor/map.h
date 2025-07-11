@@ -81,6 +81,7 @@ public:
     bool Read_Binary(char const* root, uint32_t* crc);
     bool Write_Binary(char const* root);
     bool Place_Random_Crate(void);
+    CELL Pick_Random_Cell(void);
 
     // Added for loading custom maps - 2019/10/28 JAS
     bool Read_Binary_File(char const* fname, uint32_t* crc);

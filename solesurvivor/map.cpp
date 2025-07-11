@@ -369,8 +369,6 @@ int const MapClass::RadiusOffset[] = {
 
 int const MapClass::RadiusCount[11] = {1, 9, 21, 37, 61, 89, 121, 161, 205, 253, 309};
 
-CellClass* BlubCell;
-
 /***********************************************************************************************
  * MapClass::One_Time -- Performs special one time initializations for the map.                *
  *                                                                                             *
@@ -604,8 +602,10 @@ void MapClass::Sight_From(HouseClass* house, CELL cell, int sightrange, bool inc
     */
     if (!In_Radar(cell))
         return;
-    if (!sightrange || sightrange > 10)
+    if (!sightrange)
         return;
+    if (sightrange > 10)
+        sightrange = 10;
 
     /*
     **	Determine logical cell coordinate for center scan point.
@@ -1561,24 +1561,120 @@ int MapClass::Cell_Threat(CELL cell, HousesType house)
  *=============================================================================================*/
 bool MapClass::Place_Random_Crate(void)
 {
-    int old = ScenarioInit;
-    ScenarioInit = 0;
-    for (int index = 0; index < 100; index++) {
-        int x = Random_Pick(0, MapCellWidth - 1);
-        int y = Random_Pick(0, MapCellHeight - 1);
-        CELL cell = XY_Cell(MapCellX + x, MapCellY + y);
+    CELL newcell;
+	int randy;
+	int scan_direction;
+	bool old;
+	int index;
+	CellClass *cellc;
+	int randx;
+	CELL j;
+	CELL cell;
+	OverlayType crate;
+	CratePacketData *pkt;
 
-        CellClass* ptr = &(*this)[cell];
-        if (ptr->Is_Generally_Clear() && ptr->Overlay == OVERLAY_NONE) {
-            ptr->Overlay = OVERLAY_WOOD_CRATE;
-            ptr->OverlayData = 0;
-            ptr->Redraw_Objects();
-            ScenarioInit = old;
-            return (true);
-        }
-    }
-    ScenarioInit = old;
-    return (false);
+	old = ScenarioInit;
+
+	if (GameToPlay != GAME_HOST || CratesDisabled || !GameParams.IsCrates) {
+		return false;
+	}
+
+	ScenarioInit = 0;
+
+	for (index = 0; index < 100; index++) {
+		cell = Pick_Random_Cell();
+
+		if (cell == -1) {
+			continue;
+		}
+
+		if (WDTNumArmageddonCrates <= 0 && GameParams.TeamCrates && ArmageddonDelayTimer.Time() > 60 * GameParams.ArmageddonTimer) {
+			int high_team;
+			int low_team;
+			bool armageddon;
+
+			armageddon = GameParams.IsMaxNumAIsScaled && GameParams.NumTeams == 1 && !GameParams.AllowNoTeam;
+
+			if (!armageddon && Armageddon_Probability(&high_team, &low_team) < 3.0) {
+				int timer = GameParams.ArmageddonTimer - 30;
+				ArmageddonDelayTimer.Set(timer * 60);
+			} else {
+				crate = OVERLAY_ARMOR_CRATE;
+				++WDTNumArmageddonCrates;
+			}
+		} else {
+			int crate_pick = WDT_Random_Pick(1, 1000);
+
+			if (crate_pick <= WDTCrateSteel) {
+				crate = OVERLAY_STEEL_CRATE;
+			} else if (crate_pick <= WDTCrateSteel + WDTCrateGreen) {
+				crate = OVERLAY_HEALTH_CRATE;
+			} else if (crate_pick <= WDTCrateSteel + WDTCrateGreen + WDTCrateOrange) {
+				crate = OVERLAY_SUPER_CRATE;
+			} else {
+				crate = OVERLAY_WOOD_CRATE;
+			}
+		}
+
+		cell = Try_Place_Overlay(crate, cell);
+
+		if (cell == -1) {
+			continue;
+		}
+
+		ScenarioInit = old;
+		pkt = new CratePacketData;
+		pkt->Cell = cell;
+		pkt->Overlay = crate;
+		pkt->OverlayFrame = 0;
+		CratePacketDatas.Add(pkt);
+
+		if (CrateCount >= WDTCrateDensity) {
+			randx = WDT_Random_Pick(0, MapCellWidth - 2);
+			randy = WDT_Random_Pick(0, MapCellHeight - 1);
+			cell = XY_Cell(MapCellX + randx, MapCellY + randy);
+			newcell = cell;
+
+			if (WDT_Random_Pick(1, 10) > 5) {
+				scan_direction = 1;
+			} else {
+				scan_direction = -1;
+			}
+
+			for (j = cell; j < cell + 16384; j++) {
+				cellc = &(*this)[newcell];
+
+				if (Overlay_Is_Crate(cellc->Overlay)) {
+					cellc->Overlay = OVERLAY_NONE;
+					cellc->OverlayData = 0;
+					cellc->Redraw_Objects();
+					pkt = new CratePacketData;
+					pkt->Cell = newcell;
+					pkt->Overlay = OVERLAY_NONE;
+					pkt->OverlayFrame = 0;
+					CratePacketDatas.Add(pkt);
+					break;
+				}
+
+				newcell += scan_direction;
+
+				if (newcell >= 0x4000) {
+					newcell = 0;
+				}
+
+				if (newcell < 0) {
+					newcell = 0x3FFF;
+				}
+			}
+		} else {
+			CrateCount++;
+		}
+
+		return true;
+	}
+
+	ScenarioInit = old;
+	return(false);
 }
 
 /***************************************************************************
@@ -1612,16 +1708,6 @@ int MapClass::Validate(void)
     LandType land;
     int i;
 
-    BlubCell = &((*this)[797]);
-
-    if (BlubCell->Overlapper[1]) {
-        obj = BlubCell->Overlapper[1];
-        if (obj) {
-            if (obj->IsInLimbo)
-                obj = obj;
-        }
-    }
-
     /*------------------------------------------------------------------------
     Check every cell on the map, even those that aren't displayed,
     in the hopes of detecting a memory trasher.
@@ -1635,21 +1721,6 @@ int MapClass::Validate(void)
         if (ttype >= TEMPLATE_COUNT && ttype != TEMPLATE_NONE)
             return (false);
 
-            /*.....................................................................
-            To validate the icon value, we have to get a copy of the template's
-            "icon map"; this map will have 0xff's in spots where there is no
-            icon.  If the icon value is out of range or points to an invalide spot,
-            return an error.
-            .....................................................................*/
-#if (0)
-        if (ttype != TEMPLATE_NONE) {
-            tclass = &TemplateTypeClass::As_Reference(ttype);
-            ticon = (*this)[cell].TIcon;
-            Mem_Copy(Get_Icon_Set_Map(tclass->Get_Image_Data()), map, tclass->Width * tclass->Height);
-            if (ticon < 0 || ticon >= (tclass->Width * tclass->Height) || map[ticon] == 0xff)
-                return (false);
-        }
-#endif
         /*.....................................................................
         Validate Overlay
         .....................................................................*/
@@ -1893,7 +1964,7 @@ ObjectClass* MapClass::Close_Object(COORDINATE coord) const
                 **	Special case check to ignore cloaked object if not allied with the player.
                 */
                 // Changed for multiplayer. ST - 3/13/2019 5:38PM
-                if (!o->Is_Techno() || !((TechnoClass*)o)->Is_Cloaked(PlayerPtr)) {
+                if (!o->Is_Techno() || !((TechnoClass*)o)->Is_Cloaked(PlayerPtr) || PlayerPtr->Class->House == HOUSE_SPECTATOR) {
                     // if (!o->Is_Techno() || ((TechnoClass *)o)->IsOwnedByPlayer || ((TechnoClass *)o)->Cloak !=
                     // CLOAKED) {
                     int d = -1;
@@ -1940,6 +2011,64 @@ ObjectClass* MapClass::Close_Object(COORDINATE coord) const
         object = 0;
     }
     return (object);
+}
+
+CELL MapClass::Pick_Random_Cell(void)
+{
+	CELL cell;
+	int index;
+	int counter;
+	int randx;
+	int randy;
+	int team_count;
+	int randd;
+
+	team_count = 0;
+
+	for (index = 0; index < 4; index++) {
+		if (Waypoint[index] != -1) {
+			team_count++;
+		}
+	}
+
+	if (WDT_Random_Pick(1, 10) <= team_count) {
+		int randn = WDT_Random_Pick(0, team_count - 1);
+		cell = -1;
+		counter = -1;
+
+		for (index = 0; index < 28; index++) {
+			if (Waypoint[index] != -1) {
+				counter++;
+
+				if(counter == randn) {
+					cell = Waypoint[index];
+					break;
+				}
+			}
+		}
+
+		if (cell == -1) {
+			randx = WDT_Random_Pick(0, MapCellWidth - 1);
+			randy = WDT_Random_Pick(0, MapCellHeight - 1);
+			cell = XY_Cell(MapCellX + randx, MapCellY + randy);
+		}
+
+		randd = WDT_Random_Pick(1, 10);
+		randd = (randd * randd) / 6;
+		cell = Coord_Cell(Coord_Scatter(Cell_Coord(cell), randd << 8, 0));
+	} else {
+		randx = WDT_Random_Pick(0, MapCellWidth - 1);
+		randy = WDT_Random_Pick(0, MapCellHeight - 1);
+		cell = XY_Cell(MapCellX + randx, MapCellY + randy);
+	}
+
+	if (!Map.In_Radar(cell)) {
+		randx = WDT_Random_Pick(5, MapCellWidth - 5);
+		randy = WDT_Random_Pick(5, MapCellHeight - 5);
+		cell = XY_Cell(MapCellX + randx, MapCellY + randy);
+	}
+
+	return cell;
 }
 
 #ifdef USE_RA_AI
