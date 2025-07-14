@@ -150,6 +150,10 @@ OptionsClass::OptionsClass(void)
     IsScoreRepeat = false;
     IsScoreShuffle = false;
     IsFreeScroll = false;
+    TypingSound = true;
+    IsVerbose = true;
+    OfflineGametime = 15;
+    NoMovies = false;
 }
 
 /***********************************************************************************************
@@ -564,6 +568,7 @@ void OptionsClass::Load_Settings(void)
     **	Read in the Options values
     */
     static char const* const OPTIONS = "Options";
+    static char const* const NEWOPTIONS = "NewOptions";
     GameSpeed = ini.Get_Int(OPTIONS, "GameSpeed", 4);
     ScrollRate = ini.Get_Int(OPTIONS, "ScrollRate", 4);
     Set_Brightness(ini.Get_Int(OPTIONS, "Brightness", 0x80));
@@ -572,12 +577,61 @@ void OptionsClass::Load_Settings(void)
     Set_Contrast(ini.Get_Int(OPTIONS, "Contrast", 0x80));
     Set_Color(ini.Get_Int(OPTIONS, "Color", 0x80));
     Set_Tint(ini.Get_Int(OPTIONS, "Tint", 0x80));
-    AutoScroll = ini.Get_Int(OPTIONS, "AutoScroll", 1);
+    //AutoScroll = ini.Get_Int(OPTIONS, "AutoScroll", 1);
     Set_Repeat(ini.Get_Int(OPTIONS, "IsScoreRepeat", 0));
     Set_Shuffle(ini.Get_Int(OPTIONS, "IsScoreShuffle", 0));
     IsDeathAnnounce = ini.Get_Int(OPTIONS, "DeathAnnounce", 0);
     IsFreeScroll = ini.Get_Int(OPTIONS, "FreeScrolling", 0);
     SlowPalette = ini.Get_Int(OPTIONS, "SlowPalette", 1);
+    TypingSound = ini.Get_Int(OPTIONS, "TypingSound", 1);
+    IsVerbose = ini.Get_Int(OPTIONS, "IsVerbose", 1);
+    AISlider = ini.Get_Int(OPTIONS, "AISlider", 10);
+    NoMovies = ini.Get_Int(OPTIONS, "NoMovies", 0);
+    MessageLogging = ini.Get_Int(OPTIONS, "IsLogged", 0);
+    ini.Get_String(NEWOPTIONS, "Button5Text", "Sole Survivor HQ", ButtonFiveText, sizeof(ButtonFiveText));
+    ButtonFiveText[40] = '\0';
+    ini.Get_String(NEWOPTIONS, "Button5URL", "http://www.solesurvivor.com", ButtonFiveURL, sizeof(ButtonFiveURL));
+    ini.Get_String(NEWOPTIONS, "Button6Text", "The Ladder", ButtonSixText, sizeof(ButtonSixText));
+    ButtonSixText[40] = '\0';
+    ini.Get_String(NEWOPTIONS,
+                   "Button6URL",
+                   "http://www.westwood.com/westwoodonline/tournaments/solesurvivor/teams.html",
+                   ButtonSixURL,
+                   sizeof(ButtonSixURL));
+
+    if (!Debug_Quiet) {
+        Debug_Quiet = ini.Get_Int(OPTIONS, "NoSound", 0);
+    }
+
+    OfflineGametime = ini.Get_Int(OPTIONS, "OfflineGametime", 15);
+
+    if (OfflineGametime < 1) {
+        OfflineGametime = 1;
+    } else if (OfflineGametime > 300) {
+        OfflineGametime = 300;
+    }
+
+    ini.Get_String("TeamMessages", "TeamMessage0", "Pick up that flag!!!", TeamMessages[0], MAX_MESSAGE_LENGTH);
+    ini.Get_String("TeamMessages", "TeamMessage1", "HELP !!! SAVE OUR FLAG !!!", TeamMessages[1], MAX_MESSAGE_LENGTH);
+    ini.Get_String("TeamMessages", "TeamMessage2", "Their base is ", TeamMessages[2], MAX_MESSAGE_LENGTH);
+    ini.Get_String("TeamMessages",
+                   "TeamMessage3",
+                   "Got their flag, need escort, quick!",
+                   TeamMessages[3],
+                   MAX_MESSAGE_LENGTH,
+                   buffer);
+    ini.Get_String("TeamMessages", "TeamMessage4", "Their base is destroyed!", TeamMessages[4], MAX_MESSAGE_LENGTH);
+    ini.Get_String("TeamMessages",
+                   "TeamMessage5",
+                   "Our base is destroyed! Defend our flag!",
+                   TeamMessages[5],
+                   MAX_MESSAGE_LENGTH,
+                   buffer);
+    ini.Get_String("TeamMessages", "TeamMessage6", "Converge on their base NOW!", TeamMessages[6], MAX_MESSAGE_LENGTH);
+    ini.Get_String(
+        "TeamMessages", "TeamMessage7", "Help needed: campers at base!", TeamMessages[7], MAX_MESSAGE_LENGTH);
+    ini.Get_String("TeamMessages", "TeamMessage8", "Get Crates!", TeamMessages[8], MAX_MESSAGE_LENGTH);
+    ini.Get_String("TeamMessages", "TeamMessage9", "Locate the Enemy!", TeamMessages[9], MAX_MESSAGE_LENGTH);
 
     KeyForceMove1 = (KeyNumType)ini.Get_Int(HotkeyName, "KeyForceMove1", KeyForceMove1);
     KeyForceMove2 = (KeyNumType)ini.Get_Int(HotkeyName, "KeyForceMove2", KeyForceMove2);
@@ -817,6 +871,7 @@ void OptionsClass::Save_Settings(void)
     **	Save Options settings
     */
     static char const* const OPTIONS = "Options";
+    static char const* const NEWOPTIONS = "NewOptions";
     ini.Put_Int(OPTIONS, "GameSpeed", GameSpeed);
     ini.Put_Int(OPTIONS, "ScrollRate", ScrollRate);
     ini.Put_Int(OPTIONS, "Brightness", Brightness);
@@ -825,11 +880,21 @@ void OptionsClass::Save_Settings(void)
     ini.Put_Int(OPTIONS, "Contrast", Contrast);
     ini.Put_Int(OPTIONS, "Color", Color);
     ini.Put_Int(OPTIONS, "Tint", Tint);
-    ini.Put_Int(OPTIONS, "AutoScroll", AutoScroll);
+    //ini.Put_Int(OPTIONS, "AutoScroll", AutoScroll);
     ini.Put_Int(OPTIONS, "IsScoreRepeat", IsScoreRepeat);
     ini.Put_Int(OPTIONS, "IsScoreShuffle", IsScoreShuffle);
-    ini.Put_Int(OPTIONS, "DeathAnnounce", IsDeathAnnounce);
-    ini.Put_Int(OPTIONS, "FreeScrolling", IsFreeScroll);
+    //ini.Put_Int(OPTIONS, "DeathAnnounce", IsDeathAnnounce);
+    //ini.Put_Int(OPTIONS, "FreeScrolling", IsFreeScroll);
+    ini.Put_Int(OPTIONS, "TypingSound", TypingSound);
+    ini.Put_Int(OPTIONS, "IsVerbose", IsVerbose);
+    ini.Put_Int(OPTIONS, "AISlider", AISlider);
+    ini.Put_Int(OPTIONS, "OfflineGametime", OfflineGametime);
+    ini.Put_Int(OPTIONS, "NoMovies", NoMovies);
+    ini.Put_Int(NEWOPTIONS, "IsLogged", MessageLogging);
+    ini.Put_String(NEWOPTIONS, "Button5Text", ButtonFiveText);
+    ini.Put_String(NEWOPTIONS, "Button5URL", ButtonFiveURL);
+    ini.Put_String(NEWOPTIONS, "Button6Text", ButtonSixText);
+    ini.Put_String(NEWOPTIONS, "Button6URL", ButtonSixURL);
 
     ini.Put_Int(HotkeyName, "KeyForceMove1", KeyForceMove1);
     ini.Put_Int(HotkeyName, "KeyForceMove2", KeyForceMove2);
@@ -904,8 +969,8 @@ void OptionsClass::Save_Settings(void)
  *=============================================================================================*/
 void OptionsClass::Set(void)
 {
-    Set_Brightness(Brightness);
-    Set_Contrast(Contrast);
+    //Set_Brightness(Brightness);
+    //Set_Contrast(Contrast);
     Set_Color(Color);
     Set_Tint(Tint);
     Set_Sound_Volume(Volume, false);

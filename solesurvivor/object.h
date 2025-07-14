@@ -103,6 +103,8 @@ public:
     */
     unsigned IsAnimAttached : 1;
 
+    unsigned AnimRefCount;
+
     /*
     **	Several objects could exist in the same cell list. This is a pointer to the
     **	next object in the cell list. The objects in this list are not in any
@@ -121,6 +123,12 @@ public:
     */
     short Strength;
 
+    int Mod1; //strength
+    int Mod2; //speed
+    int Mod3; //damage
+    int Mod4; //rateoffire
+    int Mod5; //range
+
     /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
@@ -131,8 +139,8 @@ public:
     */
     ObjectClass(void);
     ObjectClass(NoInitClass const& x)
-        : AbstractClass(x){};
-    virtual ~ObjectClass(void){};
+        : AbstractClass(x) {};
+    virtual ~ObjectClass(void) {};
     virtual RTTIType What_Am_I(void) const;
     int operator<(ObjectClass const& object) const
     {
@@ -183,7 +191,7 @@ public:
     */
     virtual bool Limbo(void);
     virtual bool Unlimbo(COORDINATE, DirType facing = DIR_N);
-    virtual void Detach(TARGET, bool){};
+    virtual void Detach(TARGET, bool) {};
     virtual void Detach_All(bool all = true);
     static void Detach_This_From_All(TARGET target, bool all = true);
     virtual void Record_The_Kill(TechnoClass*);
@@ -229,7 +237,7 @@ public:
     */
     virtual bool In_Range(COORDINATE, int = 0) const;
     virtual int Weapon_Range(int = 0) const;
-    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0);
+    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0, bool unk = false);
     virtual TARGET As_Target(void) const;
     virtual void Scatter(COORDINATE, bool = false, bool = false);
     virtual bool Catch_Fire(void);
@@ -259,6 +267,8 @@ public:
     virtual void Debug_Dump(MonoClass* mono) const;
 #endif
     virtual void Move(FacingType);
+
+    void Make_Health_Packet(void);
 };
 
 #endif

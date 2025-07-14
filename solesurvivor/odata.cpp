@@ -47,21 +47,37 @@
 #include "function.h"
 #include "type.h"
 
-static OverlayTypeClass const Road(OVERLAY_ROAD, // Overlay type number.
-                                   "ROAD",       // INI name of overlay.
-                                   TXT_CONCRETE, // Full name of overlay.
-                                   LAND_ROAD,    // What kind of ground is it?
-                                   0,            // If this is a wall, how many damage levels?
-                                   0,            // If this is a wall, how many damage points can it take per level?
-                                   true,         // Visible on the radar map?
-                                   false,        // Is it a wooden overlay (affected by fire)?
-                                   false,        // Targetable as a destroyable overlay?
-                                   false,        // Crushable by tracked vehicle?
-                                   false,        // Is this harvestable Tiberium?
-                                   false,        // Stops low level bullets in flight?
-                                   false,        // Theater specific art?
-                                   false,        // Is this a wall type?
-                                   false         // Is this a crate?
+static OverlayTypeClass const Road1(OVERLAY_ROAD1, // Overlay type number.
+                                    "ROAD",        // INI name of overlay.
+                                    TXT_CONCRETE,  // Full name of overlay.
+                                    LAND_ROAD,     // What kind of ground is it?
+                                    0,             // If this is a wall, how many damage levels?
+                                    0,             // If this is a wall, how many damage points can it take per level?
+                                    true,          // Visible on the radar map?
+                                    false,         // Is it a wooden overlay (affected by fire)?
+                                    false,         // Targetable as a destroyable overlay?
+                                    false,         // Crushable by tracked vehicle?
+                                    false,         // Is this harvestable Tiberium?
+                                    false,         // Stops low level bullets in flight?
+                                    false,         // Theater specific art?
+                                    false,         // Is this a wall type?
+                                    false          // Is this a crate?
+);
+static OverlayTypeClass const Road2(OVERLAY_ROAD2, // Overlay type number.
+                                    "ROAD",        // INI name of overlay.
+                                    TXT_CONCRETE,  // Full name of overlay.
+                                    LAND_ROAD,     // What kind of ground is it?
+                                    0,             // If this is a wall, how many damage levels?
+                                    0,             // If this is a wall, how many damage points can it take per level?
+                                    true,          // Visible on the radar map?
+                                    false,         // Is it a wooden overlay (affected by fire)?
+                                    false,         // Targetable as a destroyable overlay?
+                                    false,         // Crushable by tracked vehicle?
+                                    false,         // Is this harvestable Tiberium?
+                                    false,         // Stops low level bullets in flight?
+                                    false,         // Theater specific art?
+                                    false,         // Is this a wall type?
+                                    false          // Is this a crate?
 );
 static OverlayTypeClass const Concrete(OVERLAY_CONCRETE, // Overlay type number.
                                        "CONC",           // INI name of overlay.
@@ -528,38 +544,91 @@ static OverlayTypeClass const SteelCrate(OVERLAY_STEEL_CRATE, // Overlay type nu
                                          false, // Is this a wall type?
                                          true   // Is this a crate?
 );
+static OverlayTypeClass const ArmorCrate(OVERLAY_ARMOR_CRATE, // Overlay type number.
+                                         "ACRATE",            // INI name of overlay.
+                                         740,                 // Full name of overlay.
+                                         LAND_CLEAR,          // What kind of ground is it?
+                                         0,                   // If this is a wall, how many damage levels?
+                                         0,     // If this is a wall, how many damage points can it take per level?
+                                         false, // Visible on the radar map?
+                                         false, // Is it a wooden overlay (affected by fire)?
+                                         false, // Targetable as a destroyable overlay?
+                                         false, // Crushable by tracked vehicle?
+                                         false, // Is this harvestable Tiberium?
+                                         false, // Stops low level bullets in flight?
+                                         false, // Theater specific art?
+                                         false, // Is this a wall type?
+                                         true   // Is this a crate?
+);
+
+static OverlayTypeClass const HealthCrate(OVERLAY_HEALTH_CRATE, // Overlay type number.
+                                          "HCRATE",             // INI name of overlay.
+                                          220,                  // Full name of overlay.
+                                          LAND_CLEAR,           // What kind of ground is it?
+                                          false,                // If this is a wall, how many damage levels?
+                                          false, // If this is a wall, how many damage points can it take per level?
+                                          false, // Visible on the radar map?
+                                          false, // Is it a wooden overlay (affected by fire)?
+                                          false, // Targetable as a destroyable overlay?
+                                          false, // Crushable by tracked vehicle?
+                                          false, // Is this harvestable Tiberium?
+                                          false, // Stops low level bullets in flight?
+                                          false, // Theater specific art?
+                                          false, // Is this a wall type?
+                                          true   // Is this a crate?
+);
+static OverlayTypeClass const SuperCrate(OVERLAY_SUPER_CRATE, // Overlay type number.
+                                         "SUCRATE",           // INI name of overlay.
+                                         220,                 // Full name of overlay.
+                                         LAND_CLEAR,          // What kind of ground is it?
+                                         false,               // If this is a wall, how many damage levels?
+                                         false, // If this is a wall, how many damage points can it take per level?
+                                         false, // Visible on the radar map?
+                                         false, // Is it a wooden overlay (affected by fire)?
+                                         false, // Targetable as a destroyable overlay?
+                                         false, // Crushable by tracked vehicle?
+                                         false, // Is this harvestable Tiberium?
+                                         false, // Stops low level bullets in flight?
+                                         false, // Theater specific art?
+                                         false, // Is this a wall type?
+                                         true   // Is this a crate?
+);
 
 OverlayTypeClass const* const OverlayTypeClass::Pointers[OVERLAY_COUNT] = {
-    &Concrete,   //	OVERLAY_CONCRETE
-    &Sandbag,    //	OVERLAY_SANDBAG_WALL
-    &Cyclone,    //	OVERLAY_CYCLONE_WALL
-    &Brick,      //	OVERLAY_BRICK_WALL
-    &Barbwire,   //	OVERLAY_BARBWIRE_WALL
-    &Wood,       //	OVERLAY_WOOD_WALL
-    &Tiberium1,  //	OVERLAY_TIBERIUM1
-    &Tiberium2,  //	OVERLAY_TIBERIUM2
-    &Tiberium3,  //	OVERLAY_TIBERIUM3
-    &Tiberium4,  //	OVERLAY_TIBERIUM4
-    &Tiberium5,  //	OVERLAY_TIBERIUM5
-    &Tiberium6,  //	OVERLAY_TIBERIUM6
-    &Tiberium7,  //	OVERLAY_TIBERIUM7
-    &Tiberium8,  //	OVERLAY_TIBERIUM8
-    &Tiberium9,  //	OVERLAY_TIBERIUM9
-    &Tiberium10, //	OVERLAY_TIBERIUM10
-    &Tiberium11, //	OVERLAY_TIBERIUM11
-    &Tiberium12, //	OVERLAY_TIBERIUM12
-    &Road,       // OVERLAY_ROAD
-    &Squish,     // OVERLAY_SQUISH
-    &V12,        //	OVERLAY_V12
-    &V13,        //	OVERLAY_V13
-    &V14,        //	OVERLAY_V14
-    &V15,        //	OVERLAY_V15
-    &V16,        //	OVERLAY_V16
-    &V17,        //	OVERLAY_V17
-    &V18,        //	OVERLAY_V18
-    &FlagSpot,   //	OVERLAY_FLAG_SPOT
-    &WoodCrate,  // OVERLAY_WOOD_CRATE
-    &SteelCrate, // OVERLAY_STEEL_CRATE
+    &Concrete,    //	OVERLAY_CONCRETE
+    &Sandbag,     //	OVERLAY_SANDBAG_WALL
+    &Cyclone,     //	OVERLAY_CYCLONE_WALL
+    &Brick,       //	OVERLAY_BRICK_WALL
+    &Barbwire,    //	OVERLAY_BARBWIRE_WALL
+    &Wood,        //	OVERLAY_WOOD_WALL
+    &Tiberium1,   //	OVERLAY_TIBERIUM1
+    &Tiberium2,   //	OVERLAY_TIBERIUM2
+    &Tiberium3,   //	OVERLAY_TIBERIUM3
+    &Tiberium4,   //	OVERLAY_TIBERIUM4
+    &Tiberium5,   //	OVERLAY_TIBERIUM5
+    &Tiberium6,   //	OVERLAY_TIBERIUM6
+    &Tiberium7,   //	OVERLAY_TIBERIUM7
+    &Tiberium8,   //	OVERLAY_TIBERIUM8
+    &Tiberium9,   //	OVERLAY_TIBERIUM9
+    &Tiberium10,  //	OVERLAY_TIBERIUM10
+    &Tiberium11,  //	OVERLAY_TIBERIUM11
+    &Tiberium12,  //	OVERLAY_TIBERIUM12
+    &Road1,       // OVERLAY_ROAD1
+    &Road2,       // OVERLAY_ROAD2
+    &Squish,      // OVERLAY_SQUISH
+    &V12,         //	OVERLAY_V12
+    &V13,         //	OVERLAY_V13
+    &V14,         //	OVERLAY_V14
+    &V15,         //	OVERLAY_V15
+    &V16,         //	OVERLAY_V16
+    &V17,         //	OVERLAY_V17
+    &V18,         //	OVERLAY_V18
+    &FlagSpot,    //	OVERLAY_FLAG_SPOT
+    &WoodCrate,   // OVERLAY_WOOD_CRATE
+    &SteelCrate,  // OVERLAY_STEEL_CRATE
+    &ArmorCrate,  // OVERLAY_ARMOR_CRATE
+    &HealthCrate, // OVERLAY_HEALTH_CRATE
+    &SuperCrate,  // OVERLAY_SUPER_CRATE
 };
 
 /***********************************************************************************************
@@ -871,7 +940,7 @@ void OverlayTypeClass::Init(TheaterType theater)
 
             IsTheaterShape = overlay.IsTheater;
             if (overlay.RadarIcon)
-                delete[](char*) overlay.RadarIcon;
+                delete[] (char*)overlay.RadarIcon;
             ((void const*&)overlay.RadarIcon) = Get_Radar_Icon(overlay.Get_Image_Data(), 0, -1, 3);
             IsTheaterShape = false;
         }

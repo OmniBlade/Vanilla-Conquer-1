@@ -50,6 +50,38 @@
 
 HousesType OverlayClass::ToOwn = HOUSE_NONE;
 
+bool Overlay_Is_Crate(OverlayType type)
+{
+	switch(type) {
+		case OVERLAY_ARMOR_CRATE:
+		case OVERLAY_HEALTH_CRATE:
+		case OVERLAY_SUPER_CRATE:
+		case OVERLAY_WOOD_CRATE:
+		case OVERLAY_STEEL_CRATE:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+bool Overlay_Is_Crate_Alt(OverlayType type, bool unk)
+{
+	switch(type) {
+		case OVERLAY_WOOD_CRATE:
+		case OVERLAY_STEEL_CRATE:
+			return true;
+
+		case OVERLAY_HEALTH_CRATE:
+			if (unk != false) {
+				return false;
+			}	
+			return true;
+		default:
+			return false;
+	}
+}
+
 OverlayClass::OverlayClass(void)
     : Class(0)
 {
@@ -212,15 +244,11 @@ bool OverlayClass::Mark(MarkType mark)
             **	on buildable terrain. Second, the road is completed, but only if the foundation
             **	was previously placed.
             */
-            if (*this == OVERLAY_ROAD) {
-                if ((cellptr->Overlay == OVERLAY_ROAD && cellptr->OverlayData == 0)
+            if (*this == OVERLAY_ROAD1) {
+                if ((cellptr->Overlay == OVERLAY_ROAD1 && cellptr->OverlayData == 0)
                     || (cellptr->Overlay == OVERLAY_NONE && cellptr->Is_Generally_Clear())) {
 
-                    if (cellptr->Overlay == OVERLAY_ROAD) {
-                        cellptr->OverlayData = 1;
-                    } else {
-                        cellptr->OverlayData = 0;
-                    }
+                    cellptr->OverlayData = 1;
                     cellptr->Overlay = Class->Type;
                     cellptr->Redraw_Objects();
                 }
@@ -256,8 +284,8 @@ bool OverlayClass::Mark(MarkType mark)
                         **	Increment the global crate counter. This is used to regulate
                         **	the crate generation.
                         */
-                        if (Class->IsCrate)
-                            CrateCount++;
+                        //if (Class->IsCrate)
+                        //    CrateCount++;
 
                         /*
                         **	Don't show the squish unless the gross flag is active.

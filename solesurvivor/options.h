@@ -91,6 +91,11 @@ public:
     unsigned IsScoreShuffle : 1;  // Score list should shuffle?
     unsigned IsDeathAnnounce : 1; // Announce enemy deaths?
     unsigned IsFreeScroll : 1;    // Allow free direction scrolling?
+    unsigned TypingSound : 1;
+    int AISlider;
+    unsigned IsVerbose : 1;
+    int OfflineGametime;
+    bool NoMovies;
 
     /*
     **	These are the hotkeys used for keyboard control.

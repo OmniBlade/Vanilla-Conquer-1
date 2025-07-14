@@ -287,8 +287,23 @@ ObjectClass::ObjectClass(void)
     IsSelected = false;     // Limboed units cannot be selected.
     IsDown = false;         // Limboed units cannot be on the map.
     IsAnimAttached = false; // Anim is not attached.
-    Strength = 255;         // nominal strength value
-    IsSelectedMask = 0;     // Mask showing who has selected this object
+    AnimRefCount = 0;
+    Strength = 255;     // nominal strength value
+    IsSelectedMask = 0; // Mask showing who has selected this object
+
+    if (GameParams.IsCrates) {
+        Mod1 = 0;
+        Mod2 = 0;
+        Mod3 = 0;
+        Mod4 = 0;
+        Mod5 = 0;
+    } else {
+        Mod1 = Get_Stat(SOLE_ARRAY_STRENGTH, sole_array[SOLE_ARRAY_STRENGTH][2], this);
+        Mod2 = Get_Stat(SOLE_ARRAY_SPEED, sole_array[SOLE_ARRAY_SPEED][2], this);
+        Mod3 = Get_Stat(SOLE_ARRAY_DAMAGE, sole_array[SOLE_ARRAY_DAMAGE][2], this);
+        Mod4 = Get_Stat(SOLE_ARRAY_ROF, sole_array[SOLE_ARRAY_ROF][2], this);
+        Mod5 = Get_Stat(SOLE_ARRAY_RANGE, sole_array[SOLE_ARRAY_RANGE][2], this);
+    }
 }
 
 /***********************************************************************************************
@@ -558,18 +573,18 @@ COORDINATE ObjectClass::Fire_Coord(int) const
 {
     return Coord;
 };
-void ObjectClass::Record_The_Kill(TechnoClass*){};
-void ObjectClass::Do_Shimmer(void){};
+void ObjectClass::Record_The_Kill(TechnoClass*) {};
+void ObjectClass::Do_Shimmer(void) {};
 int ObjectClass::Exit_Object(TechnoClass*)
 {
     return 0;
 };
-void ObjectClass::Hidden(void){};
-void ObjectClass::Look(bool){};
-void ObjectClass::Active_Click_With(ActionType, ObjectClass*){};
+void ObjectClass::Hidden(void) {};
+void ObjectClass::Look(bool) {};
+void ObjectClass::Active_Click_With(ActionType, ObjectClass*) {};
 void ObjectClass::Active_Click_With(ActionType, CELL){};
-void ObjectClass::Clicked_As_Target(HousesType house,
-                                    int){}; // 2019/09/20 JAS - Added record of who clicked on the object
+void ObjectClass::Clicked_As_Target(HousesType house, int) {
+}; // 2019/09/20 JAS - Added record of who clicked on the object
 bool ObjectClass::In_Range(COORDINATE, int) const
 {
     return false;
@@ -582,7 +597,7 @@ TARGET ObjectClass::As_Target(void) const
 {
     return TARGET_NONE;
 };
-void ObjectClass::Scatter(COORDINATE, bool, bool){};
+void ObjectClass::Scatter(COORDINATE, bool, bool) {};
 bool ObjectClass::Catch_Fire(void)
 {
     return false;
@@ -761,6 +776,10 @@ void ObjectClass::Unselect(void)
         if (In_Which_Layer() == LAYER_GROUND) {
             Mark(MARK_OVERLAP_DOWN);
         }
+
+        if (IsServerAdmin || PlayerPtr->Class->House == HOUSE_SPECTATOR) {
+            Map.Redraw_Tab();
+        }
     }
 }
 
@@ -868,16 +887,18 @@ bool ObjectClass::Select(bool allow_mixed)
     if (Map.PendingObject)
         return (false);
 
-    if (!allow_mixed) {
-        /*
-        **	If selecting an object of a different house than the player's, make sure that
-        **	the entire selection list is cleared.
-        */
-        for (int i = 0; i < CurrentObject.Count(); i++) {
-            if (Owner() != CurrentObject[i]->Owner()) {
-                Unselect_All();
-                break;
-            }
+    if (IsServerAdmin || PlayerPtr->Class->House == HOUSE_SPECTATOR) {
+        Map.Redraw_Tab();
+    }
+
+    /*
+    **	If selecting an object of a different house than the player's, make sure that
+    **	the entire selection list is cleared.
+    */
+    for (int i = 0; i < CurrentObject.Count(); i++) {
+        if (Owner() != CurrentObject[i]->Owner() && (!IsServerAdmin || OfflineMode)) {
+            Unselect_All();
+            break;
         }
     }
 
@@ -892,6 +913,11 @@ bool ObjectClass::Select(bool allow_mixed)
     if (In_Which_Layer() == LAYER_GROUND) {
         Mark(MARK_OVERLAP_DOWN);
     }
+
+    if (IsServerAdmin && !OfflineMode && IsTrackingCurrentObject) {
+        IsTrackingRedraw = true;
+    }
+
     return (true);
 }
 
@@ -1241,19 +1267,11 @@ void ObjectClass::Detach_All(bool all)
     /*
     **	Unselect this object if it was selected.
     */
-    // if (all || Owner() != PlayerPtr->Class->House) {
-    //	Unselect();
-    //}
-
-    // Added some error handling incase there was an issue removing the object - JAS 6/28/2019
-    if (all) {
-        // Unselect();
-        // Updated to function for multiplayer - 6/28/2019 JAS
-        Unselect_All_Players();
-    } else {
-        Unselect_All_Players_Except_Owner();
+    if (all
+        || Owner() != PlayerPtr->Class->House && (!IsServerAdmin || OfflineMode)
+               && PlayerPtr->Class->House != HOUSE_SPECTATOR) {
+        Unselect();
     }
-    // End of change - JAS 6/28/2019
 
     Map.Detach(this);
 
@@ -1374,13 +1392,16 @@ RadioMessageType ObjectClass::Receive_Message(RadioClass*, RadioMessageType mess
  *   12/27/1994 JLB : Trigger event processing for attacked or destroyed.                      *
  *   01/01/1995 JLB : Reduces damage greatly depending on range.                               *
  *=============================================================================================*/
-ResultType ObjectClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType ObjectClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
     ResultType result = RESULT_NONE;
     int oldstrength = Strength;
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return RESULT_NONE;
+    }
 
     if (oldstrength && damage && !Class_Of().IsImmune) {
-        int maxstrength = Class_Of().MaxStrength;
+        int maxstrength = Class_Of().MaxStrength + Mod1;
 
         /*
         **	Modify damage based on the warhead type and the armor of the object. This results
@@ -1419,6 +1440,12 @@ ResultType ObjectClass::Take_Damage(int& damage, int distance, WarheadType warhe
         */
         Strength = oldstrength - damage;
 
+        if (GameToPlay == GAME_CLIENT && Strength < 2 && oldstrength > 1) {
+            Strength = 2;
+        } else if (GameToPlay == GAME_HOST && damage && Strength > 1) {
+            Make_Health_Packet();
+        }
+
         /*
         **	Check to see if the object is majorly damaged or destroyed.
         */
@@ -1427,6 +1454,19 @@ ResultType ObjectClass::Take_Damage(int& damage, int distance, WarheadType warhe
             Record_The_Kill(source);
             result = RESULT_DESTROYED;
             Detach_All();
+            if (GameToPlay == GAME_HOST) {
+                DamagePacketData* data = new DamagePacketData;
+                data->Whom = As_Target();
+
+                if (source != NULL) {
+                    data->Source = source->As_Target();
+                } else {
+                    data->Source = TARGET_NONE;
+                }
+
+                data->Warhead = warhead;
+                DamagePacketDatas.Add(data);
+            }
             break;
 
         case 1:
@@ -1453,6 +1493,11 @@ ResultType ObjectClass::Take_Damage(int& damage, int distance, WarheadType warhe
         if (result != RESULT_NONE && Is_Selected_By_Player()) {
             Mark(MARK_CHANGE);
         }
+    }
+
+    if (!GameParams.IsCrates && result == RESULT_DESTROYED && GameToPlay == GAME_HOST && source) {
+        source->Strength = source->Class_Of().MaxStrength + source->Mod1;
+        source->Make_Health_Packet();
     }
 
     /*
@@ -1601,6 +1646,29 @@ void ObjectClass::Init(void)
 bool ObjectClass::Revealed(HouseClass* house)
 {
     return (house != NULL);
+}
+
+void ObjectClass::Make_Health_Packet(void)
+{
+    HealthPacketData* data;
+    int index;
+    TARGET whom;
+
+    data = NULL;
+    whom = As_Target();
+
+    for (index = 0; index < HealthPacketDatas.Count(); index++) {
+        if (HealthPacketDatas[index]->Whom == whom) {
+            data = HealthPacketDatas[index];
+            data->Health = Strength;
+            return;
+        }
+    }
+
+    data = new HealthPacketData;
+    data->Whom = whom;
+    data->Health = Strength;
+    HealthPacketDatas.Add(data);
 }
 
 /***********************************************************************************************
