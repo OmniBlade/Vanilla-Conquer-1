@@ -91,6 +91,8 @@ set(SURVIVOR_SRC
     overlay.cpp
     power.cpp
     profile.cpp
+    qclient.cpp
+    qserver.cpp
     queue.cpp
     radar.cpp
     radio.cpp
