@@ -82,6 +82,7 @@ public:
     void Set_Radar_Position(CELL cell);
     CELL Radar_Position(void);
     bool Radar_Activate(int control);
+    void Quick_Plot_Radar_Pixels(void);
     void Plot_Radar_Pixel(CELL cell);
     void Radar_Pixel(CELL cell);
     void Coord_To_Radar_Pixel(COORDINATE coord, int& x, int& y);

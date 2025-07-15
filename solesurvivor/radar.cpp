@@ -64,6 +64,7 @@
  *   RadarClass::Coord_To_Radar_Pixel -- Converts a coordinate to a radar pixel position       *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+#include "defines.h"
 #include "function.h"
 #include <stdlib.h>
 
@@ -342,8 +343,8 @@ void RadarClass::Draw_It(bool forced)
     if (PlayerPtr->ActLike != _house) {
         char name[_MAX_NAME + _MAX_EXT];
 
-        if (Special.IsJurassic && AreThingiesEnabled) {
-            strcpy(name, "RADAR.JP");
+        if (IsServerAdmin || PlayerPtr->Class->House == HOUSE_SPECTATOR) {
+            _makepath(name, NULL, NULL, "RADAR", HouseTypeClass::As_Reference(HOUSE_GOOD).Suffix);
         } else {
             _makepath(name, NULL, NULL, "RADAR", HouseTypeClass::As_Reference(PlayerPtr->ActLike).Suffix);
         }
@@ -426,41 +427,34 @@ void RadarClass::Draw_It(bool forced)
 
             } else {
                 GraphicViewPortClass* oldpage = Set_Logic_Page(HidPage);
-                //				if (LogicPage->Lock()) {
-                CC_Draw_Shape(RadarAnim, RADAR_ACTIVATED_FRAME, RadX, RadY + 1, WINDOW_MAIN, SHAPE_NORMAL);
-                if (BaseX || BaseY) {
-                    LogicPage->Fill_Rect(RadX + RadOffX,
-                                         RadY + RadOffY,
-                                         RadX + RadOffX + RadIWidth - 1,
-                                         RadY + RadOffY + RadIHeight - 1,
-                                         DKGREY);
-                } else {
-                    LogicPage->Fill_Rect(RadX + RadOffX,
-                                         RadY + RadOffY,
-                                         RadX + RadOffX + RadIWidth - 1,
-                                         RadY + RadOffY + RadIHeight - 1,
-                                         BLACK);
+                if (IsToDrawUnknown) {
+                    CC_Draw_Shape(RadarAnim, RADAR_ACTIVATED_FRAME, RadX, RadY + 1, WINDOW_MAIN, SHAPE_NORMAL);
+                    if (BaseX || BaseY) {
+                        LogicPage->Fill_Rect(RadX + RadOffX,
+                                             RadY + RadOffY,
+                                             RadX + RadOffX + RadIWidth - 1,
+                                             RadY + RadOffY + RadIHeight - 1,
+                                             DKGREY);
+                    } else {
+                        LogicPage->Fill_Rect(RadX + RadOffX,
+                                             RadY + RadOffY,
+                                             RadX + RadOffX + RadIWidth - 1,
+                                             RadY + RadOffY + RadIHeight - 1,
+                                             BLACK);
+                    }
+                    Quick_Plot_Radar_Pixels();
+                    IsToDrawUnknown = false;
                 }
 
-                /*
-                ** Draw the entire radar map.
-                */
-                for (int index = 0; index < MAP_CELL_TOTAL; index++) {
-                    Plot_Radar_Pixel(index);
-                }
                 Radar_Cursor(true);
-                FullRedraw = false;
-                IsToRedraw = false;
                 LogicPage->Unlock();
                 if (oldpage == &SeenBuff) {
                     Hide_Mouse();
                     LogicPage->Blit(SeenBuff, RadX, RadY, RadX, RadY, RadWidth, RadHeight);
                     Show_Mouse();
                 }
-
-                //					Set_Logic_Page(oldpage);
-
-                //				}
+                FullRedraw = false;
+                IsToRedraw = false;
             }
 
         } else {
@@ -588,7 +582,9 @@ void RadarClass::Render_Infantry(CELL cell, int x, int y, int size)
     obj = (ObjectClass*)Map[cell].Cell_Occupier();
     while (obj) {
         if (obj->Is_Techno()
-            && (((TechnoClass*)obj)->Cloak != CLOAKED || ((TechnoClass*)obj)->House->Is_Ally(PlayerPtr))) {
+            && (((TechnoClass*)obj)->Cloak != CLOAKED || ((TechnoClass*)obj)->House->Is_Ally(PlayerPtr)
+                || IsServerAdmin && !OfflineMode || PlayerPtr->Class->House == HOUSE_SPECTATOR)) {
+
             switch (obj->What_Am_I()) {
             case RTTI_INFANTRY: {
                 // int divisor = 255 / ZoomFactor;
@@ -604,20 +600,40 @@ void RadarClass::Render_Infantry(CELL cell, int x, int y, int size)
                     xoff = 0;
                     yoff = 0;
                 }
-                LogicPage->Put_Pixel(x + xoff, y + yoff, ((InfantryClass*)obj)->House->Class->BrightColor);
+                int color;
+                if (((InfantryClass*)obj)->Flagged != HOUSE_NONE) {
+                    color = 15;
+                } else {
+                    color = ((InfantryClass*)obj)->House->Class->BrightColor;
+                }
+                LogicPage->Put_Pixel(x + xoff, y + yoff, color);
             } break;
 
             case RTTI_UNIT:
-            case RTTI_AIRCRAFT:
-                // PWG: Slowdown?
-                // if (LogicPage->Lock()){
-                Fat_Put_Pixel(x, y, ((UnitClass*)obj)->House->Class->BrightColor, size, *LogicPage);
-                // LogicPage->Unlock();
-                //}
+            case RTTI_AIRCRAFT: {
+                int color;
+                if (((UnitClass*)obj)->Flagged != HOUSE_NONE) {
+                    color = 15;
+                } else {
+                    color = ((UnitClass*)obj)->House->Class->BrightColor;
+                }
+                Fat_Put_Pixel(x, y, color, size, *LogicPage);
+            } break;
+            case RTTI_BUILDING:
+                if (GameToPlay == GAME_HOST) {
+                    int team = ((BuildingClass*)obj)->House->ActLike - 6;
+                    if (team >= 0 && team <= 3) {
+                        Fat_Put_Pixel(x, y, MPlayerGColors[team + 2], size, *LogicPage);
+                    }
+                }
                 break;
             }
         }
         obj = obj->Next;
+    }
+
+    if (Map[cell].IsFlagged) {
+        Fat_Put_Pixel(x, y, 15, size, *LogicPage);
     }
 }
 
@@ -736,6 +752,53 @@ void RadarClass::Zoom_Mode(CELL cell)
     ** Since we have made a vast change we must redraw everything
     */
     FullRedraw = true;
+}
+
+void RadarClass::Quick_Plot_Radar_Pixels(void)
+{
+    if (!IsRadarActive)
+        return;
+    if (!LogicPage->Lock())
+        return;
+
+    for (int cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+
+        /*
+		** If we are zoomed in then calculate the pixel based off of the portion
+		** of the map the radar is viewing.
+		*/
+        int x = Cell_X(cell) - RadarX;
+        int y = Cell_Y(cell) - RadarY;
+        CellClass* cellptr = &(*this)[cell];
+        x = RadX + RadOffX + BaseX + (x * ZoomFactor);
+        y = RadY + RadOffY + BaseY + (y * ZoomFactor);
+
+        /*
+		**	Determine what (if any) vehicle or unit should be rendered in this blip.
+		*/
+        int color = TBLACK; // Color of the pixel to plot.
+        if ((*this)[cell].IsVisible || Debug_Unshroud) {
+            color = cellptr->Cell_Color(true);
+        } else {
+            color = BLACK;
+        }
+
+        /*
+		**	If no color override occurs for this cell, then render the underlying
+		**	terrain.
+		*/
+        if (color == TBLACK) {
+            Fat_Put_Pixel(x, y, cellptr->Cell_Color(false), ZoomFactor, *LogicPage);
+        } else {
+            Fat_Put_Pixel(x, y, color, ZoomFactor, *LogicPage);
+        }
+        if (color != BLACK) {
+            Render_Overlay(cell, x, y, ZoomFactor);
+            Render_Terrain(cell, x, y, ZoomFactor);
+            Render_Infantry(cell, x, y, ZoomFactor);
+        }
+    }
+    LogicPage->Unlock();
 }
 
 /***********************************************************************************************
@@ -1031,6 +1094,14 @@ void RadarClass::Mark_Radar(int x1, int y1, int x2, int y2, int value, int barle
     y1 = RadarY + (y1 / ZoomFactor);
     x2 = RadarX + (x2 / ZoomFactor);
     y2 = RadarY + (y2 / ZoomFactor);
+
+    if (x2 > MAP_CELL_H - 1) {
+        x2 = MAP_CELL_H - 1;
+    }
+
+    if (y2 > MAP_CELL_H - 1) {
+        y2 = MAP_CELL_H - 1;
+    }
 
     /*
     ** Now we need to convert the Pixel length to a cell length.
@@ -1469,7 +1540,27 @@ int RadarClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
                 **	A right mouse button press toggles the zoom mode.
                 */
                 if (flags & RIGHTPRESS) {
-                    Map.Mouse_Right_Press();
+                    cell = Map.RadarClass::Click_Cell_Calc(x, y);
+                    if (cell != -1) {
+                        if (!IsTrackingCurrentObject) {
+                            int cellx = Cell_X(cell);
+                            int celly = Cell_Y(cell);
+                            cellx -= Lepton_To_Cell(Map.TacLeptonWidth) / 2;
+                            cellx = MAX(cellx, Map.MapCellX);
+                            celly -= Lepton_To_Cell(Map.TacLeptonHeight) / 2;
+                            celly = MAX(celly, Map.MapCellY);
+                            cell = XY_Cell(cellx, celly);
+                            shadow = (!Map[cell].IsVisible && !Debug_Unshroud);
+                            Map.Set_Tactical_Position(Cell_Coord(cell));
+                            cell = Coord_Cell(Map.DesiredTacticalCoord);
+                            Map.DisplayClass::IsToRedraw = true;
+                            //Map.Flag_To_Redraw(false);
+                            Map.Flag_To_Redraw(true);
+                            Map.SpecialRadarFrame = 4;
+                        } else {
+                            Sound_Effect(VOC_SCOLD, VOL_FULL);
+                        }
+                    }
                 }
 
                 /*
@@ -1493,7 +1584,7 @@ int RadarClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
 
                 Map.Set_Default_Mouse(MOUSE_RADAR_CURSOR, !Map.IsZoomed);
 
-                if (flags & LEFTPRESS) {
+                if (flags & (LEFTPRESS | RIGHTPRESS)) {
 
                     cell = Map.RadarClass::Click_Cell_Calc(x, y);
                     if (cell != -1) {
@@ -1512,13 +1603,6 @@ int RadarClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
                         Map.Flag_To_Redraw(true);
                         Map.SpecialRadarFrame = 4;
                     }
-                }
-
-                /*
-                **	A right mouse button press toggles the zoom mode.
-                */
-                if (flags & RIGHTPRESS) {
-                    Map.Zoom_Mode(cell);
                 }
             }
         }
@@ -1603,8 +1687,8 @@ void RadarClass::Set_Radar_Position(CELL cell)
         int xmod = newx;
         int ymod = newy;
 
-        int radx = (Cell_X(RadarCell)) - xmod;
-        int rady = (Cell_Y(RadarCell)) - ymod;
+        int radx = (Cell_X(RadarCell))-xmod;
+        int rady = (Cell_Y(RadarCell))-ymod;
 
         RadarX = newx;
         RadarY = newy;
@@ -1853,8 +1937,6 @@ void RadarClass::Draw_Names(void)
     HouseClass* ptr;
     int y;
     char txt[40];
-    unsigned char id;
-    int i;
     HousesType h;
     int kills;
     int color;
@@ -1874,14 +1956,10 @@ void RadarClass::Draw_Names(void)
 
     y = RadY + RadOffY;
 
-    Fancy_Text_Print(TXT_NAME_COLON, RadX + RadOffX, y, LTGREY, TBLACK, TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+    Fancy_Text_Print(TXT_NAME_COLON, RadX + RadOffX, y, LTGREY, TBLACK, TPF_6PT_GRAD | TPF_NOSHADOW);
 
-    Fancy_Text_Print(TXT_KILLS_COLON,
-                     RadX + RadOffX + RadIWidth - 2,
-                     y,
-                     LTGREY,
-                     TBLACK,
-                     TPF_RIGHT | TPF_6PT_GRAD | TPF_NOSHADOW | TPF_USE_GRAD_PAL);
+    Fancy_Text_Print(
+        TXT_KILLS_COLON, RadX + RadOffX + RadIWidth - 2, y, LTGREY, TBLACK, TPF_RIGHT | TPF_6PT_GRAD | TPF_NOSHADOW);
 
     y += 6 * factor + 1;
 
@@ -1902,7 +1980,7 @@ void RadarClass::Draw_Names(void)
 
         if (ptr->IsDefeated) {
             color = GREY;
-            style = TPF_6PT_GRAD | TPF_NOSHADOW | TPF_USE_GRAD_PAL;
+            style = TPF_6PT_GRAD | TPF_NOSHADOW;
         } else {
             color = MPlayerTColors[c_idx];
             style = TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW;
@@ -1912,27 +1990,6 @@ void RadarClass::Draw_Names(void)
         **	Initialize our message
         */
         txt[0] = 0;
-
-        /*
-        **	If the house is non-human, generate the message
-        */
-        if (!ptr->IsHuman) {
-            sprintf(txt, "%s", Text_String(TXT_COMPUTER));
-        } else {
-
-            /*
-            **	For a human house:
-            **	- Compute the multiplayer ID for this house
-            **	- find the name for this player
-            */
-            id = Build_MPlayerID(c_idx, ptr->ActLike);
-            for (i = 0; i < MPlayerCount; i++) {
-                if (id == MPlayerID[i]) {
-                    sprintf(txt, "%s", MPlayerNames[i]);
-                    break;
-                }
-            }
-        }
 
         /*
         **	Print the player name, and the # of kills

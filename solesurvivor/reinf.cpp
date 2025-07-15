@@ -229,7 +229,7 @@ bool Do_Reinforcements(TeamTypeClass* teamtype)
                 okvoice = false;
             }
 
-            transport->Attach((FootClass*)object);
+            transport->Add_To_Cargo((FootClass *)object);
         }
         object = transport;
     }
