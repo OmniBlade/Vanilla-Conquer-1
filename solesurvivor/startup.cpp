@@ -35,6 +35,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "comm/comms.h"
 #include "common/ini.h"
 #include "common/paths.h"
 #include "common/utfargs.h"
@@ -201,18 +202,10 @@ int DLL_Startup(const char* command_line_in)
 int main(int argc, char** argv)
 {
     UtfArgs args(argc, argv);
-    CCDebugString("C&C95 - Starting up.\n");
+    CCDebugString("Sole Survivor - Starting up.\n");
 
     if (Ram_Free(MEM_NORMAL) < 5000000) {
-#ifdef GERMAN
-        printf("Zuwenig Hauptspeicher verf?gbar.\n");
-#else
-#ifdef FRENCH
-        printf("M‚moire vive (RAM) insuffisante.\n");
-#else
-        printf("Insufficient RAM available.\n");
-#endif
-#endif
+        printf("%s", Text_String(TXT_NEED_RAM));
         return (EXIT_FAILURE);
     }
 
@@ -251,26 +244,26 @@ int main(int argc, char** argv)
 #ifdef GERMAN
             char disk_space_message[512];
             sprintf(disk_space_message,
-                    "Nicht genug Festplattenplatz f?r Command & Conquer.\nSie brauchen %d MByte freien Platz auf der "
+                    "Nicht genug Festplattenplatz f?r Sole Survivor.\nSie brauchen %d MByte freien Platz auf der "
                     "Festplatte.",
                     (INIT_FREE_DISK_SPACE) / (1024 * 1024));
-            MessageBoxA(NULL, disk_space_message, "Command & Conquer", MB_ICONEXCLAMATION | MB_OK);
+            MessageBoxA(NULL, disk_space_message, "Sole Survivor", MB_ICONEXCLAMATION | MB_OK);
             return (EXIT_FAILURE);
 #endif
 #ifdef FRENCH
             char disk_space_message[512];
             sprintf(disk_space_message,
-                    "Espace disque insuffisant pour lancer Command & Conquer.\nVous devez disposer de %d Mo d'espace "
+                    "Espace disque insuffisant pour lancer Sole Survivor.\nVous devez disposer de %d Mo d'espace "
                     "disponsible sur disque dur.",
                     (INIT_FREE_DISK_SPACE) / (1024 * 1024));
-            MessageBoxA(NULL, disk_space_message, "Command & Conquer", MB_ICONEXCLAMATION | MB_OK);
+            MessageBoxA(NULL, disk_space_message, "Sole Survivor", MB_ICONEXCLAMATION | MB_OK);
             return (EXIT_FAILURE);
 #endif
 #if !(FRENCH | GERMAN)
             int reply = MessageBoxA(NULL,
                                     "Warning - you are critically low on free disk space for virtual memory and save "
                                     "games. Do you want to play C&C anyway?",
-                                    "Command & Conquer",
+                                    "Sole Survivor",
                                     MB_ICONQUESTION | MB_YESNO);
             if (reply == IDNO) {
                 return (EXIT_FAILURE);
@@ -280,6 +273,8 @@ int main(int argc, char** argv)
 #endif
         }
 
+        Init_Comms_API();
+
         Read_Private_Config_Struct(cfile, &NewConfig);
 
         /*
@@ -287,7 +282,7 @@ int main(int argc, char** argv)
         */
         Read_Setup_Options(&cfile);
 
-        CCDebugString("C&C95 - Creating main window.\n");
+        CCDebugString("Sole Survivor - Creating main window.\n");
 
 #ifndef REMASTER_BUILD
         /* If DOSMode is enabled, adjust resolution accordingly. */
@@ -301,14 +296,15 @@ int main(int argc, char** argv)
         Create_Main_Window(ProgramInstance, ScreenWidth, ScreenHeight);
 #endif
 
-        CCDebugString("C&C95 - Initialising audio.\n");
+        CCDebugString("Sole Survivor - Initialising audio.\n");
 
+        // TODO Sole has an extra parameter here passed based on if its a host/offline.
         SoundOn = Audio_Init(16, false, 11025 * 2, 0);
 
         Palette = new (MEM_CLEAR) unsigned char[768];
 
         bool video_success = false;
-        CCDebugString("C&C95 - Setting video mode.\n");
+        CCDebugString("Sole Survivor - Setting video mode.\n");
 
         /*
         ** Set video mode.
@@ -322,17 +318,17 @@ int main(int argc, char** argv)
 #endif
 
         if (!video_success) {
-            CCDebugString("C&C95 - Failed to set video mode.\n");
+            CCDebugString("Sole Survivor - Failed to set video mode.\n");
 #ifdef _WIN32
             MessageBoxA(
-                MainWindow, "Error - Unable to set the video mode.", "Command & Conquer", MB_ICONEXCLAMATION | MB_OK);
+                MainWindow, "Error - Unable to set the video mode.", "Sole Survivor", MB_ICONEXCLAMATION | MB_OK);
 #endif
             if (Palette)
                 delete[] Palette;
             return (EXIT_FAILURE);
         }
 
-        CCDebugString("C&C95 - Initialising video surfaces.\n");
+        CCDebugString("Sole Survivor - Initialising video surfaces.\n");
 
 #ifdef REMASTER_BUILD
 
@@ -349,11 +345,11 @@ int main(int argc, char** argv)
             /*
             ** Aaaarrgghh!
             */
-            CCDebugString("C&C95 - Unable to allocate primary surface.\n");
+            CCDebugString("Sole Survivor - Unable to allocate primary surface.\n");
 #ifdef _WIN32
             MessageBoxA(MainWindow,
                         Text_String(TXT_UNABLE_TO_ALLOCATE_PRIMARY_VIDEO_BUFFER),
-                        "Command & Conquer",
+                        "Sole Survivor",
                         MB_ICONEXCLAMATION | MB_OK);
 #endif
             if (Palette)
@@ -369,7 +365,7 @@ int main(int argc, char** argv)
         **
         ** Use a system memory page if the user has specified it via the ccsetup program.
         */
-        CCDebugString("C&C95 - Allocating back buffer ");
+        CCDebugString("Sole Survivor - Allocating back buffer ");
         int video_memory = Get_Free_Video_Memory();
         unsigned video_capabilities = Get_Video_Hardware_Capabilities();
         if (video_memory < ScreenWidth * ScreenHeight || (!(video_capabilities & VIDEO_BLITTER))
@@ -398,13 +394,21 @@ int main(int argc, char** argv)
         }
 #endif
 
-        SeenBuff.Attach(&VisiblePage, 0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
-        HidPage.Attach(&HiddenPage, 0, 0, GBUFF_INIT_WIDTH, GBUFF_INIT_HEIGHT);
-
-        CCDebugString("C&C95 - Adjusting variables for resolution.\n");
+        if (VisiblePage.Get_Height() == 480) {
+            SeenBuff.Attach(&VisiblePage, 0, 0, 640, 400);
+            UnknownViewport1.Attach(&VisiblePage, 0, 0, 640, 480);
+            HidPage.Attach(&HiddenPage, 0, 0, 640, 400);
+            UnknownViewport2.Attach(&HiddenPage, 0, 0, 640, 480);
+        } else {
+            SeenBuff.Attach(&VisiblePage, 0, 0, 640, 400);
+            UnknownViewport1.Attach(&VisiblePage, 0, 0, 640, 400);
+            HidPage.Attach(&HiddenPage, 0, 0, 640, 400);
+            UnknownViewport2.Attach(&HiddenPage, 0, 0, 640, 400);
+        }
+        CCDebugString("Sole Survivor - Adjusting variables for resolution.\n");
         Options.Adjust_Variables_For_Resolution();
 
-        CCDebugString("C&C95 - Setting palette.\n");
+        CCDebugString("Sole Survivor - Setting palette.\n");
         /////////Set_Palette(Palette);
 
         WindowList[0][WINDOWWIDTH] = SeenBuff.Get_Width();
@@ -415,7 +419,7 @@ int main(int argc, char** argv)
         */
         Memory_Error = &Memory_Error_Handler;
 
-        CCDebugString("C&C95 - Creating mouse class.\n");
+        CCDebugString("Sole Survivor - Creating mouse class.\n");
         WWMouse = new WWMouseClass(&SeenBuff, 32, 32);
         //			MouseInstalled = Install_Mouse(32,24,320,200);
         MouseInstalled = true;
@@ -430,24 +434,12 @@ int main(int argc, char** argv)
         **	Check for forced intro movie run disabling. If the conquer
         **	configuration file says "no", then don't run the intro.
         */
-        if (!Special.IsFromInstall) {
-            Special.IsFromInstall = ini.Get_Bool("Intro", "PlayIntro", true);
-        }
+        Special.IsFromInstall = false; // No first run video for sole.
         SlowPalette = ini.Get_Bool("Options", "SlowPalette", false);
-
-        /*
-        ** Regardless of whether we should run it or not, here we're
-        ** gonna change it to say "no" in the future.
-        */
-        if (Special.IsFromInstall) {
-            BreakoutAllowed = true;
-            ini.Put_Bool("Intro", "PlayIntro", false);
-            ini.Save(cfile);
-        }
 
         Memory_Error_Exit = Print_Error_End_Exit;
 
-        CCDebugString("C&C95 - Entering main game.\n");
+        CCDebugString("Sole Survivor - Entering main game.\n");
         Main_Game(argc, argv);
 
         if (RunningAsDLL) {
@@ -466,7 +458,7 @@ int main(int argc, char** argv)
 
         Memory_Error_Exit = Print_Error_Exit;
 
-        CCDebugString("C&C95 - About to exit.\n");
+        CCDebugString("Sole Survivor - About to exit.\n");
 
 #ifdef NEW_VIDEO_BUILD
         Reset_Video_Mode();
@@ -495,7 +487,7 @@ int main(int argc, char** argv)
         } while (ReadyToQuit == 1);
 #endif
 
-        CCDebugString("C&C95 - Returned from final message loop.\n");
+        CCDebugString("Sole Survivor - Returned from final message loop.\n");
         // Prog_End();
         // Invalidate_Cached_Icons();
         // VisiblePage.Un_Init();
@@ -540,25 +532,21 @@ void Prog_End(const char* why, bool fatal) // Added why and fatal parameters. ST
         *((int*)0) = 0;
     }
 
-#ifndef DEMO
-    if (GameToPlay == GAME_MODEM || GameToPlay == GAME_NULL_MODEM) {
-        //		NullModem.Change_IRQ_Priority(0);
-    }
-#endif
-    CCDebugString("C&C95 - About to call Sound_End.\n");
+    CCDebugString("Sole Survivor - About to call Sound_End.\n");
     Sound_End();
-    CCDebugString("C&C95 - Returned from Sound_End.\n");
+    CCDebugString("Sole Survivor - Returned from Sound_End.\n");
     if (WWMouse) {
-        CCDebugString("C&C95 - Deleting mouse object.\n");
+        CCDebugString("Sole Survivor - Deleting mouse object.\n");
         delete WWMouse;
         WWMouse = NULL;
     }
     if (Palette) {
-        CCDebugString("C&C95 - Deleting palette object.\n");
+        CCDebugString("Sole Survivor - Deleting palette object.\n");
         delete[] Palette;
         Palette = NULL;
     }
-
+    
+    Shutdown_Comms_API();
     ProgEndCalled = true;
 }
 

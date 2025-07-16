@@ -341,7 +341,7 @@ extern GraphicViewPortClass SeenBuff;
 extern GraphicViewPortClass UnknownViewport1;
 extern GraphicBufferClass ModeXBuff;
 extern GraphicViewPortClass HidPage;
-extern GraphicViewPortClass	UnknownViewport2;
+extern GraphicViewPortClass UnknownViewport2;
 extern GraphicBufferClass LoResHidPage;
 extern GraphicBufferClass SysMemPage;
 extern int MenuList[][8];
@@ -389,13 +389,29 @@ extern bool Server; // Is this player acting as client or server
 // New Sole stuff, subject to change/movement
 extern int sole_array[SOLE_ARRAY_COUNT][3];
 extern int sole_array2[SOLE_ARRAY_COUNT];
-extern bool IsServerAdmin;
 extern int ShowNames;
 extern int PlayerNameDrawStyle;
+extern bool IsTrackingCurrentObject;
 extern bool OfflineMode;
+extern int FlagDrawLocation[4];
+extern bool IsServerAdmin;
+extern int GameOptionsBitfield;
+extern bool IsTrackingRedraw;
+extern int TeamPoints[4];
+extern int TeamScores[4];
+extern int SpeedScale;
+extern int SquadGamePasswordCountDown;
+
+extern bool MessageLogging;
+
+extern int WDTCrateShares[WDT_CRATE_COUNT];
+extern int WDTCrateDensity;
+extern int WDTCrateIonFactor;
+extern int WDTCrateTimerVal;
+extern GAMEPARAMS GameParams;
 
 #include "voicethemes.h"
-extern DynamicVectorClass <VoiceThemeClass *> VoiceThemes;
+extern DynamicVectorClass<VoiceThemeClass*> VoiceThemes;
 
 extern bool IsTeamMessage;
 
@@ -405,35 +421,35 @@ class ReliableCommClass;
 class ReliableProtocolClass;
 struct PlayerNameTag;
 
-extern DynamicVectorClass<PlayerNameTag *> ActivePlayers;
+extern DynamicVectorClass<PlayerNameTag*> ActivePlayers;
 
-extern DynamicVectorClass<ReliableCommClass *> ReliableComms;
-extern DynamicVectorClass<ReliableProtocolClass *> ReliableProtocols;
-extern DynamicVectorClass<ReliableCommClass *> RemoteAdminsComms;
-extern DynamicVectorClass<ReliableProtocolClass *> RemoteAdminsProtocols;
+extern DynamicVectorClass<ReliableCommClass*> ReliableComms;
+extern DynamicVectorClass<ReliableProtocolClass*> ReliableProtocols;
+extern DynamicVectorClass<ReliableCommClass*> RemoteAdminsComms;
+extern DynamicVectorClass<ReliableProtocolClass*> RemoteAdminsProtocols;
 
 extern char Host[40];
 extern char ResultHost[128];
 extern char TempPacketBuffer[100000];
 
-extern DynamicVectorClass<NewDeletePacketData *> NewDeletePacketDatas;
-extern DynamicVectorClass<HealthPacketData *> HealthPacketDatas;
-extern DynamicVectorClass<DamagePacketData *> DamagePacketDatas;
-extern DynamicVectorClass<SquishPacketData *> SquishPacketDatas;
-extern DynamicVectorClass<CapturePacketData *> CapturePacketDatas;
-extern DynamicVectorClass<CargoPacketData *> CargoPacketDatas;
-extern DynamicVectorClass<FlagPacketData *> FlagPacketDatas;
-extern DynamicVectorClass<CTFPacketData *> CTFPacketDatas;
-extern DynamicVectorClass<MovePacketData *> MovePacketDatas;
-extern DynamicVectorClass<TargetPacketData *> TargetPacketDatas;
-extern DynamicVectorClass<FireAtPacketData *> FireAtPacketDatas;
-extern DynamicVectorClass<DoTurnPacketData *> DoTurnPacketDatas;
-extern DynamicVectorClass<CratePacketData *> CratePacketDatas;
-extern DynamicVectorClass<PerCellPacketData *> PerCellPacketDatas;
-extern DynamicVectorClass<TechnoPacketData *> TechnoPacketDatas;
+extern DynamicVectorClass<NewDeletePacketData*> NewDeletePacketDatas;
+extern DynamicVectorClass<HealthPacketData*> HealthPacketDatas;
+extern DynamicVectorClass<DamagePacketData*> DamagePacketDatas;
+extern DynamicVectorClass<SquishPacketData*> SquishPacketDatas;
+extern DynamicVectorClass<CapturePacketData*> CapturePacketDatas;
+extern DynamicVectorClass<CargoPacketData*> CargoPacketDatas;
+extern DynamicVectorClass<FlagPacketData*> FlagPacketDatas;
+extern DynamicVectorClass<CTFPacketData*> CTFPacketDatas;
+extern DynamicVectorClass<MovePacketData*> MovePacketDatas;
+extern DynamicVectorClass<TargetPacketData*> TargetPacketDatas;
+extern DynamicVectorClass<FireAtPacketData*> FireAtPacketDatas;
+extern DynamicVectorClass<DoTurnPacketData*> DoTurnPacketDatas;
+extern DynamicVectorClass<CratePacketData*> CratePacketDatas;
+extern DynamicVectorClass<PerCellPacketData*> PerCellPacketDatas;
+extern DynamicVectorClass<TechnoPacketData*> TechnoPacketDatas;
 
 extern StatsPanelClass StatPanel;
-extern DynamicVectorClass<char *> BannedPlayers;
+extern DynamicVectorClass<char*> BannedPlayers;
 extern CELL FlagHomes[4];
 extern CELL FootballCells[2];
 extern int OfflinePoints;

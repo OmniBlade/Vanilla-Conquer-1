@@ -1139,3 +1139,5 @@ extern char* TitlePicture;
 
 // Sole stuff
 void Get_Or_Set_Current_Directory(bool get);
+int Process_Crate_Pickup(WDTCrateType type, CELL cell, FootClass *object, HousesType house, int int_arg);
+

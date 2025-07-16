@@ -109,75 +109,9 @@ bool Start_Scenario(char* root, bool briefing)
     }
     CCDebugString("C&C95 - Scenario read OK.\n");
 
-    if (Is_Demo()) {
-        if (briefing) {
-            Play_Movie(BriefMovie);
-            Play_Movie(ActionMovie, Scen.TransitTheme);
-        }
-        Theme.Queue_Song(THEME_AOI);
-    } else {
-        /*
-        ** Install some hacks around the movie playing to account for the choose-
-        ** sides introduction.  We don't want an intro movie on scenario 1, and
-        ** we don't want a briefing movie on GDI scenario 1.
-        */
-        if (Scen.Scenario < 20 && (!Special.IsJurassic || !AreThingiesEnabled)) {
-            if (Scen.Scenario != 1 || Whom == HOUSE_GOOD) {
-                Play_Movie(IntroMovie);
-            }
-#ifndef REMASTER_BUILD
-            if (Scen.Scenario > 1 || Whom == HOUSE_BAD) {
-                if (briefing) {
-                    PreserveVQAScreen = (Scen.Scenario == 1);
-                    Play_Movie(BriefMovie);
-                }
-            }
-#else
-            if (briefing) {
-                PreserveVQAScreen = (Scen.Scenario == 1);
-                Play_Movie(BriefMovie);
-            }
-#endif
-            Play_Movie(ActionMovie, Scen.TransitTheme);
-            if (Scen.TransitTheme == THEME_NONE) {
-                Theme.Queue_Song(THEME_AOI);
-            }
-        } else {
-            Play_Movie(BriefMovie);
-            Play_Movie(ActionMovie, Scen.TransitTheme);
-
-#ifdef NEWMENU
-
-            char buffer[_MAX_FNAME + _MAX_EXT + 4];
-            sprintf(buffer, "%s.VQA", BriefMovie);
-            CCFileClass file(buffer);
-
-            if (GameToPlay == GAME_NORMAL && !file.Is_Available()) {
-                VisiblePage.Clear();
-                Set_Palette(GamePalette);
-                //			Show_Mouse();
-                /*
-                ** Show the mission briefing. Pretend we are inside the main loop so the palette
-                ** will be correct on the textured buttons.
-                */
-                bool oldinmain = InMainLoop;
-                InMainLoop = true;
-
-                // TO_FIX - Covert ops missions want to pop up a dialog box. ST - 9/6/2019 1:48PM
-#ifndef REMASTER_BUILD
-                Restate_Mission(Scen.ScenarioName, TXT_OK, TXT_NONE);
-#endif
-
-                InMainLoop = oldinmain;
-                //			Hide_Mouse();
-                if (Scen.TransitTheme == THEME_NONE) {
-                    Theme.Queue_Song(THEME_AOI);
-                }
-            }
-
-#endif
-        }
-    }
+    Theme.Play_Song(THEME_NONE);
+    Theme.Queue_Song(THEME_PICK_ANOTHER);
+    Theme.AI();
 
     /*
     ** Set the options values, since the palette has been initialized by Read_Scenario
@@ -315,14 +249,6 @@ void Fill_In_Data(void)
 
     Map.Flag_To_Redraw(true);
 
-    /*
-    **	Bring up the score display on the radar map when starting a multiplayer
-    **	game.
-    */
-    if (GameToPlay != GAME_NORMAL) {
-        Map.Player_Names(true);
-    }
-
     ScenarioInit--;
 }
 
@@ -347,6 +273,8 @@ void Fill_In_Data(void)
 void Clear_Scenario(void)
 {
     EndCountDown = TICKS_PER_SECOND * 30;
+    WDTNumArmageddonCrates = 0;
+    ArmageddonDelayTimer.Set(0, 1);
     CrateCount = 0;
     CrateTimer = 0;
     CrateMaker = false;
@@ -384,6 +312,8 @@ void Clear_Scenario(void)
     Base.Init();
 
     CurrentObject.Clear_All();
+
+    Clear_Packet_Data_Vectors();
 }
 
 /***********************************************************************************************
@@ -405,14 +335,6 @@ void Do_Win(void)
 {
     Map.Set_Default_Mouse(MOUSE_NORMAL);
     Hide_Mouse();
-
-    /*
-    ** If this is a multiplayer game, clear the game's name so we won't respond
-    ** to game queries any more (in Call_Back)
-    */
-    if (GameToPlay != GAME_NORMAL) {
-        MPlayerGameName[0] = 0;
-    }
 
     /*
     **	Determine a cosmetic center point for the text.
@@ -440,14 +362,6 @@ void Do_Win(void)
     ** Stop here if this is a multiplayer game.
     */
     if (GameToPlay != GAME_NORMAL) {
-        if (!PlaybackGame) {
-            MPlayerGamesPlayed++;
-            Multi_Score_Presentation();
-            MPlayerCurGame++;
-            if (MPlayerCurGame >= MAX_MULTI_GAMES) {
-                MPlayerCurGame = MAX_MULTI_GAMES - 1;
-            }
-        }
         GameActive = false;
         Show_Mouse();
         return;
@@ -481,82 +395,80 @@ void Do_Win(void)
     /*
     **	Do the ending screens only if not playing back a recorded game.
     */
-    if (!PlaybackGame) {
-        if (Is_Demo()) {
-            switch (Scen.Scenario) {
-            case 1:
-                Score.Presentation();
-                Scen.Scenario = 10;
-                break;
+    if (Is_Demo()) {
+        switch (Scen.Scenario) {
+        case 1:
+            Score.Presentation();
+            Scen.Scenario = 10;
+            break;
 
-            case 10:
-                Score.Presentation();
-                Scen.Scenario = 6;
-                break;
+        case 10:
+            Score.Presentation();
+            Scen.Scenario = 6;
+            break;
 
-            default:
-                Score.Presentation();
-                GDI_Ending();
-                GameActive = false;
-                Show_Mouse();
-                return;
-            }
-        } else {
+        default:
+            Score.Presentation();
+            GDI_Ending();
+            GameActive = false;
+            Show_Mouse();
+            return;
+        }
+    } else {
 #ifdef NEWMENU
-            if (Scen.Scenario >= 20) {
-                Keyboard->Clear();
-                Score.Presentation();
-                GameActive = false;
-                Show_Mouse();
-                return;
-            }
+        if (Scen.Scenario >= 20) {
+            Keyboard->Clear();
+            Score.Presentation();
+            GameActive = false;
+            Show_Mouse();
+            return;
+        }
 #endif
 
-            if (PlayerPtr->Class->House == HOUSE_BAD && Scen.Scenario == 13) {
-                Nod_Ending();
-                // Prog_End();
-                // exit(0);
-                SeenBuff.Clear();
-                Show_Mouse();
-                GameActive = false;
-                return;
-            }
-            if (PlayerPtr->Class->House == HOUSE_GOOD && Scen.Scenario == 15) {
-                GDI_Ending();
-                // Prog_End();
-                // exit(0);
-                SeenBuff.Clear();
-                Show_Mouse();
-                GameActive = false;
-                return;
-            }
+        if (PlayerPtr->Class->House == HOUSE_BAD && Scen.Scenario == 13) {
+            Nod_Ending();
+            // Prog_End();
+            // exit(0);
+            SeenBuff.Clear();
+            Show_Mouse();
+            GameActive = false;
+            return;
+        }
+        if (PlayerPtr->Class->House == HOUSE_GOOD && Scen.Scenario == 15) {
+            GDI_Ending();
+            // Prog_End();
+            // exit(0);
+            SeenBuff.Clear();
+            Show_Mouse();
+            GameActive = false;
+            return;
+        }
 
-            if ((Special.IsJurassic && AreThingiesEnabled) && Scen.Scenario == 5) {
-                Prog_End("Do_Win - Last Jurassic mission complete");
-                if (!RunningAsDLL) {
-                    exit(0);
-                }
-                return;
+        if ((Special.IsJurassic) && Scen.Scenario == 5) {
+            Prog_End("Do_Win - Last Jurassic mission complete");
+            if (!RunningAsDLL) {
+                exit(0);
             }
+            return;
+        }
 
-            if (!Special.IsJurassic || !AreThingiesEnabled) {
-                Keyboard->Clear();
-                InterpolationPaletteChanged = true;
-                InterpolationPalette = Palette;
-                Score.Presentation();
+        if (!Special.IsJurassic) {
+            Keyboard->Clear();
+            InterpolationPaletteChanged = true;
+            InterpolationPalette = Palette;
+            Score.Presentation();
 
-                /*
+            /*
                 **	Skip scenario #7 if the airfield was blown up.
                 */
-                if (Scen.Scenario == 6 && PlayerPtr->Class->House == HOUSE_GOOD && SabotagedType == STRUCT_AIRSTRIP) {
-                    Scen.Scenario++;
-                }
-
-                Map_Selection();
+            if (Scen.Scenario == 6 && PlayerPtr->Class->House == HOUSE_GOOD && SabotagedType == STRUCT_AIRSTRIP) {
+                Scen.Scenario++;
             }
-            Scen.Scenario++;
-            Keyboard->Clear();
+
+            Map_Selection();
         }
+        Scen.Scenario++;
+        Keyboard->Clear();
     }
 
     Scen.CarryOverMoney = PlayerPtr->Credits;
@@ -627,14 +539,6 @@ void Do_Lose(void)
     Hide_Mouse();
 
     /*
-    ** If this is a multiplayer game, clear the game's name so we won't respond
-    ** to game queries any more (in Call_Back)
-    */
-    if (GameToPlay != GAME_NORMAL) {
-        MPlayerGameName[0] = 0;
-    }
-
-    /*
     **	Determine a cosmetic center point for the text.
     */
     int x = Map.TacPixelX + (Lepton_To_Pixel(Map.TacLeptonWidth) / 2);
@@ -666,14 +570,6 @@ void Do_Lose(void)
     ** Stop here if this is a multiplayer game.
     */
     if (GameToPlay != GAME_NORMAL) {
-        if (!PlaybackGame) {
-            MPlayerGamesPlayed++;
-            Multi_Score_Presentation();
-            MPlayerCurGame++;
-            if (MPlayerCurGame >= MAX_MULTI_GAMES) {
-                MPlayerCurGame = MAX_MULTI_GAMES - 1;
-            }
-        }
         GameActive = false;
         Show_Mouse();
         return;
@@ -686,7 +582,7 @@ void Do_Lose(void)
     */
     Set_Palette(GamePalette);
     Show_Mouse();
-    if (!PlaybackGame && !WWMessageBox().Process(TXT_TO_REPLAY, TXT_YES, TXT_NO)) {
+    if (!WWMessageBox().Process(TXT_TO_REPLAY, TXT_YES, TXT_NO)) {
         Hide_Mouse();
         Keyboard->Clear();
         Start_Scenario(Scen.ScenarioName, false);

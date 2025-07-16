@@ -32,7 +32,6 @@
 #ifndef SESSION_H
 #define SESSION_H
 
-#include "ipxaddr.h"
 #include "msglist.h"
 #include "connect.h"
 
@@ -239,9 +238,6 @@ typedef struct
 typedef struct NodeNameTag
 {
     char Name[MPLAYER_NAME_MAX]; // player or game name
-#ifdef NETWORKING
-    IPXAddressClass Address;
-#endif
     union
     {
         struct
@@ -500,7 +496,6 @@ public:
     // This is the multiplayer messaging system
     //.....................................................................
     MessageListClass Messages;
-    IPXAddressClass MessageAddress;
     char LastMessage[MAX_MESSAGE_LENGTH];
     int WWChat : 1; // 1 = go into special WW Chat mode
 
@@ -536,14 +531,12 @@ public:
     // IPX-specific variables
     //.....................................................................
     int IsBridge;                              // 1 = we're crossing a bridge
-    IPXAddressClass BridgeNet;                 // address of bridge
     bool NetStealth;                           // makes us invisible
     bool NetProtect;                           // keeps others from messaging us
     bool NetOpen;                              // 1 = game is open for joining
     char GameName[MPLAYER_NAME_MAX];           // game's name
     GlobalPacketType GPacket;                  // global packet
     int GPacketlen;                            // global packet length
-    IPXAddressClass GAddress;                  // address of sender
     unsigned short GProductID;                 // product ID of sender
     char MetaPacket[MAX_IPX_PACKET_SIZE];      // packet building buffer
     int MetaSize;                              // size of MetaPacket

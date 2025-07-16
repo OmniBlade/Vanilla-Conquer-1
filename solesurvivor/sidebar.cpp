@@ -76,6 +76,7 @@
 
 #include "function.h"
 #include "settings.h"
+#include "dict.h"
 
 /*
 **	Define "_RETRIEVE" if the palette morphing tables are part of the loaded data. If this
@@ -102,7 +103,8 @@ typedef enum ButtonNumberType
     BUTTON_DEMOLISH,
     BUTTON_UPGRADE,
     BUTTON_SELECT,
-    BUTTON_ZOOM
+    BUTTON_ZOOM,
+	BUTTON_COLORLIST,
 } ButtonNumberType;
 
 /*
@@ -116,6 +118,9 @@ ToggleClass* SidebarClass::Zoom = NULL;
 ShapeButtonClass SidebarClass::StripClass::UpButton[COLUMNS];
 ShapeButtonClass SidebarClass::StripClass::DownButton[COLUMNS];
 SidebarClass::StripClass::SelectClass SidebarClass::StripClass::SelectButton[COLUMNS][MAX_VISIBLE];
+
+ColorListClass *SidebarClass::ColorListInstance1;
+ColorListClass *SidebarClass::ColorListInstance2;
 
 /*
 ** Shape data pointers
@@ -228,6 +233,38 @@ void SidebarClass::One_Time(void)
     if (SidebarShape2 == NULL) {
         SidebarShape2 = Hires_Retrieve("SIDE2.SHP");
     }
+
+    static int tabs[] = {100};
+
+	ColorListInstance1 = new ColorListClass(
+		BUTTON_COLORLIST,
+		Background.X - 16,
+		Background.Y + 2,
+		Background.Width + 1,
+		Background.Height - 1,
+		TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR,
+		Hires_Retrieve("BTN-UP.SHP"),
+		Hires_Retrieve("BTN-DN.SHP")
+	);
+
+	ColorListInstance1->Set_Tabs(tabs);
+	ColorListInstance1->Set_Selected_Style(ColorListClass::SELECT_NONE);
+
+	ColorListInstance2 = new ColorListClass(
+		BUTTON_COLORLIST,
+		Background.X - 16,
+		Background.Y + 2,
+		Background.Width + 1,
+		Background.Height - 1,
+		TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR,
+		Hires_Retrieve("BTN-UP.SHP"),
+		Hires_Retrieve("BTN-DN.SHP")
+	);
+
+	ColorListInstance1->Set_Tabs(tabs);
+	ColorListInstance1->Set_Selected_Style(ColorListClass::SELECT_NONE);
+
+	Timer1.Set(1800, 1);
 }
 
 /***********************************************************************************************
@@ -271,156 +308,7 @@ void SidebarClass::Init_Clear(void)
  *=============================================================================================*/
 void SidebarClass::Init_IO(void)
 {
-#if (FRENCH)
-    const char* repair_shp = "REPAIRF.SHP";
-    const char* sell_shp = "SELLF.SHP";
-    const char* map_shp = "MAPF.SHP";
-#else
-#if (GERMAN)
-    const char* repair_shp = "REPAIRG.SHP";
-    const char* sell_shp = "SELLG.SHP";
-    const char* map_shp = "MAPG.SHP";
-#else
-    const char* repair_shp = "REPAIR.SHP";
-    const char* sell_shp = "SELL.SHP";
-    const char* map_shp = "MAP.SHP";
-#endif
-#endif
-
-    void* oldfont;
-    int oldx;
     PowerClass::Init_IO();
-
-    if (Get_Resolution_Factor()) {
-        if (!Repair)
-            Repair = new ShapeButtonClass();
-        if (!Upgrade)
-            Upgrade = new ShapeButtonClass();
-        if (!Zoom)
-            Zoom = new ShapeButtonClass();
-    } else {
-        if (!Repair)
-            Repair = new TextButtonClass();
-        if (!Upgrade)
-            Upgrade = new TextButtonClass();
-        if (!Zoom)
-            Zoom = new TextButtonClass();
-    }
-
-    /*
-    ** Add the sidebar's buttons only if we're not in editor mode.
-    */
-    int buttonspacing = (SideBarWidth - (ButtonOneWidth + ButtonTwoWidth + ButtonThreeWidth)) / 4;
-
-    if (!Debug_Map) {
-        /*
-        ** Set the button widths based on the string that goes in them.
-        */
-        oldfont = Set_Font(Font6Ptr);
-        oldx = FontXSpacing;
-        FontXSpacing = -1;
-        Fancy_Text_Print(TXT_NONE, 0, 0, TBLACK, TBLACK, TPF_6POINT | TPF_NOSHADOW);
-
-        int maxwidth = String_Pixel_Width(Text_String(TXT_REPAIR_BUTTON)) + 8;
-        maxwidth = MAX((unsigned)maxwidth, String_Pixel_Width(Text_String(TXT_BUTTON_SELL)) + 8);
-        maxwidth = MAX((unsigned)maxwidth, String_Pixel_Width(Text_String(TXT_MAP)) + 8);
-        Repair->Width = maxwidth;
-        Upgrade->Width = maxwidth;
-        Zoom->Width = maxwidth;
-        //		Repair.Width = String_Pixel_Width(Text_String(TXT_REPAIR_BUTTON)) + 8;
-        //		Upgrade.Width = String_Pixel_Width(Text_String(TXT_BUTTON_SELL)) + 8;
-        //		Zoom.Width = String_Pixel_Width(Text_String(TXT_MAP)) + 8;
-        /*
-        ** find the spacing between buttons by getting remaining width
-        ** and dividing it between the buttons.
-        */
-        int buttonspacing = (SideBarWidth - (Repair->Width + Upgrade->Width + Zoom->Width)) / 4;
-
-        if (Get_Resolution_Factor()) {
-            ShapeButtonClass* SBCRepair = (ShapeButtonClass*)Repair;
-            ShapeButtonClass* SBCUpgrade = (ShapeButtonClass*)Upgrade;
-            ShapeButtonClass* SBCZoom = (ShapeButtonClass*)Zoom;
-
-            Repair->X = 484;
-            Repair->Y = 160;
-            SBCRepair->ReflectButtonState = true;
-            SBCRepair->Set_Shape(Hires_Retrieve(repair_shp));
-
-            Upgrade->X = 480 + 57;
-            Upgrade->Y = 160;
-            SBCUpgrade->ReflectButtonState = true;
-            SBCUpgrade->Set_Shape(Hires_Retrieve(sell_shp));
-
-            Zoom->X = 480 + 110;
-            Zoom->Y = 160;
-            SBCZoom->Set_Shape(Hires_Retrieve(map_shp));
-        } else {
-            TextButtonClass* TBCRepair = (TextButtonClass*)Repair;
-            TextButtonClass* TBCUpgrade = (TextButtonClass*)Upgrade;
-            TextButtonClass* TBCZoom = (TextButtonClass*)Zoom;
-
-            TBCRepair->Set_Text("Repair");
-            TBCRepair->Set_Style(TPF_6POINT | TPF_NOSHADOW | TPF_CENTER);
-
-            TBCUpgrade->Set_Text("Sell");
-            TBCUpgrade->Set_Style(TPF_6POINT | TPF_NOSHADOW | TPF_CENTER);
-
-            TBCZoom->Set_Text("Map");
-            TBCZoom->Set_Style(TPF_6POINT | TPF_NOSHADOW | TPF_CENTER);
-
-            Repair->X = 242;
-            Repair->Y = 80;
-            Repair->Width = 32;
-            Repair->Height = 9;
-
-            Upgrade->X = Repair->X + Repair->Width + 2;
-            Upgrade->Y = Repair->Y;
-            Upgrade->Width = 20;
-            Upgrade->Height = Repair->Height;
-
-            Zoom->X = Upgrade->X + Upgrade->Width + 2;
-            Zoom->Y = Upgrade->Y;
-            Zoom->Width = 20;
-            Zoom->Height = Upgrade->Height;
-        }
-
-        Repair->IsSticky = true;
-        Repair->ID = BUTTON_REPAIR;
-        Repair->IsPressed = false;
-        Repair->IsToggleType = true;
-
-        Upgrade->IsSticky = true;
-        Upgrade->ID = BUTTON_UPGRADE;
-        Upgrade->IsPressed = false;
-        Upgrade->IsToggleType = true;
-
-        Zoom->IsSticky = true;
-        Zoom->ID = BUTTON_ZOOM;
-        Zoom->IsPressed = false;
-
-        if (IsRadarActive || GameToPlay != GAME_NORMAL) {
-            Zoom->Enable();
-        } else {
-            Zoom->Disable();
-        }
-
-        Set_Font(oldfont);
-        FontXSpacing = oldx;
-        FontXSpacing = -1;
-
-        Column[0].Init_IO(0);
-        Column[1].Init_IO(1);
-
-        /*
-        ** If a game was loaded & the sidebar was enabled, pop it up now
-        */
-        if (IsSidebarActive) {
-            IsSidebarActive = false;
-            Activate(1);
-            //			Background.Zap();
-            //			Add_A_Button(Background);
-        }
-    }
 }
 
 /***********************************************************************************************
@@ -763,68 +651,11 @@ void SidebarClass::Draw_It(bool complete)
 {
     PowerClass::Draw_It(complete);
 
-    if (IsSidebarActive && (IsToRedraw || complete) && !Debug_Map) {
-        IsToRedraw = false;
-
-        if (LogicPage->Lock()) {
-            /*
-            **	Draw the outline box around the sidebar buttons.
-            */
-            // CC_Draw_Shape(SidebarShape1, (int)complete, SideX, 158, WINDOW_MAIN, SHAPE_WIN_REL);
-            // CC_Draw_Shape(SidebarShape2, (int)complete, SideX, 158+118, WINDOW_MAIN, SHAPE_WIN_REL);
-
-            if (Get_Resolution_Factor() == 0) {
-                if (complete) {
-                    LogicPage->Fill_Rect(
-                        SideX + Map.PowWidth, SideY, SideX + SideWidth - 1, SideY + SideHeight - 1, LTGREY);
-
-                    // Draw rectangle covering "Repair", "Sell", and "Map Buttons"
-                    LogicPage->Fill_Rect(SideX, SideY - 1, SideX + SideWidth, SideY + TopHeight - 1, LTGREY);
-                }
-
-                // Draw a small rectangle strip between sidebar button strip to
-                // erase helpbox messages when mouse is moved from the right
-                // strip.
-                LogicPage->Fill_Rect(Column[0].X + Column[0].ObjectWidth + 1,
-                                     SideY + TopHeight + 1,
-                                     Column[1].X,
-                                     SideY + SideHeight - 1,
-                                     LTGREY);
-
-                Draw_Box(SideX + Map.PowWidth,
-                         SideY + TopHeight,
-                         SideWidth - Map.PowWidth,
-                         SideHeight - TopHeight,
-                         BOXSTYLE_RAISED,
-                         false);
-            } else {
-                LogicPage->Draw_Line(SideX, 157, SeenBuff.Get_Width() - 1, 157, 0);
-                CC_Draw_Shape(SidebarShape1, 0, SideX, 158, WINDOW_MAIN, SHAPE_WIN_REL);
-                CC_Draw_Shape(SidebarShape2, 0, SideX, 158 + 118, WINDOW_MAIN, SHAPE_WIN_REL);
-            }
-
-            //  Repair.Draw_Me(true);
-            //  Upgrade.Draw_Me(true);
-            //  Zoom.Draw_Me(true);
-            //	} else {                                                                                                        \
-    //		if (IsToRedraw || complete) {                                                                                  \
-    //			LogicPage->Fill_Rect(TacPixelX + Lepton_To_Pixel(TacLeptonWidth), SIDE_Y, 319, SIDE_Y+TOP_HEIGHT,             \
-    //BLACK);                                                                                                          \
-    //		}
-
-            LogicPage->Unlock();
-        }
-    }
-    /*
-    **	Draw the side strip elements by calling their respective draw functions.
-    */
     if (IsSidebarActive) {
-        Column[0].Draw_It(complete);
-        Column[1].Draw_It(complete);
-        Repair->Draw_Me(true);
-        Upgrade->Draw_Me(true);
-        Zoom->Draw_Me(true);
-    }
+		if (SpecialDialog == SDLG_NONE) {
+			ColorListInstance1->Draw_Me(true);
+		}
+	}
 
     IsToRedraw = false;
 }
@@ -930,6 +761,18 @@ void SidebarClass::AI(KeyNumType& input, int x, int y)
 
             Flag_To_Redraw(false);
         }
+
+        if (input == (BUTTON_COLORLIST|KN_BUTTON)) {
+			if (SpecialDialog == SDLG_NONE) {
+				ColorListInstance1->Draw_Me(true);
+			}
+		}
+
+		if(!Timer1.Time()) {
+			Color_List_Reset();
+			ColorListInstance1->Draw_Me(true);
+			Timer1.Set(900, true);
+		}
     }
 
     if ((!IsRepairMode) && Repair && Repair->IsOn) {
@@ -1050,34 +893,21 @@ bool SidebarClass::Activate(int control)
         **	activate it on the left side of the screen.
         */
         if (IsSidebarActive /*&& X*/) {
-            Set_View_Dimensions(0, Map.Get_Tab_Height(), SeenBuff.Get_Width() - sidewidth);
-            IsToRedraw = true;
-            Help_Text(TXT_NONE);
-            Repair->Zap();
-            Add_A_Button(*Repair);
-            Upgrade->Zap();
-            Add_A_Button(*Upgrade);
-            Zoom->Zap();
-            Add_A_Button(*Zoom);
-            Column[0].Activate();
-            Column[1].Activate();
-            Background.Zap();
-            Add_A_Button(Background);
-            Map.RadarButton.Zap();
-            Add_A_Button(Map.RadarButton);
-            Map.PowerButton.Zap();
-            Add_A_Button(Map.PowerButton);
-        } else {
-            Help_Text(TXT_NONE);
-            Set_View_Dimensions(0, Map.Get_Tab_Height());
-            Remove_A_Button(*Repair);
-            Remove_A_Button(*Upgrade);
-            Remove_A_Button(*Zoom);
-            Remove_A_Button(Background);
-            Column[0].Deactivate();
-            Column[1].Deactivate();
-            Remove_A_Button(Map.RadarButton);
-            Remove_A_Button(Map.PowerButton);
+            if (WDTRadarAdded) {
+				RadarButton.Zap();
+				Add_A_Button(RadarButton);
+			}
+			Help_Text(TXT_NONE);
+			Set_View_Dimensions(0, Map.Get_Tab_Height(), SeenBuff.Get_Width() - sidewidth);
+			ColorListInstance1->Zap();
+			Add_A_Button(*ColorListInstance1);
+		} else  {
+			if (WDTRadarAdded) {
+				Remove_A_Button(RadarButton);
+			}			
+			Help_Text(TXT_NONE);
+			Set_View_Dimensions(0, Map.Get_Tab_Height());
+			Remove_A_Button(*ColorListInstance1);
         }
 
         /*
@@ -1085,6 +915,7 @@ bool SidebarClass::Activate(int control)
         **	will be rendered correctly.
         */
         Flag_To_Redraw(true);
+        Map.IsToDrawUnknown = true;
     }
 
     return (old);
@@ -1770,9 +1601,7 @@ void SidebarClass::StripClass::Draw_It(bool complete)
         /*
         ** New sidebar needs to be drawn not filled
         */
-        if (factor > 0 && BuildableCount < MAX_VISIBLE) {
-            CC_Draw_Shape(LogoShapes, ID, X + 3, Y - 1, WINDOW_MAIN, SHAPE_WIN_REL | SHAPE_NORMAL, 0);
-        }
+        CC_Draw_Shape(LogoShapes, ID, X + 3, Y - 1, WINDOW_MAIN, SHAPE_WIN_REL | SHAPE_NORMAL, 0);
 
         /*
         **	Redraw the scroll buttons.
@@ -2606,6 +2435,402 @@ bool SidebarClass::StripClass::Abandon_Production(int factory)
         IsBuilding = false;
     }
     return (abandon);
+}
+
+// Matching
+void SidebarClass::Color_List_Add_Player(const char *name, HousesType house)
+{
+	char str[80];
+	HouseClass *hptr = HouseClass::As_Pointer(house);
+	int index = Color_List_Find_Entry(name);
+
+	if (index != -1) {
+		ColorListInstance1->Colors[index] = MPlayerTColors[hptr->RemapColor];
+
+		if (!OfflineMode && Options.IsVerbose && Frame > 60) {
+			sprintf(str, Text_String(TXT_HAS_JOINED_GAME), name);
+			Messages.Add_Message(str, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
+			Flag_To_Redraw(false);
+		}
+
+		Color_List_Toggle_Spectator(name, false);
+	} else {
+		char *item;
+		if (ColorListInstance1->Count() > 60) {
+			for (index = 0; index < ColorListInstance1->Count(); index++) {
+				if (ColorListInstance1->Colors[index] == 13) {
+					item = (char *)ColorListInstance1->Get_Item(index);
+					ColorListInstance1->Remove_Item(item);
+					delete[] item;
+					break;
+				}
+			}
+		}
+
+		item = new char[80];
+		sprintf(item, " %s \t0", name);
+		ColorListInstance1->Add_Item(item, MPlayerTColors[hptr->RemapColor]);
+
+		if (IsSidebarActive) {
+			if (SpecialDialog == SDLG_NONE) {
+				ColorListInstance1->Draw_Me(true);
+			}
+		}
+
+		if (!OfflineMode && Options.IsVerbose && Frame > 60) {
+			sprintf(str, Text_String(TXT_HAS_JOINED_GAME), name);
+			Messages.Add_Message(str, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
+			Flag_To_Redraw(false);
+		}
+	}
+}
+
+// Matching
+void SidebarClass::Color_List_Remove_Player(const char *name)
+{
+	char str[80];
+	int index = Color_List_Find_Entry(name);
+
+	if (index != -1) {
+		ColorListInstance1->Colors[index] = 13;
+
+		if (Options.IsVerbose && Frame > 60) {
+			sprintf(str, Text_String(TXT_HAS_LEFT_GAME), name);
+			Messages.Add_Message(str, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
+			Flag_To_Redraw(false);
+		}
+
+		Color_List_Toggle_Spectator(name, false);
+
+		if (IsSidebarActive) {
+			if (SpecialDialog == SDLG_NONE) {
+				ColorListInstance1->Draw_Me(true);
+			}
+		}
+	}
+}
+
+extern bool DebugLogTeams; // CONQUER.CPP
+// Matching
+void SidebarClass::Color_List_Add_Teams(void)
+{
+	if (GameParams.NumTeams >= 2) {
+		if (DebugLogTeams) {
+			char msg[300];
+			sprintf(msg, "*SidebarClass::Add_Teams\n");
+			CCDebugString(msg);
+		}
+
+		char *team1 = new char[80];
+
+		if (GameParams.NumTeams > 0) {
+			sprintf(team1, " * %s \t%d", Text_String(TXT_BLUE), TeamScores[0]);
+			ColorListInstance1->Add_Item(team1, MPlayerTColors[2]);
+		}
+
+		char *team2 = new char[80];
+
+		if (GameParams.NumTeams > 1) {
+			sprintf(team2, " * %s \t%d", Text_String(TXT_ORANGE), TeamScores[1]);
+			ColorListInstance1->Add_Item(team2, MPlayerTColors[3]);
+		}
+
+		char *team3 = new char[80];
+
+		if (GameParams.NumTeams > 2) {
+			sprintf(team3, " * %s \t%d", Text_String(TXT_GREEN), TeamScores[2]);
+			ColorListInstance1->Add_Item(team3, MPlayerTColors[4]);
+		}
+
+		char *team4 = new char[80];
+
+		if (GameParams.NumTeams > 3) {
+			sprintf(team4, " * %s \t%d", Text_String(TXT_GREY), TeamScores[3]);
+			ColorListInstance1->Add_Item(team4, MPlayerTColors[5]);
+		}
+
+		if (IsSidebarActive) {
+			if (SpecialDialog == SDLG_NONE) {
+				ColorListInstance1->Draw_Me(true);
+			}
+		}
+	}
+}
+
+// Matching
+void SidebarClass::Color_List_Draw_Points(int index)
+{
+	char str[100];
+	const char *item;
+	char *score_str;
+	int entry;
+	int score;
+
+	if (GameParams.NumTeams < 2) {
+		return;
+	}
+
+	switch (index) {
+		case 0:
+			sprintf(str, "* %s", Text_String(TXT_BLUE));
+			break;
+		case 1:
+			sprintf(str, "* %s", Text_String(TXT_ORANGE));
+			break;
+		case 2:
+			sprintf(str, "* %s", Text_String(TXT_GREEN));
+			break;
+		case 3:
+			sprintf(str, "* %s", Text_String(TXT_GREY));
+			break;
+	}
+
+	score = TeamScores[index];
+	entry = Color_List_Find_Entry(str);
+
+	if (entry == -1) {
+		return;
+	}
+
+	/*
+	** Retrieve list string and update the score text.
+	*/
+	item = ColorListInstance1->Get_Item(entry);
+	score_str = strchr((char *)item, '\t');
+	score_str++;
+	sprintf(score_str, "%d", score);
+
+	if (OfflineMode) {
+		sprintf(score_str, "%d", OfflinePoints);
+	}
+
+	if (IsSidebarActive) {
+		if (SpecialDialog == SDLG_NONE) {
+			ColorListInstance1->Draw_Me(true);
+		}
+	}
+}
+
+// Matching
+void SidebarClass::Color_List_Update_Points(const char *name, int points)
+{
+	int entry = Color_List_Find_Entry(name);
+	const char *item;
+	char *score_str;
+
+	if (entry == -1) {
+		return;
+	}
+
+	item = ColorListInstance1->Get_Item(entry);
+	score_str = strchr((char *)item, '\t');
+	score_str++;
+	sprintf(score_str, "%d", points);
+
+	if (OfflineMode) {
+		sprintf(score_str, "%d", OfflinePoints);
+	}
+
+	if (IsSidebarActive) {
+		if (SpecialDialog == SDLG_NONE) {
+			ColorListInstance1->Draw_Me(true);
+		}
+	}
+}
+
+// Matching
+void SidebarClass::Color_List_Clear(void)
+{
+	const char *entry;
+
+	while (ColorListInstance1->Count()) {
+		entry = ColorListInstance1->Get_Item(0);
+		ColorListInstance1->Remove_Item(entry);
+		delete[] (char *)entry;
+	}
+}
+
+// Matching
+void SidebarClass::Color_List_Flag_To_Redraw(void)
+{
+	// TODO Rename as this looks like it clears redrawn rather than flags to redraw.
+	const char *entry;
+	int index;
+
+	for (index = 0; index < ColorListInstance1->Count(); index++) {
+		if (ColorListInstance1->Colors[index] == 13) {
+			entry = ColorListInstance1->Get_Item(index);
+			ColorListInstance1->Remove_Item(entry);
+			delete[] (char *)entry;
+			index--;
+		}
+	}
+}
+
+// Matching
+void SidebarClass::Color_List_Reset(void)
+{
+	int max_score;
+	int max_index;
+	int index;
+	char *entry;
+	char *score_str;
+	int score;
+	int count;
+
+	max_score = 0;
+
+	for (index = 0; index < ColorListInstance2->Count(); index++) {
+		entry = (char *)ColorListInstance1->Get_Item(0);
+		ColorListInstance1->Remove_Item(entry);
+		delete[] entry;
+	}
+
+	count = 0;
+
+	for (index = 0; index < ColorListInstance1->Count(); index++) {
+		entry = (char *)ColorListInstance1->Get_Item(index);
+		if (*entry != '(' && ColorListInstance1->Colors[index] != 13) {
+			count++;
+		}
+	}
+
+	while (count > 0) {
+		max_score = -1;
+		max_index = 0;
+
+		for (index = 0; index < ColorListInstance1->Count(); index++) {
+			entry = (char *)ColorListInstance1->Get_Item(index);
+
+			if (*entry != '(' && ColorListInstance1->Colors[index] != 13) {
+				score_str = strchr(entry, '\t');
+				score_str++;
+				score = atoi(score_str);
+
+				if (score > max_score) {
+					max_score = score;
+					max_index = index;
+				}
+			}
+		}
+
+		entry = (char *)ColorListInstance1->Get_Item(max_index);
+		ColorListInstance2->Add_Item(entry, ColorListInstance1->Colors[max_index]);
+		ColorListInstance1->Remove_Item(entry);
+		count--;
+	}
+
+	count = 0;
+
+	for (index = 0; index < ColorListInstance1->Count(); index++) {
+		entry = (char *)ColorListInstance1->Get_Item(index); // TODO, copy/paste error?
+
+		if (ColorListInstance1->Colors[index] != 13) {
+			count++;
+		}
+	}
+
+	while (count > 0) {
+		max_score = -1;
+		max_index = 0;
+
+		for (index = 0; index < ColorListInstance1->Count(); index++) {
+			entry = (char *)ColorListInstance1->Get_Item(index);
+
+			if (ColorListInstance1->Colors[index] != 13) {
+				score_str = strchr(entry, '\t');
+				score_str++;
+				score = atoi(score_str);
+
+				if (score > max_score) {
+					max_score = score;
+					max_index = index;
+				}
+			}
+		}
+
+		entry = (char *)ColorListInstance1->Get_Item(max_index);
+		ColorListInstance2->Add_Item(entry, ColorListInstance1->Colors[max_index]);
+		ColorListInstance1->Remove_Item(entry);
+		count--;
+	}
+
+	while (ColorListInstance1->Count() > 0) {
+		max_score = -1;
+		max_index = 0;
+
+		for (index = 0; index < ColorListInstance1->Count(); index++) {
+			entry = (char *)ColorListInstance1->Get_Item(index);
+			score_str = strchr(entry, '\t');
+			score_str++;
+			score = atoi(score_str);
+
+			if (score > max_score) {
+				max_score = score;
+				max_index = index;
+			}
+		}
+
+		entry = (char *)ColorListInstance1->Get_Item(max_index);
+		ColorListInstance2->Add_Item(entry, ColorListInstance1->Colors[max_index]);
+		ColorListInstance1->Remove_Item(entry);
+		count--; // TODO Copy/Paste error in original?
+	}
+
+	while (ColorListInstance2->Count() > 0) {
+		entry = (char *)ColorListInstance2->Get_Item(0);
+		ColorListInstance1->Add_Item(entry, ColorListInstance2->Colors[0]);
+		ColorListInstance2->Remove_Item(entry);
+	}
+}
+
+// Matching
+int SidebarClass::Color_List_Find_Entry(const char *name)
+{
+	int index;
+	const char *entry;
+	char delim_char;
+	char tab_char;
+
+	for (index = 0; index < ColorListInstance1->Count(); index++) {
+		entry = ColorListInstance1->Get_Item(index);
+		delim_char = entry[strlen(name) + 1];
+		tab_char = entry[strlen(name) + 2];
+
+		if (strnicmp(entry + 1, name, strlen(name)) == 0 &&
+			(delim_char == ')' || delim_char == ' ') &&
+			tab_char == '\t') {
+			return index;
+		}
+	}
+
+	return -1;
+}
+
+// Matching
+void SidebarClass::Color_List_Toggle_Spectator(const char *name, bool state)
+{
+	int index;
+	char *name_start;
+	char *name_end;
+
+	index = Color_List_Find_Entry(name);
+
+	if (index == -1) {
+		return;
+	}
+
+	name_start = (char *)ColorListInstance1->Get_Item(index);
+	name_end = strchr(name_start, '\t');
+	name_end--;
+
+	if (state) {
+		*name_start = '(';
+		*name_end = ')';
+	} else {
+		*name_start = ' ';
+		*name_end = ' ';
+	}
 }
 
 /***********************************************************************************************

@@ -624,19 +624,19 @@ void ScoreClass::Presentation(void)
         sprintf(inter_pal, "SNODPAL1.PAL");
     }
 
-    if (Special.IsJurassic && AreThingiesEnabled)
+    if (Special.IsJurassic)
         return;
 
     PseudoSeenBuff = new GraphicBufferClass(320, 200, (void*)NULL);
     TextPrintBuffer = new GraphicBufferClass(SeenBuff.Get_Width(), SeenBuff.Get_Height(), (void*)NULL);
     TextPrintBuffer->Clear();
     BlitList.Clear();
-    Disable_Uncompressed_Shapes();
+    //Disable_Uncompressed_Shapes();
 
     ControlQ = 0;
     FontXSpacing = 0;
     Map.Override_Mouse_Shape(MOUSE_NORMAL);
-    Theme.Queue_Song(THEME_WIN1);
+    Theme.Queue_Song(THEME_MAP1);
 
     VisiblePage.Clear();
     PseudoSeenBuff->Clear();
@@ -998,7 +998,7 @@ void ScoreClass::Presentation(void)
             delete ScoreObjs[i];
             ScoreObjs[i] = 0;
         }
-    Fade_Palette_To(BlackPalette, FADE_PALETTE_FAST, NULL);
+    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, NULL);
     VisiblePage.Clear();
 
     Show_Mouse();
@@ -1006,7 +1006,7 @@ void ScoreClass::Presentation(void)
 
     Theme.Queue_Song(THEME_NONE);
 
-    Fade_Palette_To(BlackPalette, FADE_PALETTE_FAST, NULL);
+    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, NULL);
     VisiblePage.Clear();
     Set_Palette(GamePalette);
 
@@ -1014,13 +1014,13 @@ void ScoreClass::Presentation(void)
     FontXSpacing = oldfontxspacing;
     ControlQ = 0;
 
-    Set_Logic_Page(SeenBuff);
+    //Set_Logic_Page(SeenBuff);
 
     delete PseudoSeenBuff;
     delete TextPrintBuffer;
     TextPrintBuffer = NULL;
     BlitList.Clear();
-    Enable_Uncompressed_Shapes();
+    //Enable_Uncompressed_Shapes();
 }
 
 // ST = 12/17/2018 5:44PM
@@ -1039,32 +1039,6 @@ void Cycle_Wait_Click(void)
 
     Keyboard->Clear();
     while (minclicks || (!Keyboard->Check() && !ControlQ)) {
-
-        if (GameToPlay == GAME_NULL_MODEM || GameToPlay == GAME_MODEM) {
-            // GameToPlay == GAME_INTERNET) {
-// PG_TO_FIX
-#if (0)
-            //
-            // send a timing packet if enough time has gone by.
-            //
-            if ((WinTickCount.Time() - timingtime) > PACKET_TIMING_TIMEOUT) {
-                sendpacket.Command = SERIAL_SCORE_SCREEN;
-                sendpacket.ResponseTime = NullModem.Response_Time();
-                sendpacket.ID = ModemGameToPlay;
-
-                NullModem.Send_Message(&sendpacket, sizeof(sendpacket), 0);
-                timingtime = WinTickCount.Time();
-            }
-
-            if (NullModem.Get_Message(&receivepacket, &packetlen) > 0) {
-                // throw packet away
-                packetlen = packetlen;
-            }
-
-            NullModem.Service();
-#endif
-        }
-
         Call_Back_Delay(1);
         if (minclicks) {
             minclicks--;
@@ -1652,10 +1626,9 @@ void ScoreClass::Input_Name(char str[], int xpos, int ypos, char const pal[])
 
                     int xposindex6 = xpos + (index * 6);
 
-                    PseudoSeenBuff->Fill_Rect(xposindex6, ypos, xposindex6 + 6, ypos + 6, TBLACK);
-                    SysMemPage.Fill_Rect(xposindex6, ypos, xposindex6 + 6, ypos + 6, TBLACK);
-                    TextPrintBuffer->Fill_Rect(
-                        xposindex6 * factor, ypos * factor, (xposindex6 + 6) * factor, (ypos + 6) * factor, BLACK);
+                    PseudoSeenBuff->Fill_Rect(xposindex6, ypos, xposindex6 + 5, ypos + 6, TBLACK);
+                    SysMemPage.Fill_Rect(xposindex6, ypos, xposindex6 + 5, ypos + 6, TBLACK);
+                    TextPrintBuffer->Fill_Rect(xposindex6 * 2, ypos * 2, (xposindex6 + 5) * 2, (ypos + 6) * 2, BLACK);
                 }
 
             } else if (key != KN_RETURN && key != KN_KEYPAD_RETURN) {
@@ -1663,13 +1636,10 @@ void ScoreClass::Input_Name(char str[], int xpos, int ypos, char const pal[])
                 if (ascii >= 'a' && ascii <= 'z')
                     ascii = static_cast<KeyASCIIType>(ascii - ('a' - 'A'));
                 if ((ascii >= '!' && ascii <= KA_TILDA) || ascii == ' ') {
-                    PseudoSeenBuff->Fill_Rect(xpos + (index * 6), ypos, xpos + (index * 6) + 6, ypos + 5, TBLACK);
-                    SysMemPage.Fill_Rect(xpos + (index * 6), ypos, xpos + (index * 6) + 6, ypos + 5, TBLACK);
-                    TextPrintBuffer->Fill_Rect(factor * (xpos + (index * 6)),
-                                               ypos * factor,
-                                               factor * (xpos + (index * 6) + 6),
-                                               factor * (ypos + 6),
-                                               BLACK);
+                    PseudoSeenBuff->Fill_Rect(xpos + (index * 6), ypos, xpos + (index * 6) + 5, ypos + 5, TBLACK);
+                    SysMemPage.Fill_Rect(xpos + (index * 6), ypos, xpos + (index * 6) + 5, ypos + 5, TBLACK);
+                    TextPrintBuffer->Fill_Rect(
+                        2 * (xpos + (index * 6)), ypos * 2, 2 * (xpos + (index * 6) + 5), 2 * (ypos + 6), BLACK);
                     str[index] = ascii;
                     str[index + 1] = 0;
 
@@ -1992,141 +1962,4 @@ char* Int_Print(int a)
  *=============================================================================================*/
 void Multi_Score_Presentation(void)
 {
-    static unsigned char const _cycleyellowpal[] = {
-        0x0, 0xec, 0xEb, 0xea, 0xE9, 0xe9, 0xE9, 0x0, 0xE9, 0x0, 0x0, 0x0, 0x0, 0x0, 0xED, 0x0};
-
-    static unsigned char const _greenpal[] = {
-        0x0, 0x12, 0x14, 0x16, 0x18, 0x18, 0x18, 0x0, 0x18, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10, 0x0};
-    static unsigned char const _redpal[] = {
-        0x0, 0x22, 0x24, 0x26, 0x28, 0x28, 0x28, 0x0, 0x28, 0x0, 0x0, 0x0, 0x0, 0x0, 0x20, 0x0};
-    static unsigned char const _graypal[] = {
-        0x0, 0xca, 0xCb, 0xcc, 0xCd, 0xcd, 0xCd, 0x0, 0xCD, 0x0, 0x0, 0x0, 0x0, 0x0, 0xC8, 0x0};
-    static unsigned char const _orangepal[] = {
-        0x0, 0xd1, 0xD2, 0xd3, 0xD4, 0xd4, 0xD4, 0x0, 0xD4, 0x0, 0x0, 0x0, 0x0, 0x0, 0xD0, 0x0};
-    static unsigned char const _bluepal[] = {
-        0x0, 0x2, 0x0a, 0xb, 0x0b, 0xb, 0x0B, 0x0, 0x0B, 0x0, 0x0, 0x0, 0x0, 0x0, 0x09, 0x0};
-    static unsigned char const _yellowpal[] = {
-        0x0, 0x5, 0xee, 0xf1, 0xf2, 0xf2, 0xF2, 0xf2, 0xF2, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7D, 0x0};
-
-    // static char const _greenpal[]= {0x0,0x0,0x12,0x0,0x14,0x0,0x16,0x0,0x18,0x0,0x0,0x0,0x0,0x0,0x10,0x0};
-    // static char const _redpal[]=   {0x0,0x0,0x22,0x0,0x24,0x0,0x26,0x0,0x28,0x0,0x0,0x0,0x0,0x0,0x20,0x0};
-    // static char const _graypal[]=  {0x0,0x0,0xCA,0x0,0xCB,0x0,0xCC,0x0,0xCD,0x0,0x0,0x0,0x0,0x0,0xC8,0x0};
-    // static char const _orangepal[]={0x0,0x0,0xD1,0x0,0xD2,0x0,0xD3,0x0,0xD4,0x0,0x0,0x0,0x0,0x0,0xD0,0x0};
-    // static char const _bluepal[]=  {0x0,0x0,0x02,0x0,0x0A,0x0,0x0B,0x0,0x0B,0x0,0x0,0x0,0x0,0x0,0x09,0x0};
-    // static char const _yellowpal[]={0x0,0x0,0x05,0x0,0xEE,0x0,0xF1,0x0,0xF2,0x0,0x0,0x0,0x0,0x0,0x7D,0x0};
-
-    static unsigned char const* _colors[] = {_yellowpal, _redpal, _bluepal, _orangepal, _greenpal, _graypal};
-
-    int i, k;
-    void *oldfont, *anim;
-    int oldfontxspacing = FontXSpacing;
-    char const* pal;
-
-    FontXSpacing = 0;
-    Map.Override_Mouse_Shape(MOUSE_NORMAL);
-    Theme.Queue_Song(THEME_WIN1);
-
-    PseudoSeenBuff = new GraphicBufferClass(320, 200, (void*)NULL);
-    TextPrintBuffer = new GraphicBufferClass(SeenBuff.Get_Width(), SeenBuff.Get_Height(), (void*)NULL);
-    BlitList.Clear();
-
-    SysMemPage.Clear();
-    PseudoSeenBuff->Clear();
-    HiddenPage.Clear();
-    TextPrintBuffer->Clear();
-
-    Set_Palette(BlackPalette);
-
-    anim = Open_Animation("MLTIPLYR.WSA", NULL, 0L, (WSAOpenType)(WSA_OPEN_FROM_MEM | WSA_OPEN_TO_PAGE), Palette);
-    Hide_Mouse();
-
-    /*
-    ** Display the background animation
-    */
-    VisiblePage.Clear();
-    InterpolationPaletteChanged = true;
-    InterpolationPalette = Palette;
-    Increase_Palette_Luminance(Palette, 30, 30, 30, 63);
-    Animate_Frame(anim, *PseudoSeenBuff, 1);
-    Interpolate_2X_Scale(PseudoSeenBuff, &SeenBuff, "MULTSCOR.PAL", Settings.Video.InterpolationMode);
-    Fade_Palette_To(Palette, FADE_PALETTE_FAST, Call_Back);
-
-    int frame = 1;
-    while (frame < Get_Animation_Frame_Count(anim)) {
-        Animate_Frame(anim, *PseudoSeenBuff, frame++);
-        Call_Back_Delay(2);
-    }
-    Close_Animation(anim);
-
-    /* Change to the six-point font for Text_Print */
-    oldfont = Set_Font(ScoreFontPtr);
-    Call_Back();
-
-    Set_Logic_Page(*PseudoSeenBuff);
-
-    /*
-    ** Move all the scores over a notch if there's more games than can be
-    ** shown (which is known by MPlayerCurGame == MAX_MULTI_GAMES-1);
-    */
-    if (MPlayerCurGame == MAX_MULTI_GAMES - 1) {
-        for (i = 0; i < MAX_MULTI_NAMES; i++) {
-            for (k = 0; k < MAX_MULTI_GAMES - 1; k++) {
-                MPlayerScore[i].Kills[k] = MPlayerScore[i].Kills[k + 1];
-            }
-        }
-    }
-
-    int y = 41;
-    for (i = 0; i < MAX_MULTI_NAMES; i++) {
-        if (strlen(MPlayerScore[i].Name)) {
-            pal = (const char*)_colors[MPlayerScore[i].Color];
-
-            Alloc_Object(new ScorePrintClass(MPlayerScore[i].Name, 15, y, pal));
-            Call_Back_Delay(20);
-
-            Alloc_Object(new ScorePrintClass(Int_Print(MPlayerScore[i].Wins), 118, y, pal));
-            Call_Back_Delay(6);
-
-            for (k = 0; k <= MIN(MPlayerCurGame, MAX_MULTI_GAMES - 2); k++) {
-                if (MPlayerScore[i].Kills[k] >= 0) {
-                    Alloc_Object(new ScorePrintClass(Int_Print(MPlayerScore[i].Kills[k]), 225 + (24 * k), y, pal));
-                    Call_Back_Delay(6);
-                }
-            }
-            y += 12;
-        }
-    }
-
-#if (FRENCH)
-    Alloc_Object(
-        new ScorePrintClass(TXT_MAP_CLICK2, 90 /*(320-strlen(Text_String(TXT_MAP_CLICK2)))/2*/, 185, _cycleyellowpal));
-#else
-    Alloc_Object(
-        new ScorePrintClass(TXT_MAP_CLICK2, 109 /*(320-strlen(Text_String(TXT_MAP_CLICK2)))/2*/, 185, _cycleyellowpal));
-#endif
-    Cycle_Wait_Click();
-
-    /* get rid of all the animating objects */
-    for (i = 0; i < MAXSCOREOBJS; i++)
-        if (ScoreObjs[i]) {
-            delete ScoreObjs[i];
-            ScoreObjs[i] = 0;
-        }
-
-    Theme.Queue_Song(THEME_NONE);
-
-    Fade_Palette_To(BlackPalette, FADE_PALETTE_FAST, NULL);
-    VisiblePage.Clear();
-    Set_Palette(GamePalette);
-
-    Set_Logic_Page(SeenBuff);
-
-    delete PseudoSeenBuff;
-    delete TextPrintBuffer;
-    BlitList.Clear();
-
-    Set_Font(oldfont);
-    FontXSpacing = oldfontxspacing;
-    ControlQ = 0;
-    Show_Mouse();
 }

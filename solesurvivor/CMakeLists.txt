@@ -104,10 +104,14 @@ set(SURVIVOR_SRC
     score.cpp
     scroll.cpp
     sdata.cpp
+    serverres.cpp
+    serverstats.cpp
     shapebtn.cpp
     sidebar.cpp
+    singlep.cpp
     slider.cpp
     smudge.cpp
+    solehelp.cpp
     sounddlg.cpp
     special.cpp
     startup.cpp

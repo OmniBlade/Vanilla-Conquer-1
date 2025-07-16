@@ -49,8 +49,8 @@ public:
                     h,
                     TPF_6PT_GRAD | TPF_NOSHADOW,
                     Hires_Retrieve("BTN-UP.SHP"),
-                    Hires_Retrieve("BTN-DN.SHP")){};
-    virtual ~MusicListClass(void){};
+                    Hires_Retrieve("BTN-DN.SHP")) {};
+    virtual ~MusicListClass(void) {};
 
 protected:
     virtual void Draw_Entry(int index, int x, int y, int width, int selected);
@@ -81,11 +81,7 @@ int SoundControlsClass::Init(void)
     Play_Y = 129 * factor;
 
     OnOff_Width = 25 * factor;
-#ifdef GERMAN
     Shuffle_X = 79 * factor;
-#else
-    Shuffle_X = 91 * factor;
-#endif
 
     Shuffle_Y = 130 * factor;
 
@@ -134,17 +130,11 @@ void SoundControlsClass::Process(void)
     **	Return to options menu button.
     */
     TextButtonClass returnto(BUTTON_OPTIONS,
-                             TXT_OPTIONS_MENU,
+                             TXT_GAME_CONTROLS,
                              TPF_6PT_GRAD | TPF_NOSHADOW,
-#ifdef FRENCH
                              Option_X + Button_X - 8 * 2,
                              Option_Y + Button_Y,
                              Button_Width + 11 * 2);
-#else
-                             Option_X + Button_X,
-                             Option_Y + Button_Y,
-                             Button_Width);
-#endif
 
     /*
     **	Stop playing button.
@@ -267,8 +257,9 @@ void SoundControlsClass::Process(void)
             if (ptr != nullptr) {
                 snprintf(ptr,
                          100,
-                         "%cTrack %d\t%d:%02d\t%s",
+                         "%c%sTrack %d\t%d:%02d\t%s",
                          index,
+                         Text_String(TXT_TRACK),
                          listbox.Count() + 1,
                          length / 60,
                          length % 60,
@@ -295,7 +286,7 @@ void SoundControlsClass::Process(void)
         /*
         **	Invoke game callback.
         */
-        if (GameToPlay == GAME_NORMAL || GameToPlay == GAME_SKIRMISH) {
+        if (GameToPlay == GAME_NORMAL || OfflineMode) {
             Call_Back();
         } else {
             if (Main_Loop()) {
@@ -449,7 +440,7 @@ void SoundControlsClass::Process(void)
     while (listbox.Count()) {
         char const* ptr = listbox.Get_Item(0);
         listbox.Remove_Item(ptr);
-        delete[](char*) ptr;
+        delete[] (char*)ptr;
     }
 }
 

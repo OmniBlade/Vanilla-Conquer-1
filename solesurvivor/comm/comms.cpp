@@ -130,7 +130,7 @@ void CommStatsClass::Get2(int** a2, int** a3, int** a4, unsigned int** a5)
     }
 }
 
-int Init_Comms_API(HINSTANCE instance)
+int Init_Comms_API(void)
 {
 #ifdef WIN32
     AppInstance = GetModuleHandleA(NULL);

@@ -20,7 +20,7 @@ SettingsClass::SettingsClass()
     ** Video settings
     */
     Video.WindowWidth = 640;
-    Video.WindowHeight = 400;
+    Video.WindowHeight = 480;
     Video.Windowed = false;
     Video.Width = 0;
     Video.Height = 0;

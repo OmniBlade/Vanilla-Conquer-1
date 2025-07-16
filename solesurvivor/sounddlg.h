@@ -67,22 +67,10 @@ class SoundControlsClass
         PLAY_Y = 129,
 
         ONOFF_WIDTH = 25,
-#ifdef GERMAN
         SHUFFLE_X = 79, // BGA:91,
-#else
-#ifdef FRENCH
-        SHUFFLE_X = 99,
-#else
-        SHUFFLE_X = 91,
-#endif
-#endif
         SHUFFLE_Y = 130,
 
-#ifdef FRENCH
-        REPEAT_X = 174,
-#else
         REPEAT_X = 166,
-#endif
         REPEAT_Y = 130,
 
         MSLIDER_X = 147,

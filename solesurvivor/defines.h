@@ -3158,6 +3158,47 @@ typedef struct
 
 #define size_of(typ, id) sizeof(((typ*)0)->id)
 
+#define PACKET_HEADER_SIZE   7
+#define MAX_PACKET_DATA_SIZE 200
+
+/*
+** Sole Survivor Stuff
+*/
+typedef enum SoleArrayType
+{
+    SOLE_ARRAY_STRENGTH,
+    SOLE_ARRAY_DAMAGE,
+    SOLE_ARRAY_SPEED,
+    SOLE_ARRAY_ROF,
+    SOLE_ARRAY_RANGE,
+    SOLE_ARRAY_COUNT,
+} SoleArrayType;
+
+typedef enum WDTCrateType
+{
+    WDT_CRATE_NONE = -1,
+
+    WDT_CRATE_STRENGTH,
+    WDT_CRATE_WEAPON,
+    WDT_CRATE_SPEED,
+    WDT_CRATE_RELOAD,
+    WDT_CRATE_RANGE,
+    WDT_CRATE_HEAL,
+    WDT_CRATE_BOMB,
+    WDT_CRATE_STEALTH,
+    WDT_CRATE_TELEPORT,
+    WDT_CRATE_KILL,
+    WDT_CRATE_UNCLOAK_ALL,
+    WDT_CRATE_RESHOUD,
+    WDT_CRATE_UNSHROUD,
+    WDT_CRATE_RADAR,
+    WDT_CRATE_ARMAGEDDON,
+    WDT_CRATE_SUPER,
+
+    WDT_CRATE_COUNT,
+    WDT_CRATE_FIRST = 0
+} WDTCrateType;
+
 enum TechnoPacketDataType
 {
     TECHNO_PACKET_DATA_0,         // techno bitfield[1] 0x20 flip
@@ -3171,6 +3212,1074 @@ enum TechnoPacketDataType
     TECHNO_PACKET_DATA_ORANGE_CRATE,
     TECHNO_PACKET_DATA_DEMOLITION,
 };
+
+typedef enum PacketType : unsigned char
+{
+    PACKET_EMPTY = 0,
+
+    // Sent:
+    // Recieved:
+    PACKET_CONNECTION,
+
+    // Sent:
+    // Recieved:
+    PACKET_PLAYER_LEAVE,
+
+    // Sent:
+    // Recieved:
+    PACKET_EVENT,
+
+    // Sent:
+    // Recieved:
+    PACKET_GAME_OPTIONS,
+
+    // Sent:
+    // Recieved:
+    PACKET_PLAYER_UNITS,
+
+    // Sent:
+    // Recieved:
+    PACKET_FRAMERATE,
+
+    // Sent:
+    // Recieved:
+    PACKET_GAME_STATE_START,
+
+    // Sent:
+    // Recieved:
+    PACKET_GAME_STATE,
+
+    // Sent:
+    // Recieved:
+    PACKET_GAME_STATE_DONE,
+
+    // Sent:
+    // Recieved:
+    PACKET_HOUSE_UPDATE,
+
+    // Sent:
+    // Recieved:
+    PACKET_NEW_DELETE_OBJ,
+
+    // Sent:
+    // Recieved:
+    PACKET_HEALTH,
+
+    // Sent:
+    // Recieved:
+    PACKET_DAMAGE,
+
+    // Sent:
+    // Recieved:
+    PACKET_SQUISH,
+
+    // Sent:
+    // Recieved:
+    PACKET_CAPTURE,
+
+    // Sent:
+    // Recieved:
+    PACKET_CARGO,
+
+    // Sent:
+    // Recieved:
+    PACKET_FLAG,
+
+    // Sent:
+    // Recieved:
+    PACKET_CTF,
+
+    // Sent:
+    // Recieved:
+    PACKET_MOVE,
+
+    // Sent:
+    // Recieved:
+    PACKET_TARGET,
+
+    // Sent:
+    // Recieved:
+    PACKET_FIRE_AT,
+
+    // Sent:
+    // Recieved:
+    PACKET_DO_TURN,
+
+    // Sent:
+    // Recieved:
+    PACKET_CRATE,
+
+    // Sent:
+    // Recieved:
+    PACKET_PCP,
+
+    // Sent:
+    // Recieved:
+    PACKET_TECHNO,
+
+    // Sent:
+    // Recieved:
+    PACKET_SPECTATOR,
+
+    // Sent:
+    // Recieved:
+    PACKET_GAME_END,
+
+    // Sent:
+    // Recieved:
+    PACKET_SCENARIO_CHANGE,
+
+    // Sent:
+    // Recieved:
+    PACKET_MESSAGE,
+
+    // Sent:
+    // Recieved:
+    PACKET_COMMAND_MESSAGE,
+
+    // Sent:
+    // Recieved:
+    PACKET_SERVER_PASSWORD,
+
+    PACKET_COUNT,
+
+    // Special one-off packet requesting connection, sent in Wait_For_WDT_Connection
+    // when establishing a new Client player.
+    PACKET_REQUEST_CONNECTION = PACKET_CONNECTION + 100
+
+} PacketType;
+
+typedef enum ConnectionType
+{
+    CONN_TCP = 0,
+    CONN_UDP = 255,
+} ConnectionType;
+
+// Comm packet header?
+#pragma pack(push, 1)
+typedef struct PacketHeaderStruct
+{
+    short Size;
+    PacketType Type;
+} PacketHeaderStruct;
+#pragma pack(pop)
+static_assert(sizeof(PacketHeaderStruct) == 3, "PacketHeaderStruct does not match expected size!");
+
+//
+// PACKET_CONNECTION
+//
+#pragma pack(push, 1)
+typedef struct ConnectPacketData
+{
+    char PlayerName[MPLAYER_NAME_MAX];
+    HousesType Side;
+    RTTIType ChosenRTTI;
+    int ChosenType;
+    int field_15;
+    int field_19;
+    int VersionNumber;
+} ConnectPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct ConnectPacketStruct
+{
+    PacketHeaderStruct Header;
+    ConnectPacketData Data;
+} ConnectPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(ConnectPacketStruct) == 33, "ConnectPacketStruct does not match expected size!");
+
+//
+// PACKET_PLAYER_LEAVE
+//
+#pragma pack(push, 1)
+typedef struct PlayerLeavePacketStruct
+{
+    PacketHeaderStruct Header;
+    HousesType House;
+} PlayerLeavePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(PlayerLeavePacketStruct) == 4, "PlayerLeavePacketStruct does not match expected size!");
+
+//
+// PACKET_EVENT
+//
+#pragma pack(push, 1)
+typedef struct EventPacketStruct
+{
+    PacketHeaderStruct Header;
+    int Size;
+    unsigned char Data[MAX_PACKET_DATA_SIZE]; // Compressed!!! event data
+} EventPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(EventPacketStruct) == 207, "EventPacketStruct does not match expected size!");
+
+#pragma pack(push, 4)
+typedef struct GAMEPARAMS
+{
+    int TimeLimit;
+    int ScoreLimit;
+    int LifeLimit;
+    int IsCaptureTheFlag;
+    int Football;
+    int FootballNumFlags;
+    int NumCTFStructures;
+    int NumStartingUnits; // Just a guess, but very well could be.        //    int field_1C;               // Where is this set?
+    int AIUnitsPer10min;
+    int MaxAIUnits;
+    int AIBuildingsPer10min;
+    int MaxAIBuildings;
+    int IsMaxNumAIsScaled;
+    int ResetTeamsInCTF;
+    int AllowFlagSitting;
+    int HealthBars; // 0 = YOU, 1 = YOU and TEAMMATES, 2 = EVERYBODY
+    int FreeRadarForAll;
+    int LosePowerups;
+    int MinPlayers;
+    int IonCannon;
+    int TeamCrates;
+    int SuperSeconds;
+    int ArmageddonTimer;
+
+    unsigned int IsLamerCorrection : 1;
+    unsigned int NoReshroud : 1;
+    unsigned int IsLadderGame : 1;
+    unsigned int IsCrates : 1;
+
+    int Steel;
+    int Green;
+    int Orange;
+    int IsSquadChannel;
+    int PasswordCountdownSeconds;
+    int NumTeams;
+    int PlayersPerTeam;
+    int AllowNoTeam;
+    int AllowPickTeam;
+    char ChannelName[80];
+    int CrateDensityOverride;
+    int IsAutoTeaming;
+    int SuperInvuln;
+
+} GAMEPARAMS;
+#pragma pack(pop)
+static_assert(sizeof(GAMEPARAMS) == 0xE0, "GAMEPARAMS does not match expected size!");
+
+//
+// PACKET_GAME_OPTIONS
+//
+#pragma pack(push, 1)
+typedef struct GameOptionsPacketData
+{
+    unsigned char LocalID; // HouseClass heap ID.
+    HousesType House;      // ActsLike, used for teams?
+    unsigned int PrefColor;
+
+    unsigned char Scenario;
+    unsigned int Credits;
+
+    unsigned int Bases : 1;
+    unsigned int Tiberium : 1;
+    unsigned int Goodies : 1;
+    unsigned int Bit1_pad : 29;
+    //unsigned int Bit1_8:1;    // Might be Ghosts? But cleared by Client anyways.
+
+    unsigned char BuildLevel;
+    unsigned char UnitCount;
+
+    unsigned int Special;
+
+    GAMEPARAMS GameParams;
+
+    unsigned int GameTime;
+
+    unsigned Bit2_1 : 1; // looks to stop mega missions in EventClass?
+    unsigned Bit2_pad : 31;
+    //unsigned Bit2_2:1;
+    //unsigned Bit2_4:1;
+    //unsigned Bit2_8:1;
+
+    unsigned int TeamScore[4];
+
+    unsigned char WeaponAttack[WEAPON_COUNT];
+    unsigned char WeaponROF[WEAPON_COUNT];
+    unsigned int WeaponRange[WEAPON_COUNT];
+} GameOptionsPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct GameOptionsPacketStruct
+{
+    PacketHeaderStruct Header;
+    GameOptionsPacketData Data;
+} GameOptionsPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(GameOptionsPacketStruct) == 422, "GameOptionsPacketStruct does not match expected size!");
+
+//
+// PACKET_PLAYER_UNITS
+//
+#pragma pack(push, 1)
+typedef struct PlayerJoinPacketData
+{
+    char Count;
+    TARGET Objects[MAX_PACKET_DATA_SIZE / sizeof(TARGET)];
+} PlayerJoinPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct PlayerJoinPacketStruct
+{
+    PacketHeaderStruct Header;
+    PlayerJoinPacketData Data;
+} PlayerJoinPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(PlayerJoinPacketStruct) == 204, "PlayerJoinPacketStruct does not match expected size!");
+
+//
+// PACKET_FRAMERATE
+//
+#pragma pack(push, 1)
+typedef struct FrameRatePacketStruct
+{
+    PacketHeaderStruct Header;
+    int FPS;
+} FrameRatePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(FrameRatePacketStruct) == 7, "FrameRatePacketStruct does not match expected size!");
+
+//
+// PACKET_GAME_STATE_START
+//
+#pragma pack(push, 1)
+typedef struct GameStateStartPacketStruct
+{
+    PacketHeaderStruct Header;
+    int DataSize; // The size of the expected packet
+} GameStateStartPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(GameStateStartPacketStruct) == 7, "GameStateStartPacketStruct does not match expected size!");
+
+//
+// PACKET_GAME_STATE
+//
+#pragma pack(push, 1)
+typedef struct GameStatePacketData
+{
+    TARGET Whom;
+    COORDINATE Coord;
+    short Health;
+    HousesType Owner;
+    char Type;
+    char _bit_C; // IsCloakable or IsCloaked
+    char Strength;
+    char Speed;
+    char Damage;
+    char ROF;
+    char Range;
+} GameStatePacketData;
+#pragma pack(pop)
+static_assert(sizeof(GameStatePacketData) == 18, "GameStatePacketData does not match expected size!");
+
+#pragma pack(push, 1)
+typedef struct GameStatePacketStruct
+{
+    PacketHeaderStruct Header;
+    int DataSize; // The size of the expected PACKET_GAME_STATE
+    GameStatePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(GameStatePacketData)];
+    char field_CD; // this is highly suspect but a must for the size to match the array
+    char field_CE;
+} GameStatePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(GameStatePacketStruct) == 207, "GameStatePacketStruct does not match expected size!");
+
+//
+// PACKET_GAME_STATE_DONE
+//
+#pragma pack(push, 1)
+typedef struct GameStateDonePacketStruct
+{
+    PacketHeaderStruct Header;
+    char _Unknown; // never set?
+} GameStateDonePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(GameStateDonePacketStruct) == 4, "GameStateDonePacketStruct does not match expected size!");
+
+//
+// PACKET_HOUSE_UPDATE
+//
+#pragma pack(push, 1)
+typedef struct HouseUpdatePacketData
+{
+    char PlayerName[MPLAYER_NAME_MAX];
+    HousesType ActLike;
+    HousesType House; // HouseClass heap index
+    int Credits;
+    PlayerColorType Color;
+    unsigned int ScoredPoints;
+    int TotalDeaths;
+    unsigned char IsVisionary;
+    TARGET FlagLocation;
+    CELL FlagHome;
+} HouseUpdatePacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct HouseUpdatePacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    HouseUpdatePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(HouseUpdatePacketData)];
+} HouseUpdatePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(HouseUpdatePacketStruct) == 174, "HouseUpdatePacketStruct does not match expected size!");
+
+//
+// PACKET_NEW_DELETE_OBJ
+//
+#pragma pack(push, 1)
+typedef struct NewDeletePacketData
+{
+    char IsDeletePacket;
+    TARGET Whom;
+    COORDINATE Coord;
+    HousesType Owner;
+    MissionType Mission;
+    char Type;
+    char Strength;
+    char Speed;
+    char Damage;
+    char ROF;
+    char Range;
+} NewDeletePacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct NewDeletePacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    NewDeletePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(NewDeletePacketData)];
+} NewDeletePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(NewDeletePacketStruct) == 191, "NewDeletePacketStruct does not match expected size!");
+
+//
+// PACKET_HEALTH
+//
+#pragma pack(push, 1)
+typedef struct HealthPacketData
+{
+    TARGET Whom;
+    unsigned short Health;
+} HealthPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct HealthPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    HealthPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(HealthPacketData)];
+} HealthPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(HealthPacketStruct) == 202, "HealthPacketStruct does not match expected size!");
+
+//
+// PACKET_DAMAGE
+//
+#pragma pack(push, 1)
+typedef struct DamagePacketData
+{
+    TARGET Whom;
+    TARGET Source;
+    WarheadType Warhead;
+} DamagePacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct DamagePacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    DamagePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(DamagePacketData)];
+} DamagePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(DamagePacketStruct) == 202, "DamagePacketStruct does not match expected size!");
+
+//
+// PACKET_SQUISH
+//
+#pragma pack(push, 1)
+typedef struct SquishPacketData
+{
+    TARGET field_0;
+    TARGET field_4;
+} SquishPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct SquishPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    SquishPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(SquishPacketData)];
+} SquishPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(SquishPacketStruct) == 204, "CapturePacketStruct does not match expected size!");
+
+//
+// PACKET_CAPTURE
+//
+#pragma pack(push, 1)
+typedef struct CapturePacketData
+{
+    TARGET Whom;
+    HousesType NewHouse;
+} CapturePacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct CapturePacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    CapturePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CapturePacketData)];
+} CapturePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(CapturePacketStruct) == 204, "CapturePacketStruct does not match expected size!");
+
+//
+// PACKET_CARGO
+//
+#pragma pack(push, 1)
+typedef struct CargoPacketData
+{
+    TARGET Whom;
+    TARGET Cargo;
+    char State;
+} CargoPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct CargoPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    CargoPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CargoPacketData)];
+} CargoPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(CargoPacketStruct) == 202, "CargoPacketStruct does not match expected size!");
+
+//
+// PACKET_FLAG
+//
+#pragma pack(push, 1)
+typedef struct FlagPacketData
+{
+    HousesType House;
+    TARGET Whom;
+    char Attached;
+} FlagPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct FlagPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    FlagPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(FlagPacketData)];
+} FlagPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(FlagPacketStruct) == 202, "FlagPacketStruct does not match expected size!");
+
+//
+// PACKET_CTF
+//
+#pragma pack(push, 1)
+typedef struct CTFPacketData
+{
+    HousesType House;
+    CELL Cell;
+    char State; // enum?
+} CTFPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct CTFPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    CTFPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CTFPacketData)];
+} CTFPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(CTFPacketStruct) == 204, "CTFPacketStruct does not match expected size!");
+
+//
+// PACKET_MOVE
+//
+#pragma pack(push, 1)
+typedef struct MovePacketData
+{
+    TARGET Whom;
+    CELL Cell;
+    FacingType Facing;
+} MovePacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct MovePacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    MovePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(MovePacketData)];
+} MovePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(MovePacketStruct) == 200, "MovePacketStruct does not match expected size!");
+
+//
+// PACKET_TARGET
+//
+#pragma pack(push, 1)
+typedef struct TargetPacketData
+{
+    TARGET Whom;
+    TARGET Target;
+} TargetPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct TargetPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    TargetPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(TargetPacketData)];
+} TargetPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(TargetPacketStruct) == 204, "TargetPacketStruct does not match expected size!");
+
+//
+// PACKET_FIRE_AT
+//
+#pragma pack(push, 1)
+typedef struct FireAtPacketData
+{
+    TARGET Whom;
+    TARGET Target;
+    char Which; // Weapon type?
+} FireAtPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct FireAtPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    FireAtPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(FireAtPacketData)];
+} FireAtPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(FireAtPacketStruct) == 202, "FireAtPacketStruct does not match expected size!");
+
+//
+// PACKET_DO_TURN
+//
+#pragma pack(push, 1)
+typedef struct DoTurnPacketData
+{
+    TARGET Whom;
+    DirType Dir;
+} DoTurnPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct DoTurnPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    DoTurnPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(DoTurnPacketData)];
+} DoTurnPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(DoTurnPacketStruct) == 204, "DoTurnPacketStruct does not match expected size!");
+
+//
+// PACKET_CRATE
+//
+#pragma pack(push, 1)
+typedef struct CratePacketData
+{
+    CELL Cell;
+    OverlayType Overlay;
+    char OverlayFrame;
+} CratePacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct CratePacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    CratePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CratePacketData)];
+} CratePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(CratePacketStruct) == 204, "CratePacketStruct does not match expected size!");
+
+//
+// PACKET_PCP
+//
+#pragma pack(push, 1)
+typedef struct PerCellPacketData
+{
+    TARGET Whom;
+    HousesType Owner;
+    CELL Cell;
+    char Number; // enum PCPType?
+    int _IntNumber;
+} PerCellPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct PerCellPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    PerCellPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(PerCellPacketData)];
+} PerCellPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(PerCellPacketStruct) == 196, "PerCellPacketStruct does not match expected size!");
+
+//
+// PACKET_TECHNO
+//
+#pragma pack(push, 1)
+typedef struct TechnoPacketData
+{
+    TARGET Whom;
+    TechnoPacketDataType Type;
+    unsigned char Data;
+} TechnoPacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct TechnoPacketStruct
+{
+    PacketHeaderStruct Header;
+    char Count; // Number of data struct within this packet.
+    TechnoPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(TechnoPacketData)];
+} TechnoPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(TechnoPacketStruct) == 202, "TechnoPacketStruct does not match expected size!");
+
+//
+// PACKET_SPECTATOR
+//
+#pragma pack(push, 1)
+typedef struct SpectatorPacketStruct
+{
+    PacketHeaderStruct Header;
+    HousesType House;
+} SpectatorPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(SpectatorPacketStruct) == 4, "SpectatorPacketStruct does not match expected size!");
+
+//
+// PACKET_GAME_END
+//
+#pragma pack(push, 1)
+typedef struct GameEndPacketStruct
+{
+    PacketHeaderStruct Header;
+    HousesType House;
+} GameEndPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(GameEndPacketStruct) == 4, "GameEndPacketStruct does not match expected size!");
+
+//
+// PACKET_SCENARIO_CHANGE
+//
+#pragma pack(push, 1)
+typedef struct ScenarioChangePacketStruct
+{
+    PacketHeaderStruct Header;
+    int Scenario;
+    int Bitfield;
+} ScenarioChangePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(ScenarioChangePacketStruct) == 11, "ScenarioChangePacketStruct does not match expected size!");
+
+//
+// PACKET_MESSAGE
+//
+#pragma pack(push, 1)
+typedef struct MessagePacketData
+{
+    HousesType From;
+    HousesType To;
+    int Team;
+    char MessageBuffer[MAX_MESSAGE_LENGTH];
+} MessagePacketData;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+typedef struct MessagePacketStruct
+{
+    PacketHeaderStruct Header;
+    MessagePacketData Data;
+} MessagePacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(MessagePacketStruct) == 89, "MessagePacketStruct does not match expected size!");
+
+//
+// PACKET_COMMAND_MESSAGE
+//
+#pragma pack(push, 1)
+typedef struct CommandPacketStruct
+{
+    PacketHeaderStruct Header;
+    int State;
+    int Obfuscated;
+} CommandPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(CommandPacketStruct) == 11, "CommandPacketStruct does not match expected size!");
+
+//
+// PACKET_SERVER_PASSWORD
+//
+#pragma pack(push, 1)
+typedef struct ServerPassPacketStruct
+{
+    PacketHeaderStruct Header;
+    int Status;
+} ServerPassPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(ServerPassPacketStruct) == 7, "ServerPassPacketStruct does not match expected size!");
+
+#pragma pack(push, 1)
+typedef struct AdminResponsePacket
+{
+    PacketHeaderStruct Header;
+    int Value;
+    char Data[80];
+} AdminResponsePacket;
+#pragma pack(pop)
+static_assert(sizeof(AdminResponsePacket) == 87, "AdminResponsePacket does not match expected size!");
+
+//
+// Full Packet as union of all others.
+//
+#pragma pack(push, 1)
+typedef struct WDTPacketStruct
+{
+    PacketHeaderStruct Header;
+
+    union
+    {
+        struct
+        {
+            char PlayerName[12];
+            unsigned char Side;
+            unsigned char ChosenRTTI;
+            int ChosenType;
+            int field_15;
+            int field_19;
+            int VersionNumber;
+        } Connection;
+
+        struct
+        {
+            unsigned char LocalID; // HouseClass heap ID.
+            HousesType House;      // ActsLike, used for teams?
+            unsigned int PrefColor;
+            unsigned char Scenario;
+            unsigned int Credits;
+            unsigned int Bases : 1;
+            unsigned int Tiberium : 1;
+            unsigned int Goodies : 1;
+            //unsigned int Bit1_8:1;    // Might be Ghosts? But cleared by Client anyways.
+            unsigned int pad1 : 29;
+            unsigned char BuildLevel;
+            unsigned char UnitCount;
+            unsigned int Special;
+            GAMEPARAMS GameParams;
+            unsigned int GameTime;
+            unsigned Bit2_1 : 1; // looks to stop mega missions in EventClass?
+            unsigned pad2 : 31;
+            //unsigned Bit2_2:1;
+            //unsigned Bit2_4:1;
+            //unsigned Bit2_8:1;
+            unsigned int TeamScore[4];
+            unsigned char WeaponAttack[WEAPON_COUNT];
+            unsigned char WeaponROF[WEAPON_COUNT];
+            unsigned int WeaponRange[WEAPON_COUNT];
+        } GameOptions;
+
+        struct
+        {
+            int State;
+            int Obfuscated;
+        } Command;
+
+        struct
+        {
+            unsigned char Count;
+            TARGET Objects[MAX_PACKET_DATA_SIZE / sizeof(TARGET)];
+        } PlayerJoin;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            NewDeletePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(NewDeletePacketData)];
+        } NewDelete;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            HealthPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(HealthPacketData)];
+        } Health;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            DamagePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(DamagePacketData)];
+        } Damage;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            SquishPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(SquishPacketData)];
+        } Crush;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            CapturePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CapturePacketData)];
+        } Capture;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            CargoPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CargoPacketData)];
+        } Cargo;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            FlagPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(FlagPacketData)];
+        } Flag;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            CTFPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CTFPacketData)];
+        } CTF;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            MovePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(MovePacketData)];
+        } Movement;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            TargetPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(TargetPacketData)];
+        } Target;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            FireAtPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(FireAtPacketData)];
+        } FireAt;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            DoTurnPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(DoTurnPacketData)];
+        } DoTurn;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            CratePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(CratePacketData)];
+        } Crate;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            PerCellPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(PerCellPacketData)];
+        } PerCell;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            TechnoPacketData Data[MAX_PACKET_DATA_SIZE / sizeof(TechnoPacketData)];
+        } Techno;
+
+        struct
+        {
+            int Size;
+            unsigned char Data[MAX_PACKET_DATA_SIZE]; // Compressed!!! event data
+        } Event;
+
+        struct
+        {
+            int FPS;
+        } FrameRate;
+
+        struct
+        {
+            HousesType House;
+        } PlayerLeave;
+
+        struct
+        {
+            HousesType House;
+        } Spectator;
+
+        struct
+        {
+            HousesType House;
+        } GameEnd;
+
+        struct
+        {
+            unsigned char Count; // Number of data struct within this packet.
+            HouseUpdatePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(HouseUpdatePacketData)];
+        } HouseUpdate;
+
+        struct
+        {
+            int Size; // The size of the expected PACKET_GAME_STATE
+            GameStatePacketData Data[MAX_PACKET_DATA_SIZE / sizeof(GameStatePacketData)];
+            char field_CD; // this is highly suspect but a must for the size to match the array
+            char field_CE;
+        } GameState;
+
+        struct
+        {
+            HousesType From;
+            HousesType To;
+            int Team;
+            char MessageBuffer[MAX_MESSAGE_LENGTH];
+        } Message;
+
+        struct
+        {
+            int Scenario;
+            unsigned _SomeBit : 1;
+        } Scenario;
+
+        struct
+        {
+            unsigned Status;
+        } ServerPassword;
+    };
+} WDTPacketStruct;
+#pragma pack(pop)
+static_assert(sizeof(WDTPacketStruct) == 422, "WDTPacketStruct does not match expected size!");
+
+#define packet_size_of(id) (sizeof(((WDTPacketStruct*)0)->id) + sizeof(PacketHeaderStruct))
+
+#define MAX_PACKET_LEN sizeof(WDTPacketStruct)
 
 /*
 **

@@ -416,6 +416,24 @@ private:
     unsigned IsRepairActive : 1;
     unsigned IsUpgradeActive : 1;
     unsigned IsDemolishActive : 1;
+
+    public:
+		void Color_List_Add_Player(const char *name, HousesType house);
+		void Color_List_Remove_Player(const char *name);
+		void Color_List_Add_Teams(void);
+		void Color_List_Draw_Points(int index);
+		void Color_List_Update_Points(const char *name, int points);
+		void Color_List_Clear(void);
+		void Color_List_Flag_To_Redraw(void);
+		void Color_List_Reset(void);
+		int  Color_List_Find_Entry(const char *name);
+		void Color_List_Toggle_Spectator(const char *name, bool state);
+
+		static ColorListClass *ColorListInstance1;
+		static ColorListClass *ColorListInstance2;
+
+	public:
+		CountDownTimerClass Timer1;
 };
 
 #endif

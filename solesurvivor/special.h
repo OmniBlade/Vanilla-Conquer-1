@@ -52,7 +52,7 @@ public:
         IsDefenderAdvantage = true;
         IsVisibleTarget = false;
         IsVariation = false;
-        IsJurassic = false;
+        IsJurassic = true;
         IsJuvenile = false;
         IsSmartDefense = false;
         IsTreeTarget = false;
