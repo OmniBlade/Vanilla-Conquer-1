@@ -142,6 +142,16 @@ public:
     */
     unsigned IsSecondShot : 1;
 
+    unsigned TechnoUnk1 : 1; // DrawNames ?
+
+    unsigned TechnoUnk2 : 1; // RespawnCrates ?
+
+    unsigned TechnoUnk3 : 1; // RespawnStealth ?
+
+    unsigned TechnoUnk4 : 1; // OrangeCrateBoost ?
+
+    unsigned TechnoUnk5 : 1; // Uncloak related
+
     /*
     **	For units in area guard mode, this is the recorded home position. The guarding
     **	unit will try to stay near this location in the course of it's maneuvers. This is
@@ -204,6 +214,12 @@ public:
     */
     int PurchasePrice;
 
+    TCountDownTimerClass Timer1; // Timer related to temp stealth/create benefits on respawn?
+
+    CountDownTimerClass Timer2;
+
+    TCountDownTimerClass Timer3;
+
     /*
     **	Per-player view of whether a techno object is discovered. One bit for each house type. ST - 3/6/2019 11:15AM
     */
@@ -228,8 +244,8 @@ public:
         , CrewClass(x)
         , House(this->House)
         , CloakingDevice(x)
-        , PrimaryFacing(x){};
-    virtual ~TechnoClass(void){};
+        , PrimaryFacing(x) {};
+    virtual ~TechnoClass(void) {};
 
     /*
     **	Query functions.
@@ -288,13 +304,14 @@ public:
     virtual void Death_Announcement(TechnoClass const* source = 0) const = 0;
     virtual FireErrorType Can_Fire(TARGET target, int which = 0) const;
     virtual TARGET Greatest_Threat(ThreatType threat) const;
-    virtual void Assign_Target(TARGET target);
+    virtual void Assign_Target(TARGET target, bool unk = false);
     virtual void Override_Mission(MissionType mission, TARGET tarcom, TARGET navcom);
     virtual bool Restore_Mission(void);
-    virtual BulletClass* Fire_At(TARGET target, int which = 0);
+    virtual BulletClass* Fire_At(TARGET target, int which = 0, bool unk = false);
     virtual int Weapon_Range(int which) const;
-    virtual bool Captured(HouseClass* newowner);
-    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source);
+    virtual bool Captured(HouseClass* newowner, bool unk = false);
+    virtual ResultType
+    Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk = false);
     bool Evaluate_Cell(ThreatType method, int mask, CELL cell, int range, TechnoClass const** object, int& value) const;
     bool Evaluate_Object(ThreatType method, int mask, int range, TechnoClass const* object, int& value) const;
     bool Is_Cloaked(HousesType house) const;
@@ -320,6 +337,15 @@ public:
     */
     virtual void Code_Pointers(void);
     virtual void Decode_Pointers(void);
+
+    FootClass* Remove_From_Cargo(ObjectClass* unk1 = NULL, bool unk2 = false)
+    {
+        return Detach_Object(this, unk1, unk2);
+    }
+    void Add_To_Cargo(ObjectClass* object, bool unk = false)
+    {
+        Attach(this, object, unk);
+    }
 
     /*
     **	Display and rendering support functionality. Supports imagery and how
@@ -350,7 +376,7 @@ public:
     **	Movement and animation.
     */
     virtual void Random_Animate(void);
-    virtual void Assign_Destination(TARGET target);
+    virtual void Assign_Destination(TARGET target, int = 0);
     virtual void Scatter(COORDINATE source = 0, bool forced = false, bool nokidding = false);
     virtual void Per_Cell_Process(bool);
     virtual void Enter_Idle_Mode(bool initial = false);
@@ -384,6 +410,9 @@ public:
     */
     static int const BodyShape[32];
     //		static int const TurretShape[32];
+    void Make_Fire_At_Packet_Data(TARGET target, int which);
+    void Make_Assign_Target_Packet_Data(void);
+    void Make_Techno_Packet_Data(int type, unsigned char value);
 };
 
 #endif

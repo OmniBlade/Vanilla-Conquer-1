@@ -88,6 +88,7 @@ private:
     void Set_Active(int select);
 
     static void const* TabShape;
+    static void const* StatTabShape;
 };
 
 #endif

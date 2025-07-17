@@ -3201,8 +3201,8 @@ typedef enum WDTCrateType
 
 enum TechnoPacketDataType
 {
-    TECHNO_PACKET_DATA_0,         // techno bitfield[1] 0x20 flip
-    TECHNO_PACKET_DATA_1,         // techno bitfield[1] 0x40 flip and [0] 2 flip
+    TECHNO_PACKET_DATA_0,         // techno bitfield[1] 0x20 flip... related to host unit crate behaviour
+    TECHNO_PACKET_DATA_1,         // techno bitfield[1] 0x40 flip and [0] 2 flip.. related to host unit cloaking
     TECHNO_PACKET_DATA_STRENGTH,  // strength modification
     TECHNO_PACKET_DATA_DAMAGE,    // damage modification
     TECHNO_PACKET_DATA_SPEED,     // speed modification

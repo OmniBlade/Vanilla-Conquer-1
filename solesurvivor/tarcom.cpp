@@ -94,6 +94,9 @@ void TarComClass::AI(void)
 {
     TurretClass::AI();
 
+    if (!IsActive)
+        return;
+
     if (Class->Primary != WEAPON_NONE) {
 
         /*
@@ -122,9 +125,7 @@ void TarComClass::AI(void)
                 }
             }
 
-            if (TurretClass::Fire_At(TarCom, primary)) {
-                Sound_Effect(weapon->Sound, Coord);
-            }
+            TurretClass::Fire_At(TarCom, primary);
             break;
 
         case FIRE_FACING:
@@ -145,6 +146,9 @@ void TarComClass::AI(void)
 
         case FIRE_CLOAKED:
             IsFiring = false;
+            if (GameToPlay == GAME_HOST) {
+                Make_Techno_Packet_Data(TECHNO_PACKET_DATA_CLOAKABLE, 0);
+            }
             Do_Uncloak();
             break;
         }

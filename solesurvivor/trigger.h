@@ -205,6 +205,11 @@ public:
     {
     }
 
+    bool Delete_Allowed()
+    {
+        return true;
+    }
+
     /*
     **	Dee-buggin' support.
     */

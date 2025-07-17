@@ -182,7 +182,12 @@ bool TurretClass::Ok_To_Move(DirType dir)
  *=============================================================================================*/
 void TurretClass::AI(void)
 {
+    int rot;
+
     DriveClass::AI();
+
+    if (!IsActive)
+        return;
 
     /*
     **	A unit with a constant rotating radar dish is handled here.
@@ -199,7 +204,8 @@ void TurretClass::AI(void)
             }
 
             if (SecondaryFacing.Is_Rotating()) {
-                if (SecondaryFacing.Rotation_Adjust(Class->ROT + 1)) {
+                rot = (Class->ROT * SpeedScale) / 256;
+                if (SecondaryFacing.Rotation_Adjust(rot+ 1)) {
                     Mark(MARK_CHANGE);
                 }
 
@@ -240,13 +246,21 @@ void TurretClass::AI(void)
  * HISTORY:                                                                                    *
  *   04/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-BulletClass* TurretClass::Fire_At(TARGET target, int which)
+BulletClass* TurretClass::Fire_At(TARGET target, int which, bool unk)
 {
+    int t;
+	FireErrorType rc;
     BulletClass* bullet = NULL;
     WeaponTypeClass const* weapon = (which == 0) ? &Weapons[Class->Primary] : &Weapons[Class->Secondary];
 
-    if (Can_Fire(target, which) == FIRE_OK) {
-        bullet = DriveClass::Fire_At(target, which);
+    if (GameToPlay != GAME_CLIENT) {
+		rc = Can_Fire(target, which);
+	} else {
+		rc = FIRE_OK;
+	}
+
+    if (rc == FIRE_OK) {
+        bullet = DriveClass::Fire_At(target, which, unk);
 
         if (bullet) {
 
@@ -254,8 +268,14 @@ BulletClass* TurretClass::Fire_At(TARGET target, int which)
             **	Possible reload timer set.
             */
             if (*this == UNIT_MSAM && Reload == 0) {
-                Reload = TICKS_PER_SECOND * 30;
+                t = (TICKS_PER_SECOND * 30) - 10 * Mod4;
+				if (t < 6){
+					t = 6;
+				}
+				Reload = t;
             }
+            
+            Sound_Effect(weapon->Sound, Coord);
         }
     }
 

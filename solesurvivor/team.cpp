@@ -145,8 +145,26 @@ TeamClass::~TeamClass(void)
         if (Class->IsTransient && !Number[TeamTypes.ID(Class)]) {
             delete (TeamTypeClass*)Class;
         }
+
+        (*(TeamTypeClass **)&Class) = NULL;
     }
 }
+
+void TeamClass::Destruct(void)
+{
+	if (GameActive && Class) {
+		Number[TeamTypes.ID(Class)]--;
+		while (Member) {
+			Remove(Member);
+		}
+
+		if (Class->IsTransient && !Number[TeamTypes.ID(Class)]) {
+			delete (TeamTypeClass *)Class;
+		}
+
+		(*(TeamTypeClass **)&Class) = NULL;
+	}
+}	
 
 TeamClass::TeamClass(TeamTypeClass const* type, HouseClass* owner)
     : Class(type)

@@ -39,6 +39,7 @@
 #include "function.h"
 
 void const* TabClass::TabShape = NULL;
+void const* TabClass::StatTabShape = NULL;
 
 /***********************************************************************************************
  * TabClass::TabClass -- Default construct for the tab button class.                           *
@@ -81,48 +82,123 @@ TabClass::TabClass(void)
 void TabClass::Draw_It(bool complete)
 {
 
-    SidebarClass::Draw_It(complete);
+    int value;
+	//int unk;
+	//int factor;
 
-    if (Debug_Map) {
-        // HidPage.Unlock();
-        return;
-    }
+	int x_pos = 162;
+	int bar_width = 14;
+	int bar_y_pos = 6;
+	int bar_1_offset = 41;
+	int bar_2_offset = 98;
+	int bar_3_offset = 158;
+	int bar_4_offset = 219;
+	int bar_5_offset = 276;
 
-// Disable tab drawing. ST - 3/1/2019 11:35AM
-#ifndef REMASTER_BUILD
-    /*
+	SidebarClass::Draw_It(complete);
+
+	if (Debug_Map){
+		//HidPage.Unlock();
+		return;
+	}
+
+	/*
 	**	Redraw the top bar imagery if flagged to do so or if the entire display needs
 	**	to be redrawn.
 	*/
-    int width = SeenBuff.Get_Width();
-    int rightx = width - 1;
+	int width  = SeenBuff.Get_Width();
+	int rightx = width - 1;
 
-    if (complete || IsToRedraw) {
+	int i;
+	ObjectClass *unit;
+	ObjectClass *obj;
 
-        if (Tab_Height != 0) {
+	if (complete || IsToRedraw) {
 
-            if (LogicPage->Lock()) {
-                unsigned factor = Get_Resolution_Factor();
-                unsigned fore = factor ? 11 : WHITE;
-                TextPrintType flags = factor ? TPF_GREEN12_GRAD | TPF_CENTER | TPF_USE_GRAD_PAL
-                                             : TPF_6PT_GRAD | TPF_CENTER | TPF_NOSHADOW;
+		if (LogicPage->Lock()){
 
-                LogicPage->Fill_Rect(0, 0, rightx, Tab_Height - 2, BLACK);
-                CC_Draw_Shape(TabShape, 0, 0, 0, WINDOW_MAIN, SHAPE_NORMAL);
-                CC_Draw_Shape(TabShape, 0, width - Eva_Width, 0, WINDOW_MAIN, SHAPE_NORMAL);
-                Draw_Credits_Tab();
-                LogicPage->Draw_Line(0, Tab_Height - 1, rightx, Tab_Height - 1, BLACK);
+			LogicPage->Fill_Rect(0, 0, rightx, Tab_Height-2, BLACK);
+			CC_Draw_Shape(TabShape, 0, 0, 0, WINDOW_MAIN, SHAPE_NORMAL);
+			CC_Draw_Shape(TabShape, 0, width-Eva_Width, 0, WINDOW_MAIN, SHAPE_NORMAL);
+			//Draw_Credits_Tab();
+			CC_Draw_Shape(StatTabShape, 0, x_pos, 0, WINDOW_MAIN, SHAPE_NORMAL);
+			LogicPage->Draw_Line(0, Tab_Height-1, rightx, Tab_Height-1, BLACK);
 
-                Fancy_Text_Print(TXT_TAB_BUTTON_CONTROLS, Eva_Width / 2, 0, fore, TBLACK, flags);
-                Fancy_Text_Print(TXT_TAB_SIDEBAR, width - (Eva_Width / 2), 0, fore, TBLACK, flags);
-            }
-            LogicPage->Unlock();
-        }
-    }
+			Fancy_Text_Print(TXT_TAB_BUTTON_CONTROLS, Eva_Width/2, 0, 11, TBLACK, TPF_GREEN12_GRAD|TPF_CENTER | TPF_USE_GRAD_PAL);
+			Fancy_Text_Print(TXT_TAB_SIDEBAR, width-(Eva_Width/2), 0, 11, TBLACK, TPF_GREEN12_GRAD|TPF_CENTER | TPF_USE_GRAD_PAL);
+		}
+		LogicPage->Unlock();
+	}
 
-    Credits.Graphic_Logic(complete || IsToRedraw);
-#endif
-    IsToRedraw = false;
+	unit = NULL;
+	obj = NULL;
+	if ((IsServerAdmin || OfflineMode || PlayerPtr->Class->House == HOUSE_SPECTATOR)) {
+		if (CurrentObject.Count()) {
+			unit = CurrentObject[0];
+		}
+	}
+
+	if (!unit && GameToPlay == GAME_CLIENT) {
+
+		for (i = 0; i < Units.Count(); i++) {
+			if (Units.Ptr(i)->IsOwnedByPlayer) {
+				unit = Units.Ptr(i);
+				break;
+			}
+		}
+
+		if (!unit) {
+			for (i = 0; i < Infantry.Count(); i++) {
+				if (Infantry.Ptr(i)->IsOwnedByPlayer) {
+					unit = Infantry.Ptr(i);
+					break;
+				}
+			}
+		}
+	}
+	obj = unit;
+
+	if (unit) {
+		//factor = Get_Resolution_Factor();
+		//unk = SeenBuff.Get_Width() - ((unsigned char)120 << factor);
+
+		if (unit->Mod1 > 0) {
+			value = Get_Stat(SOLE_ARRAY_STRENGTH, sole_array[SOLE_ARRAY_STRENGTH][2], obj);
+			LogicPage->Draw_Line(x_pos + bar_1_offset, bar_y_pos + 0, (unit->Mod1 * (bar_width - 1)) / value + (x_pos + bar_1_offset), bar_y_pos + 0, 159);
+			LogicPage->Draw_Line(x_pos + bar_1_offset, bar_y_pos + 1, (unit->Mod1 * (bar_width - 1)) / value + (x_pos + bar_1_offset), bar_y_pos + 1, 167);
+			LogicPage->Draw_Line(x_pos + bar_1_offset, bar_y_pos + 2, (unit->Mod1 * (bar_width - 1)) / value + (x_pos + bar_1_offset), bar_y_pos + 2, 159);
+		}
+
+		if (unit->Mod3 > 0) {
+			value = Get_Stat(SOLE_ARRAY_DAMAGE, sole_array[SOLE_ARRAY_DAMAGE][2], obj);
+			LogicPage->Draw_Line(x_pos + bar_2_offset, bar_y_pos + 0, (unit->Mod3 * (bar_width - 1)) / value + (x_pos + bar_2_offset), bar_y_pos + 0, 159);
+			LogicPage->Draw_Line(x_pos + bar_2_offset, bar_y_pos + 1, (unit->Mod3 * (bar_width - 1)) / value + (x_pos + bar_2_offset), bar_y_pos + 1, 167);
+			LogicPage->Draw_Line(x_pos + bar_2_offset, bar_y_pos + 2, (unit->Mod3 * (bar_width - 1)) / value + (x_pos + bar_2_offset), bar_y_pos + 2, 159);
+		}
+
+		if (unit->Mod2 > 0) {
+			value = Get_Stat(SOLE_ARRAY_SPEED, sole_array[SOLE_ARRAY_SPEED][2], obj);
+			LogicPage->Draw_Line(x_pos + bar_3_offset, bar_y_pos + 0, (unit->Mod2 * (bar_width - 1)) / value + (x_pos + bar_3_offset), bar_y_pos + 0, 159);
+			LogicPage->Draw_Line(x_pos + bar_3_offset, bar_y_pos + 1, (unit->Mod2 * (bar_width - 1)) / value + (x_pos + bar_3_offset), bar_y_pos + 1, 167);
+			LogicPage->Draw_Line(x_pos + bar_3_offset, bar_y_pos + 2, (unit->Mod2 * (bar_width - 1)) / value + (x_pos + bar_3_offset), bar_y_pos + 2, 159);
+		}
+
+		if (unit->Mod4 > 0) {
+			value = Get_Stat(SOLE_ARRAY_ROF, sole_array[SOLE_ARRAY_ROF][2], obj);
+			LogicPage->Draw_Line(x_pos + bar_4_offset, bar_y_pos + 0, (unit->Mod4 * (bar_width - 1)) / value + (x_pos + bar_4_offset), bar_y_pos + 0, 159);
+			LogicPage->Draw_Line(x_pos + bar_4_offset, bar_y_pos + 1, (unit->Mod4 * (bar_width - 1)) / value + (x_pos + bar_4_offset), bar_y_pos + 1, 167);
+			LogicPage->Draw_Line(x_pos + bar_4_offset, bar_y_pos + 2, (unit->Mod4 * (bar_width - 1)) / value + (x_pos + bar_4_offset), bar_y_pos + 2, 159);
+		}
+
+		if (unit->Mod5 > 0) {
+			value = Get_Stat(SOLE_ARRAY_RANGE, sole_array[SOLE_ARRAY_RANGE][2], obj);
+			LogicPage->Draw_Line(x_pos + bar_5_offset, bar_y_pos + 0, (unit->Mod5 * (bar_width - 1)) / value + (x_pos + bar_5_offset), bar_y_pos + 0, 159);
+			LogicPage->Draw_Line(x_pos + bar_5_offset, bar_y_pos + 1, (unit->Mod5 * (bar_width - 1)) / value + (x_pos + bar_5_offset), bar_y_pos + 1, 167);
+			LogicPage->Draw_Line(x_pos + bar_5_offset, bar_y_pos + 2, (unit->Mod5 * (bar_width - 1)) / value + (x_pos + bar_5_offset), bar_y_pos + 2, 159);
+		}
+	}
+
+	IsToRedraw = false;
 }
 
 void TabClass::Draw_Credits_Tab(void)
@@ -256,15 +332,11 @@ void TabClass::One_Time(void)
 {
     int factor = (SeenBuff.Get_Width() == 320) ? 1 : 2;
     Eva_Width = 80 * factor;
-
-#ifdef REMASTER_BUILD
-    Tab_Height = 0; // Disable tab drawing. ST - 3/1/2019 11:35AM
-#else
     Tab_Height = 8 * factor;
-#endif
 
     SidebarClass::One_Time();
     TabShape = Hires_Retrieve("TABS.SHP");
+    StatTabShape = MFCD::Retrieve("STATTAB.SHP");
 }
 
 void TabClass::Init_Clear(void)

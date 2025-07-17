@@ -187,7 +187,7 @@ int TextButtonClass::Draw_Me(int forced)
         /*
         **	Hide the mouse.
         */
-        if (LogicPage == &SeenBuff) {
+        if (LogicPage == &SeenBuff || &UnknownViewport1 == LogicPage) {
             // Conditional_Hide_Mouse(X, Y, X+Width-1, Y+Height-1);
             Conditional_Hide_Mouse(X, Y, X + Width, Y + Height);
         }
@@ -202,7 +202,7 @@ int TextButtonClass::Draw_Me(int forced)
         /*
         **	Display the mouse.
         */
-        if (LogicPage == &SeenBuff) {
+        if (LogicPage == &SeenBuff || &UnknownViewport1 == LogicPage) {
             Conditional_Show_Mouse();
         }
         return (true);

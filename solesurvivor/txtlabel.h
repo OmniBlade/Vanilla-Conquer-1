@@ -64,8 +64,6 @@ public:
     char* Text;
     int Color;
     int PixWidth;
-    char Segments;
-    unsigned short CRC;
 };
 
 #endif

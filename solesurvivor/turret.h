@@ -69,10 +69,10 @@ protected:
     TurretClass(NoInitClass const& x)
         : DriveClass(x)
         , Reload(x)
-        , SecondaryFacing(x){};
+        , SecondaryFacing(x) {};
     virtual ~TurretClass(void);
 
-    BulletClass* Fire_At(TARGET target, int which);
+    BulletClass* Fire_At(TARGET target, int which, bool unk = false);
 
     virtual DirType Fire_Direction(void) const;
     virtual FireErrorType Can_Fire(TARGET target, int which) const;

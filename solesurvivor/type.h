@@ -250,8 +250,8 @@ public:
     */
     int FullName;
 
-    AbstractTypeClass(void){};
-    AbstractTypeClass(NoInitClass const&){};
+    AbstractTypeClass(void) {};
+    AbstractTypeClass(NoInitClass const&) {};
     AbstractTypeClass(int name, char const* ini);
     virtual ~AbstractTypeClass()
     {
@@ -1500,7 +1500,7 @@ public:
         return *Pointers[type];
     };
     static void Init(TheaterType theater = THEATER_TEMPERATE);
-    static void One_Time(void){};
+    static void One_Time(void) {};
     static void Prep_For_Add(void);
 
     virtual COORDINATE Coord_Fixup(COORDINATE coord) const;
@@ -1562,7 +1562,7 @@ public:
 
     //----------------------------------------------------------
     TemplateTypeClass(NoInitClass const& x)
-        : ObjectTypeClass(x){};
+        : ObjectTypeClass(x) {};
     TemplateTypeClass(TemplateType iconset,
                       int theater,
                       char const* ininame,
@@ -1629,7 +1629,7 @@ public:
     /*
     ** Sole Survivor addition. TODO name appropriately.
     */
-    unsigned Unk: 1;
+    unsigned Unk : 1;
 
     /*
     **	If this animation uses the white translucent table, then this flag

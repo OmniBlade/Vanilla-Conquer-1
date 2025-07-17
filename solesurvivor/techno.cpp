@@ -119,9 +119,7 @@
 #define MAX_UNCLOAK_STAGE 38
 #define UNCLOAK_VIS_TIME  (1 * TICKS_PER_SECOND)
 
-// Added for getting the input for special character keys from the client
-// - 6/26/2019 JAS
-extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
+int techweapondata[11] = {100, 86, 74, 64, 56, 49, 44, 40, 37, 35, 33};
 
 /***************************************************************************
 **	Which shape to use depending on which facing is controlled by these arrays.
@@ -500,8 +498,25 @@ TechnoClass::TechnoClass(void)
     IsOwnedByPlayer = false;
     IsSecondShot = true;
     IsTethered = false;
+
+    if (GameToPlay != GAME_NORMAL) {
+        TechnoUnk1 = true;
+    }
+
     SuspendedTarCom = TARGET_NONE;
     PrimaryFacing.Set(DIR_N);
+
+    TechnoUnk2 = false;
+    TechnoUnk3 = false;
+
+    Timer1.Set(0);
+    Timer3.Set(0);
+
+    TechnoUnk5 = false;
+
+    Timer2.Set(0);
+
+    TechnoUnk4 = false;
 
     // Added for multiplayer changes. ST - 3/6/2019 11:34AM
     IsDiscoveredByPlayerMask = 0;
@@ -555,36 +570,12 @@ bool TechnoClass::Revealed(HouseClass* house)
 
         if (GameToPlay == GAME_NORMAL) {
             if (house == PlayerPtr) {
-                if (!IsOwnedByPlayer) {
-
-                    /*
-                    **	If there is a trigger event associated with this object, then process
-                    **	it for discovery purposes.
-                    */
-                    if (Trigger) {
-                        Trigger->Spring(EVENT_DISCOVERED, this);
-                    }
-
-                    /*
-                    **	Alert the enemy house to presence of the friendly side.
-                    */
-                    House->IsDiscovered = true;
-
-                    if (house->IsHuman) {
-                        Set_Discovered_By_Player(house);
-                    } else {
-                        IsDiscoveredByComputer = true;
-                    }
-
+                if (house->IsHuman) {
+                    Set_Discovered_By_Player(house);
                 } else {
-
-                    if (house->IsHuman) {
-                        Set_Discovered_By_Player(house);
-                    } else {
-                        IsDiscoveredByComputer = true;
-                    }
-                    Look();
+                    IsDiscoveredByComputer = true;
                 }
+                Look();
             }
         } else {
 
@@ -910,27 +901,55 @@ TechnoClass::TechnoClass(HousesType house)
     IsSecondShot = false;
     IsTethered = false;
 
+    if (GameToPlay != GAME_NORMAL) {
+        TechnoUnk1 = true;
+    }
+
     SuspendedTarCom = TARGET_NONE;
 
     PrimaryFacing.Set(DIR_N);
 
     // Added for multiplayer changes. ST - 4/24/2019 10:40AM
     IsDiscoveredByPlayerMask = 0;
-#ifdef REMASTER_BUILD
-    if (GameToPlay == GAME_NORMAL) {
-        IsOwnedByPlayer = (house == PlayerPtr->Class->House);
-    } else {
-        IsOwnedByPlayer = House->IsHuman;
-    }
-#else
-    IsOwnedByPlayer = (PlayerPtr == House);
-#endif
 
     /*
     **	There is a chance that a vehicle will be a "lemon".
     */
     if (Random_Pick(0, 255) < (int)House->Class->Lemon) {
         IsALemon = true;
+    }
+
+    if (IsServerAdmin) {
+        IsOwnedByPlayer = true;
+    } else {
+        IsOwnedByPlayer = false;
+    }
+
+    if (house == HOUSE_ADMIN) {
+        Mod1 = Get_Stat(SOLE_ARRAY_STRENGTH, sole_array[SOLE_ARRAY_STRENGTH][2], this);
+        Mod2 = Get_Stat(SOLE_ARRAY_SPEED, sole_array[SOLE_ARRAY_SPEED][2], this);
+        Mod3 = Get_Stat(SOLE_ARRAY_DAMAGE, sole_array[SOLE_ARRAY_DAMAGE][2], this);
+        Mod4 = Get_Stat(SOLE_ARRAY_ROF, sole_array[SOLE_ARRAY_ROF][2], this);
+        Mod5 = Get_Stat(SOLE_ARRAY_RANGE, sole_array[SOLE_ARRAY_RANGE][2], this);
+    }
+
+    TechnoUnk2 = false;
+    TechnoUnk3 = false;
+
+    Timer1.Set(0);
+    Timer3.Set(0);
+
+    TechnoUnk5 = false;
+    TechnoUnk4 = false;
+
+    Timer2.Set(0);
+
+    if (GameToPlay == GAME_HOST) {
+        Timer1.Set(1000);
+        if (GameParams.IsCrates) {
+            TechnoUnk2 = true;
+        }
+        TechnoUnk3 = true;
     }
 }
 
@@ -1007,13 +1026,11 @@ void TechnoClass::Per_Cell_Process(bool)
  *=============================================================================================*/
 void TechnoClass::Draw_It(int x, int y, WindowNumberType window)
 {
+    bool show_health_bar = false;
+
     Clear_Redraw_Flag();
 
-#ifdef REMASTER_BUILD
-    WindowNumberType line_frame_cmp = WINDOW_VIRTUAL;
-#else
     WindowNumberType line_frame_cmp = WINDOW_TACTICAL;
-#endif
 
     const bool show_health_bar = (Strength > 0) && !Is_Cloaked(PlayerPtr)
                                  && (Is_Selected_By_Player()
@@ -1117,14 +1134,73 @@ void TechnoClass::Draw_It(int x, int y, WindowNumberType window)
             // Lower left corner.
             draw_window.Draw_Line(x - lx, y + ly, x - lx + dx, y + ly, WHITE);
             draw_window.Draw_Line(x - lx, y + ly, x - lx, y + ly - dy, WHITE);
-        }
-    }
 
-    // MBL 04.21.2020
-    bool selected = Is_Selected_By_Player() || Special.ResourceBarDisplayMode == SpecialClass::RB_ALWAYS;
-    // if ((window == WINDOW_VIRTUAL) || (Is_Selected_By_Player() && House->Is_Ally(PlayerPtr)))
-    if ((window == WINDOW_VIRTUAL) || (selected && House->Is_Ally(PlayerPtr))) {
-        Draw_Pips((x - lx) + 5, y + ly - 3, window);
+            if (House->Is_Ally(PlayerPtr)) {
+                Draw_Pips((x - lx) + 5, y + ly - 3, window);
+            }
+        }
+
+        if (TechnoUnk1) { // DrawNames perhaps?
+            if ((!ShowNames && !IsSelected)
+                || (Cloak && !House->Is_Ally(PlayerPtr) && (!IsServerAdmin || OfflineMode)
+                    && PlayerPtr->Class->House != HOUSE_SPECTATOR)) {
+                return;
+            }
+
+            HouseClass* hptr = HouseClass::As_Pointer(Owner());
+            if (hptr == NULL) {
+                return;
+            }
+
+            int text_x;
+            int text_y;
+            if (PlayerNameDrawStyle == 3) {
+                Fancy_Text_Print("", text_x, text_y, 15, 0, TPF_3POINT | TPF_CENTER | TPF_FULLSHADOW);
+            } else {
+                Fancy_Text_Print("", text_x, text_y, 15, 0, TPF_8POINT | TPF_CENTER | TPF_FULLSHADOW);
+            }
+
+            int name_width = String_Pixel_Width(hptr->Name);
+            int house;
+            int font_height;
+            font_height = FontHeight;
+            house = hptr->ActLike - 6;
+
+            if (house >= HOUSE_GOOD && house <= HOUSE_JP) {
+                int width_fudge = 7;
+                int height_fudge = width_fudge;
+                int left = x - (name_width + width_fudge + 3) / 2;
+                int top = y - height / 2 - font_height / 2 - height_fudge / 2 - 2;
+                text_x = x + (width_fudge + 3) / 2;
+                text_y = y - height / 2 - font_height;
+
+                if (name_width / 2 + text_x + 1 > draw_window.Get_Width()) {
+                    return;
+                }
+
+                draw_window.Fill_Rect(left, top, left + width_fudge - 1, top + height_fudge - 1, BLACK);
+                //BUG top + width_fudge - 2 should be top + height_fudge - 2
+                draw_window.Fill_Rect(
+                    left + 1, top + 1, left + width_fudge - 2, top + width_fudge - 2, MPlayerTColors[house + 2]);
+            } else {
+                text_x = x;
+                text_y = y - height / 2 - font_height;
+
+                if (name_width / 2 + text_x + 1 > draw_window.Get_Width()) {
+                    return;
+                }
+            }
+
+            GraphicViewPortClass* oldpage = Set_Logic_Page(draw_window);
+            if (PlayerNameDrawStyle == 3) {
+                Fancy_Text_Print(hptr->Name, text_x, text_y, 15, 0, TPF_3POINT | TPF_CENTER | TPF_FULLSHADOW);
+            } else if (TechnoUnk4) {
+                Fancy_Text_Print(hptr->Name, text_x, text_y, 5, 0, TPF_8POINT | TPF_CENTER | TPF_FULLSHADOW);
+            } else {
+                Fancy_Text_Print(hptr->Name, text_x, text_y, 15, 0, TPF_8POINT | TPF_CENTER | TPF_FULLSHADOW);
+            }
+            Set_Logic_Page(*oldpage);
+        }
     }
 }
 
@@ -1153,6 +1229,17 @@ bool TechnoClass::Unlimbo(COORDINATE coord, DirType dir)
         Commence();
 
         IsLocked = Map.In_Radar(Coord_Cell(coord));
+        if (GameToPlay == GAME_HOST) {
+            if (TechnoUnk2) {
+                Make_Techno_Packet_Data(TECHNO_PACKET_DATA_0, 1);
+            }
+
+            if (TechnoUnk3) {
+                Do_Cloak();
+                Make_Techno_Packet_Data(TECHNO_PACKET_DATA_1, 1);
+                IsCloakable = true;
+            }
+        }
         return (true);
     }
     return (false);
@@ -1849,7 +1936,12 @@ TARGET TechnoClass::Greatest_Threat(ThreatType method) const
  *=============================================================================================*/
 HousesType TechnoClass::Owner(void) const
 {
-    return (House->Class->House);
+    if (House && House->Class) {
+        return (House->Class->House);
+    }
+
+    CCDebugString("* Invalid dereference in TechnoClass::Owner\n");
+    return HOUSE_GOOD;
 }
 
 /***********************************************************************************************
@@ -1902,8 +1994,70 @@ void TechnoClass::Clicked_As_Target(HousesType house,
 void TechnoClass::AI(void)
 {
     CargoClass::AI();
+
+    if (!IsActive)
+        return;
+
     RadioClass::AI();
+
+    if (!IsActive)
+        return;
+
     DoorClass::AI();
+
+    if (!IsActive)
+        return;
+
+    if (GameToPlay == GAME_HOST && What_Am_I() == RTTI_UNIT && ((const UnitTypeClass&)Class_Of()).Type == UNIT_STANK) {
+        if (IsCloakable) {
+            Timer3.Set(0);
+            TechnoUnk5 = false;
+        } else if (TechnoUnk5) {
+            if (Timer3.Expired()) {
+                TechnoUnk5 = false;
+                IsCloakable = true;
+                Do_Cloak();
+                Make_Techno_Packet_Data(TECHNO_PACKET_DATA_CLOAKABLE, true);
+            }
+        } else {
+            Timer3.Set(240);
+            TechnoUnk5 = true;
+        }
+    }
+
+    if (GameToPlay == GAME_HOST && TechnoUnk4 && Timer2.Time() == 0) {
+        TechnoUnk4 = false;
+        Make_Techno_Packet_Data(TECHNO_PACKET_DATA_ORANGE_CRATE, false);
+        Mod1 = 0;
+
+        if (Strength > Class_Of().MaxStrength) {
+            Strength = Class_Of().MaxStrength;
+        }
+        Mod2 = 0;
+        Mod3 = 0;
+        Mod4 = 0;
+        Mod5 = 0;
+        Mark(MARK_CHANGE);
+        Map.Redraw_Tab();
+    }
+
+    if (GameToPlay == GAME_HOST && Timer1.Time() == 0) {
+        if (TechnoUnk2) {
+            TechnoUnk2 = false;
+            Timer1.Set(0);
+            Make_Techno_Packet_Data(TECHNO_PACKET_DATA_0, false);
+            Mark(MARK_CHANGE);
+        }
+
+        if (TechnoUnk3) {
+            TechnoUnk3 = false;
+            Timer1.Set(0);
+            Make_Techno_Packet_Data(TECHNO_PACKET_DATA_1, false);
+            Do_Uncloak();
+            IsCloakable = false;
+            Mark(MARK_CHANGE);
+        }
+    }
 
     /*
     ** Handle decision to re-cloak here. Process the cloaking/decloaking operation.
@@ -1923,9 +2077,11 @@ void TechnoClass::AI(void)
             CloakingDevice.Graphic_Logic();
             if (!Arm && CloakingDevice.Fetch_Stage()) {
                 if (Health_Ratio() > 0x0040) {
+                    Make_Techno_Packet_Data(TECHNO_PACKET_DATA_CLOAKABLE, true);
                     Do_Cloak();
                 } else {
                     if (Random_Pick(0, 25) == 1) {
+                        Make_Techno_Packet_Data(TECHNO_PACKET_DATA_CLOAKABLE, true);
                         Do_Cloak();
                     }
                 }
@@ -1984,7 +2140,8 @@ void TechnoClass::AI(void)
                     **	Special check to ensure that if the unit is carring a captured
                     **	flag, it will never fully cloak.
                     */
-                    if (What_Am_I() == RTTI_UNIT && ((UnitClass*)this)->Flagged != HOUSE_NONE) {
+                    if ((What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY)
+                        && ((UnitClass*)this)->Flagged != HOUSE_NONE) {
                         Do_Shimmer();
                     } else {
                         Detach_All(false);
@@ -2008,12 +2165,21 @@ void TechnoClass::AI(void)
             case CLOAKED:
                 // Changed for multiplayer so we can visually see the different players in the original renderer. ST -
                 // 3/13/2019 5:40PM
-                if (Is_Owned_By_Player()) {
+                if (Is_Owned_By_Player() || House->Is_Ally(PlayerPtr) || PlayerPtr->Class->House == HOUSE_SPECTATOR) {
                     // if (IsOwnedByPlayer) {
                     Mark(MARK_CHANGE);
                 }
                 break;
             }
+        }
+        //TODO this is strange....
+    } else if (Cloak == UNCLOAKING) {
+        CloakingDevice.Graphic_Logic();
+        Mark(MARK_CHANGE);
+        if (Visual_Character(true) == VISUAL_NORMAL) {
+            CloakingDevice.Set_Rate(UNCLOAK_VIS_TIME);
+            CloakingDevice.Set_Stage(0); // re-start the stage counter
+            Cloak = UNCLOAKED;
         }
     }
 
@@ -2175,7 +2341,7 @@ FireErrorType TechnoClass::Can_Fire(TARGET target, int which) const
     /*
     **	If cloaked, then firing is disabled.
     */
-    if (Cloak != UNCLOAKED) {
+    if (Cloak == CLOAKED || Cloak == CLOAKING) {
         return (FIRE_CLOAKED);
     }
 
@@ -2224,8 +2390,12 @@ void TechnoClass::Stun(void)
  * HISTORY:                                                                                    *
  *   12/23/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void TechnoClass::Assign_Target(TARGET target)
+void TechnoClass::Assign_Target(TARGET target, bool unk)
 {
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return;
+    }
+
     if (target == TarCom)
         return;
 
@@ -2254,6 +2424,10 @@ void TechnoClass::Assign_Target(TARGET target)
     **	Set the unit's targeting computer.
     */
     TarCom = target;
+
+    if (GameToPlay == GAME_HOST && What_Am_I() != RTTI_AIRCRAFT) {
+        Make_Assign_Target_Packet_Data();
+    }
 }
 
 /***********************************************************************************************
@@ -2274,12 +2448,41 @@ void TechnoClass::Assign_Target(TARGET target)
  * HISTORY:                                                                                    *
  *   12/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-int TechnoClass::Rearm_Delay(bool second) const
+int TechnoClass::Rearm_Delay(bool /*second*/) const
 {
-    if (second) {
-        return (((int)Weapons[Techno_Type_Class()->Primary].ROF * House->ROFBias) + 3);
+    int rof;
+    int value1;
+    int value2;
+    UnitClass* uptr;
+
+    rof = Weapons[Techno_Type_Class()->Primary].ROF;
+
+    if (What_Am_I() == RTTI_UNIT) {
+        uptr = (UnitClass*)this;
+        if (uptr->Class->Type == UNIT_MSAM) {
+            rof /= 3;
+        }
     }
-    return (9);
+
+    value1 = 100 * Mod4 / sole_array[SOLE_ARRAY_ROF][2];
+
+    if (value1 < 0) {
+        value1 = 0;
+    }
+
+    if (value1 > 100) {
+        value1 = 100;
+    }
+
+    value1 = techweapondata[value1 / 10];
+
+    value2 = (rof * value1) / 100;
+
+    if (value2 < 6) {
+        value2 = 6;
+    }
+
+    return (value2);
 }
 
 /***********************************************************************************************
@@ -2302,7 +2505,7 @@ int TechnoClass::Rearm_Delay(bool second) const
  *   12/26/1994 JLB : Created.                                                                 *
  *   07/03/1995 JLB : Moving platforms fire inaccurate projectiles.                            *
  *=============================================================================================*/
-BulletClass* TechnoClass::Fire_At(TARGET target, int which)
+BulletClass* TechnoClass::Fire_At(TARGET target, int which, bool unk)
 {
     BulletClass* bullet;     // Projectile.
     DirType dir;             // The facing to impart upon the projectile.
@@ -2315,6 +2518,10 @@ BulletClass* TechnoClass::Fire_At(TARGET target, int which)
     }
     WeaponTypeClass const* weapon = (which == 0) ? &Weapons[tclass.Primary] : &Weapons[tclass.Secondary];
     BulletTypeClass const& btype = BulletTypeClass::As_Reference(weapon->Fires);
+
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return (NULL);
+    }
 
     /*
     **	Perform a quick legality check to see if firing can occur.
@@ -2357,9 +2564,13 @@ BulletClass* TechnoClass::Fire_At(TARGET target, int which)
     **	need to be performed according to the style of projectile
     **	created.
     */
-    int firepower = (weapon->Attack > 0) ? ((int)weapon->Attack * House->FirepowerBias) : 0;
+    int firepower = (weapon->Attack > 0) ? ((int)weapon->Attack * House->FirepowerBias) + Mod3 : 0;
     bullet = new BulletClass(weapon->Fires);
     if (bullet) {
+        if (GameToPlay == GAME_HOST && What_Am_I() != RTTI_AIRCRAFT) {
+            Make_Fire_At_Packet_Data(target, which);
+        }
+
         bullet->Assign_Target(target);
         bullet->Payback = this;
         bullet->Strength = (short)firepower;
@@ -2545,6 +2756,10 @@ void TechnoClass::Player_Assign_Mission(MissionType mission, TARGET target, TARG
             Response_Sabotage();
         } else if (mission == MISSION_ATTACK) {
             Response_Attack();
+            ObjectClass* trgt = As_Object(target);
+            if (trgt) {
+                trgt->Clicked_As_Target();
+            }
         } else {
             Response_Move();
         }
@@ -2577,7 +2792,7 @@ ActionType TechnoClass::What_Action(ObjectClass* object) const
         **	object cannot do anything special with itself, then just return with
         **	the no action flag.
         */
-        if (object == this && CurrentObject.Count() == 1 && House == PlayerPtr) {
+        if (object == this && CurrentObject.Count() == 1) {
             return (ACTION_SELF);
         }
 #ifdef REMASTER_BUILD
@@ -2594,15 +2809,6 @@ ActionType TechnoClass::What_Action(ObjectClass* object) const
         bool ctrldown = (Keyboard->Down(Options.KeyForceAttack1) || Keyboard->Down(Options.KeyForceAttack2));
         bool shiftdown = (Keyboard->Down(Options.KeySelect1) || Keyboard->Down(Options.KeySelect2));
 #endif
-        /*
-        **	Special guard area mission is possible if both the control and the
-        **	alt keys are held down.
-        */
-        // Changed for multiplayer. ST - 3/13/2019 5:52PM
-        if (Is_Owned_By_Player() && ctrldown && altdown && Can_Player_Move() && Can_Player_Fire()) {
-            // if (IsOwnedByPlayer && ctrldown && altdown && Can_Player_Move() && Can_Player_Fire()) {
-            return (ACTION_GUARD_AREA);
-        }
 
         /*
         **	Special override to force a move regardless of what is occupying the location.
@@ -2622,8 +2828,12 @@ ActionType TechnoClass::What_Action(ObjectClass* object) const
         bool is_a_loaner = object->Is_Techno() && ((TechnoClass*)object)->IsALoaner;
         if (shiftdown) {
             // Changed for multiplayer. ST - 3/13/2019 5:52PM
-            if (!is_a_loaner) {
+            if (Is_Owned_By_Player() && !is_a_loaner) {
                 // if (IsOwnedByPlayer && !IsALoaner) {
+                if ((!IsServerAdmin || OfflineMode) && PlayerPtr->Class->House != HOUSE_SPECTATOR) {
+                    return (ACTION_NONE);
+                }
+
                 return (ACTION_TOGGLE_SELECT);
             }
         }
@@ -2632,7 +2842,8 @@ ActionType TechnoClass::What_Action(ObjectClass* object) const
         **	If firing is possible and legal, then return this action potential.
         */
         // Changed for multiplayer. ST - 3/13/2019 5:52PM
-        if (Is_Owned_By_Player() && (ctrldown || !House->Is_Ally(object))
+        if ((Is_Owned_By_Player() || (IsServerAdmin && !OfflineMode))
+            && ((ctrldown && (IsServerAdmin && !OfflineMode)) || !House->Is_Ally(object))
             && (ctrldown || object->Class_Of().IsLegalTarget
                 || (Special.IsTreeTarget && object->What_Am_I() == RTTI_TERRAIN))) {
             // if (IsOwnedByPlayer && (ctrldown || !House->Is_Ally(object)) && (ctrldown ||
@@ -2664,7 +2875,8 @@ ActionType TechnoClass::What_Action(ObjectClass* object) const
         // Changed for multiplayer. ST - 3/13/2019 5:52PM
         if (!Is_Weapon_Equipped() || !Is_Owned_By_Player() || object->Owner() == Owner()) {
             if ((!is_a_loaner || !Is_Owned_By_Player()) && object->Class_Of().IsSelectable
-                && (!object->Is_Selected_By_Player() || CurrentObject.Count())) {
+                && (!object->Is_Selected_By_Player() || CurrentObject.Count())
+                && ((IsServerAdmin && !OfflineMode) || PlayerPtr->Class->House == HOUSE_SPECTATOR)) {
                 // if (!Is_Weapon_Equipped() || !IsOwnedByPlayer || object->Owner() == Owner()) {
                 // if ((!IsALoaner || !IsOwnedByPlayer) && object->Class_Of().IsSelectable && !object->IsSelected) {
                 return (ACTION_SELECT);
@@ -2714,7 +2926,7 @@ ActionType TechnoClass::What_Action(CELL cell) const
     /*
     **	Disable recognizing the <CTRL> key forced fire option when dealing with buildings.
     */
-    if (What_Am_I() == RTTI_BUILDING)
+    if (What_Am_I() == RTTI_BUILDING && (!IsServerAdmin || OfflineMode))
         ctrldown = false;
 
     if (cellptr->Overlay != OVERLAY_NONE) {
@@ -2732,7 +2944,7 @@ ActionType TechnoClass::What_Action(CELL cell) const
     }
 
     // Changed for multiplayer. ST - 3/13/2019 5:52PM
-    if (Is_Owned_By_Player() && Techno_Type_Class()->Primary != WEAPON_NONE
+    if ((Is_Owned_By_Player() || (IsServerAdmin && !OfflineMode)) && Techno_Type_Class()->Primary != WEAPON_NONE
         && (ctrldown || (optr && optr->IsLegalTarget))) {
         // if (IsOwnedByPlayer && Techno_Type_Class()->Primary != WEAPON_NONE && (ctrldown || (optr &&
         // optr->IsLegalTarget))) {
@@ -2784,6 +2996,10 @@ ActionType TechnoClass::What_Action(CELL cell) const
  *=============================================================================================*/
 bool TechnoClass::Can_Player_Move(void) const
 {
+    if (IsServerAdmin && !OfflineMode) {
+        return (true);
+    }
+
     return (PlayerPtr == House);
 }
 
@@ -2805,6 +3021,10 @@ bool TechnoClass::Can_Player_Move(void) const
  *=============================================================================================*/
 bool TechnoClass::Can_Player_Fire(void) const
 {
+    if (IsServerAdmin && !OfflineMode) {
+        return (true);
+    }
+
     if (House->IsHuman && Is_Techno() && Techno_Type_Class()->Primary != WEAPON_NONE) {
         return (true);
     }
@@ -2856,7 +3076,7 @@ bool TechnoClass::Can_Repair(void) const
     if (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_AIRCRAFT) {
         return (false);
     }
-    return (Techno_Type_Class()->IsRepairable && Strength != Class_Of().MaxStrength);
+    return (Techno_Type_Class()->IsRepairable && Strength != Class_Of().MaxStrength + Mod1);
 }
 
 /***********************************************************************************************
@@ -2891,7 +3111,7 @@ int TechnoClass::Weapon_Range(int which) const
         if (weapon == WEAPON_NIKE && GameToPlay == GAME_NORMAL) {
             return (Weapons[weapon].Range * 2);
         }
-        return (Weapons[weapon].Range);
+        return (Weapons[weapon].Range + Mod5);
     }
     return (0);
 }
@@ -2958,8 +3178,13 @@ bool TechnoClass::Restore_Mission(void)
  * HISTORY:                                                                                    *
  *   05/08/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool TechnoClass::Captured(HouseClass* newowner)
+bool TechnoClass::Captured(HouseClass* newowner, bool unk)
 {
+    CapturePacketData* data;
+    if (GameToPlay == GAME_CLIENT && !unk) {
+        return false;
+    }
+
     if (newowner != House) {
 
         /*
@@ -3022,7 +3247,18 @@ bool TechnoClass::Captured(HouseClass* newowner)
         **	Change ownership now.
         */
         House = newowner;
-        IsOwnedByPlayer = (House == PlayerPtr);
+        if (IsServerAdmin && !OfflineMode) {
+            IsOwnedByPlayer = true;
+        } else {
+            IsOwnedByPlayer = (House == PlayerPtr);
+        }
+
+        if (GameToPlay == GAME_HOST) {
+            data = new CapturePacketData;
+            data->Whom = As_Target();
+            data->NewHouse = newowner->Class->House;
+            CapturePacketDatas.Add(data);
+        }
 
         return (true);
     }
@@ -3045,7 +3281,7 @@ bool TechnoClass::Captured(HouseClass* newowner)
  * HISTORY:                                                                                    *
  *   06/20/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ResultType TechnoClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType TechnoClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
     /*
     **	Adjust damage according to house override armor value.
@@ -3054,7 +3290,18 @@ ResultType TechnoClass::Take_Damage(int& damage, int distance, WarheadType warhe
         damage = damage * House->ArmorBias;
     }
 
-    ResultType result = ObjectClass::Take_Damage(damage, distance, warhead, source);
+    if (TechnoUnk2) {
+        return RESULT_NONE;
+    }
+
+    if (source && source->House && House) {
+        if (source->House->IsHuman && source->House->ActLike == House->ActLike
+            && source->House->ActLike >= HOUSE_BLUE_TEAM && source->House->ActLike <= HOUSE_GREY_TEAM) {
+            return RESULT_NONE;
+        }
+    }
+
+    ResultType result = ObjectClass::Take_Damage(damage, distance, warhead, source, unk);
 
     switch (result) {
     case RESULT_DESTROYED:
@@ -3174,16 +3421,64 @@ void TechnoClass::Record_The_Kill(TechnoClass* source)
         House->WhoLastHurtMe = source->Owner();
     }
 
+    if (source) {
+        HouseClass* src_hptr = HouseClass::As_Pointer(source->Owner());
+        HouseClass* this_hptr = HouseClass::As_Pointer(Owner());
+        if (src_hptr && this_hptr && (src_hptr == PlayerPtr || this_hptr == PlayerPtr)) {
+            char str[80];
+            if ((source->What_Am_I() == RTTI_UNIT || source->What_Am_I() == RTTI_INFANTRY)
+                && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY)) {
+                if (src_hptr == PlayerPtr) {
+                    sprintf(str, Text_String((rand() % 10 + TXT_MADE_MINCEMEAT)), this_hptr->Name);
+                } else {
+                    sprintf(str, Text_String((rand() % 10 + TXT_FEEL_THE_WRATH)), src_hptr->Name);
+                }
+            } else {
+                if (src_hptr == PlayerPtr) {
+                    sprintf(str, Text_String((rand() % 6 + TXT_DEMOLISHED_DEFENSIVE_STRUCT)));
+                } else {
+                    sprintf(str, Text_String((rand() % 6 + TXT_DEFENSIVE_STRUCT_COOKED)));
+                }
+            }
+            ::Messages.Add_Message(str, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
+            Map.Flag_To_Redraw(false);
+        }
+    }
+
     switch (What_Am_I()) {
     case RTTI_BUILDING:
         if (((BuildingClass*)this)->WhoLastHurtMe != HOUSE_NONE) {
             House->BuildingsLost++;
         }
         if (source) {
-            if (GameToPlay == GAME_INTERNET) {
-                source->House->DestroyedBuildings.Increment_Unit_Total(((BuildingClass*)this)->Class->Type);
-            }
             source->House->BuildingsKilled[Owner()]++;
+            int points = Calculate_Points(source->House->Class->House) / 2;
+            if (points == 0) {
+                points = 1;
+            }
+
+            if (stricmp(source->House->Name, Text_String(TXT_HUNTER))) {
+                source->House->Int2 += points;
+            }
+            if (GameParams.NumTeams > 1 && source->House->IsHuman && source->House->ActLike >= HOUSE_FIRST_TEAM
+                && source->House->ActLike <= HOUSE_LAST_TEAM && stricmp(source->House->Name, Text_String(TXT_HUNTER))) {
+                TeamPoints[source->House->ActLike] += points;
+                Map.Color_List_Draw_Points(source->House->ActLike - HOUSE_FIRST_TEAM);
+                if (DebugLogTeams) {
+                    char buf[300];
+                    sprintf(buf,
+                            "*Added %d to Team %d for player %s (building)\n",
+                            points,
+                            source->House->ActLike - HOUSE_FIRST_TEAM,
+                            source->House->Name);
+                    CCDebugString(buf);
+                }
+            }
+
+            if (OfflineMode && source->House == PlayerPtr) {
+                OfflinePoints += points;
+            }
+            Map.Color_List_Update_Points(source->House->Name, source->House->Int2);
         }
 
         /*
@@ -3196,46 +3491,43 @@ void TechnoClass::Record_The_Kill(TechnoClass* source)
         break;
 
     case RTTI_AIRCRAFT:
-        House->UnitsLost++;
-        if (source) {
-            if (GameToPlay == GAME_INTERNET) {
-                source->House->DestroyedAircraft.Increment_Unit_Total(((AircraftClass*)this)->Class->Type);
-            }
-            source->House->UnitsKilled[Owner()]++;
-        }
-        /*
-        ** If the map is displaying the multiplayer player names & their
-        ** # of kills, tell it to redraw.
-        */
-        if (Map.Is_Player_Names()) {
-            Map.Player_Names(true);
-        }
-        break;
-
+        // Fallthrough
     case RTTI_INFANTRY:
-        House->UnitsLost++;
-        if (source) {
-            if (GameToPlay == GAME_INTERNET) {
-                source->House->DestroyedInfantry.Increment_Unit_Total(((InfantryClass*)this)->Class->Type);
-            }
-            source->House->UnitsKilled[Owner()]++;
-        }
-        /*
-        ** If the map is displaying the multiplayer player names & their
-        ** # of kills, tell it to redraw.
-        */
-        if (Map.Is_Player_Names()) {
-            Map.Player_Names(true);
-        }
-        break;
-
+        // Fallthrough
     case RTTI_UNIT:
         House->UnitsLost++;
+        House->Int3++;
+        printf("Techno: %s has %d deaths\n", House->Name, House->Int3);
+
         if (source) {
-            if (GameToPlay == GAME_INTERNET) {
-                source->House->DestroyedUnits.Increment_Unit_Total(((UnitClass*)this)->Class->Type);
-            }
             source->House->UnitsKilled[Owner()]++;
+            int points = Calculate_Points(source->House->Class->House);
+            //if (points == 0) {
+            //	points = 1;
+            //}
+
+            if (stricmp(source->House->Name, Text_String(TXT_HUNTER))) {
+                source->House->Int2 += points;
+            }
+            if (GameParams.NumTeams > 1 && source->House->IsHuman && source->House->ActLike >= HOUSE_FIRST_TEAM
+                && source->House->ActLike <= HOUSE_LAST_TEAM && stricmp(source->House->Name, Text_String(TXT_HUNTER))) {
+                TeamPoints[source->House->ActLike] += points;
+                Map.Color_List_Draw_Points(source->House->ActLike - HOUSE_FIRST_TEAM);
+                if (DebugLogTeams) {
+                    char buf[300];
+                    sprintf(buf,
+                            "*Added %d to Team %d for player %s (unit)\n",
+                            points,
+                            source->House->ActLike - HOUSE_FIRST_TEAM,
+                            source->House->Name);
+                    CCDebugString(buf);
+                }
+            }
+
+            if (OfflineMode && source->House == PlayerPtr) {
+                OfflinePoints += points;
+            }
+            Map.Color_List_Update_Points(source->House->Name, source->House->Int2);
         }
 
         /*
@@ -3332,10 +3624,17 @@ CELL TechnoClass::Nearby_Location(TechnoClass const*) const
 void TechnoClass::Do_Uncloak(void)
 {
     if (IsCloakable && (Cloak == CLOAKED || Cloak == CLOAKING)) {
-        Sound_Effect(VOC_CLOAK, Coord);
+        if (GameToPlay != GAME_HOST || OfflineMode) {
+            Sound_Effect(VOC_CLOAK, Coord);
+        }
+
         Cloak = UNCLOAKING;
         CloakingDevice.Set_Stage(0);
         CloakingDevice.Set_Rate(1);
+    }
+
+    if (TechnoUnk5) {
+        Timer3.Set(240);
     }
 }
 
@@ -3356,7 +3655,10 @@ void TechnoClass::Do_Uncloak(void)
 void TechnoClass::Do_Cloak(void)
 {
     if (IsCloakable && (Cloak == UNCLOAKED || Cloak == UNCLOAKING)) {
-        Sound_Effect(VOC_CLOAK, Coord);
+        if (GameToPlay != GAME_HOST || OfflineMode) {
+            Sound_Effect(VOC_CLOAK, Coord);
+        }
+
         Detach_All(false);
         Cloak = CLOAKING;
         CloakingDevice.Set_Stage(0);
@@ -3420,7 +3722,7 @@ VisualType TechnoClass::Visual_Character(bool raw)
     */
     if (Cloak == CLOAKED) {
         // Changed for multiplayer. Not needed except to test in the old renderer. ST - 3/13/2019 5:56PM
-        if (!raw && Is_Owned_By_Player())
+        if (!raw && (Is_Owned_By_Player() || House->Is_Ally(PlayerPtr) || PlayerPtr->Class->House == HOUSE_SPECTATOR))
             return (VISUAL_SHADOWY);
         // if (!raw && IsOwnedByPlayer) return(VISUAL_SHADOWY);
         return (VISUAL_HIDDEN);
@@ -3441,7 +3743,7 @@ VisualType TechnoClass::Visual_Character(bool raw)
         return (VISUAL_DARKEN);
     if (stage < 0x00C0)
         return (VISUAL_SHADOWY);
-    if (!raw && Is_Owned_By_Player())
+    if (!raw && (Is_Owned_By_Player() || House->Is_Ally(PlayerPtr) || PlayerPtr->Class->House == HOUSE_SPECTATOR))
         return (VISUAL_SHADOWY); // Changed for multiplayer. Not needed except to test in the old renderer. ST -
                                  // 3/13/2019 5:56PM
     // if (!raw && IsOwnedByPlayer) return(VISUAL_SHADOWY);
@@ -3627,6 +3929,10 @@ void TechnoClass::Techno_Draw_Object_Virtual(void const* shapefile,
  *=============================================================================================*/
 void const* TechnoClass::Remap_Table(void)
 {
+    if (TechnoUnk2) {
+		return DisplayClass::SomeNEWRemapTable;
+	}
+
     return (House->Remap_Table(IsBlushing, true));
 }
 
@@ -3696,7 +4002,7 @@ void TechnoClass::Detach(TARGET target, bool all)
 void TechnoClass::Kill_Cargo(TechnoClass* source)
 {
     while (Is_Something_Attached()) {
-        FootClass* foot = Detach_Object();
+        FootClass* foot = Remove_From_Cargo();
         if (foot) {
             foot->Record_The_Kill(source);
             delete foot;
@@ -4355,7 +4661,7 @@ void TechnoClass::Random_Animate(void)
  * HISTORY:                                                                                    *
  *   07/24/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void TechnoClass::Assign_Destination(TARGET)
+void TechnoClass::Assign_Destination(TARGET, int)
 {
 }
 
@@ -4594,6 +4900,37 @@ int TechnoClass::Refund_Amount(void) const
         cost /= 2;
     }
     return (cost);
+}
+
+void TechnoClass::Make_Fire_At_Packet_Data(TARGET target, int which)
+{
+	FireAtPacketData *data = new FireAtPacketData;
+	data->Whom = As_Target();
+	data->Target = target;
+	data->Which = which;
+	FireAtPacketDatas.Add(data);
+}
+
+
+void TechnoClass::Make_Assign_Target_Packet_Data(void)
+{
+	TargetPacketData *data = new TargetPacketData;
+	data->Whom = As_Target();
+	data->Target = TarCom;
+	TargetPacketDatas.Add(data);
+}
+
+void TechnoClass::Make_Techno_Packet_Data(int type, unsigned char value)
+{
+	TechnoPacketData *data = new TechnoPacketData;
+	data->Whom = As_Target();
+	if (data->Whom == NULL) {
+		delete data;
+	} else {
+		data->Type = (TechnoPacketDataType)type;
+		data->Data = value;
+		TechnoPacketDatas.Add(data);
+	}
 }
 
 /*

@@ -56,7 +56,8 @@ typedef enum KindType : unsigned char
     KIND_ANIMATION,
     KIND_TRIGGER,
     KIND_TEAM,
-    KIND_TEAMTYPE
+    KIND_TEAMTYPE,
+    KIND_COUNT
 } KindType;
 
 inline TARGET Build_Target(KindType kind, int value)

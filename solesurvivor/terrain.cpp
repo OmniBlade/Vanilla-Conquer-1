@@ -139,7 +139,7 @@ TerrainClass::~TerrainClass(void)
  *   11/22/1994 JLB : Shares base damage handler for techno objects.                           *
  *   12/11/1994 JLB : Shortens attached burning animations.                                    *
  *=============================================================================================*/
-ResultType TerrainClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType TerrainClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
     Validate();
     ResultType res = RESULT_NONE;
@@ -149,7 +149,7 @@ ResultType TerrainClass::Take_Damage(int& damage, int distance, WarheadType warh
     */
     if ((!IsOnFire || warhead == WARHEAD_FIRE) && warhead != WARHEAD_SA && !Class->IsImmune) {
 
-        res = ObjectClass::Take_Damage(damage, distance, warhead, source);
+        res = ObjectClass::Take_Damage(damage, distance, warhead, source, unk);
 
         if (damage && warhead == WARHEAD_FIRE) {
             Catch_Fire();
@@ -276,7 +276,7 @@ TerrainClass::TerrainClass(TerrainType type, CELL cell)
     IsSporing = false;
     IsCrumbling = false;
     IsOnFire = false;
-    Strength = Class->MaxStrength;
+    Strength = Class->MaxStrength + Mod1;
     if (cell != -1) {
         if (!Unlimbo(Cell_Coord(cell))) {
             delete this;

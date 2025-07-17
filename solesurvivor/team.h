@@ -186,6 +186,8 @@ public:
     {
         return RTTI_TEAM;
     };
+    virtual void Destruct();
+    
     static void operator delete(void* ptr);
     static void* operator new(size_t, void* ptr)
     {

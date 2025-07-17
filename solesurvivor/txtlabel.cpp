@@ -61,7 +61,6 @@ TextLabelClass::TextLabelClass(char* txt, int x, int y, int color, TextPrintType
     Style = style;
     UserData = 0;
     PixWidth = -1;
-    Segments = 0;
 }
 
 /***********************************************************************************************
