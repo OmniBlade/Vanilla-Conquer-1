@@ -457,5 +457,6 @@ extern bool CratesDisabled;
 extern int WDTCrateSteel;
 extern int WDTCrateGreen;
 extern int WDTCrateOrange;
+extern TimerClass WDTGameTimer;
 
 #endif

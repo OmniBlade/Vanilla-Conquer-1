@@ -95,6 +95,10 @@
 
 #include "function.h"
 #include "ccini.h"
+#include "ini.h"
+
+bool UnitClass::IsNewAllowed;
+bool UnitClass::IsDeleteAllowed;
 
 /***********************************************************************************************
  * UnitClass::Validate -- validates unit pointer.															  *
@@ -126,6 +130,273 @@ int UnitClass::Validate(void) const
 #else
 #define Validate()
 #endif
+
+void Read_Host_Game_Params(GAMEPARAMS* params)
+{
+    char buffer[200];
+
+    //Check added in 1.05
+    if (GameToPlay != GAME_HOST || OfflineMode)
+        return;
+
+    CDFileClass fc("SERVER.INI");
+    INIClass ini;
+    ini.Load(fc);
+
+    params->TimeLimit = ini.Get_Int("GameParms", "TimeLimit", 0);
+    params->ScoreLimit = ini.Get_Int("GameParms", "ScoreLimit", 0);
+    params->LifeLimit = ini.Get_Int("GameParms", "LifeLimit", 0);
+    params->IsCaptureTheFlag = ini.Get_Int("GameParms", "CaptureTheFlag", 0);
+    params->NumCTFStructures = ini.Get_Int("GameParms", "NumCTFStructures", 4);
+
+    if (params->NumCTFStructures < 0) {
+        params->NumCTFStructures = 0;
+    } else if (params->NumCTFStructures > 20) {
+        params->NumCTFStructures = 20;
+    }
+
+    params->AIUnitsPer10min = ini.Get_Int("GameParms", "AIUnitsPer10min", 3);
+    params->MaxAIUnits = ini.Get_Int("GameParms", "MaxAIUnits", 5);
+    params->AIBuildingsPer10min = ini.Get_Int("GameParms", "AIBuildingsPer10min", 3);
+    params->MaxAIBuildings = ini.Get_Int("GameParms", "MaxAIBuildings", 5);
+    params->IsMaxNumAIsScaled = ini.Get_Int("GameParms", "IsMaxNumAIsScaled", 0);
+    params->NoReshroud = ini.Get_Int("GameParms", "NoReshroud", 0);
+    params->IsLadderGame = ini.Get_Int("GameParms", "IsLadderGame", 1);
+    params->IsCrates = ini.Get_Int("GameParms", "IsCrates", 1);
+    params->ResetTeamsInCTF = ini.Get_Int("GameParms", "ResetTeamsInCTF", 1);
+    params->AllowFlagSitting = ini.Get_Int("GameParms", "AllowFlagSitting", 1);
+    params->HealthBars = ini.Get_Int("GameParms", "HealthBars", 0);
+
+    if (params->HealthBars >= 1) {
+        //Special.IsBarOn = true;
+    }
+
+    if (params->HealthBars >= 2) {
+        //Special.IsHealthBar = true;
+    }
+
+    params->FreeRadarForAll = ini.Get_Int("GameParms", "FreeRadarForAll", 0);
+
+    if (!params->IsCrates) {
+        params->FreeRadarForAll = 1;
+    }
+
+    params->LosePowerups = ini.Get_Int("GameParms", "LosePowerups", 1);
+    params->Football = ini.Get_Int("GameParms", "Football", 0);
+
+    if (params->IsCaptureTheFlag) {
+        params->Football = 0;
+    }
+
+    params->FootballNumFlags = ini.Get_Int("GameParms", "FootballNumFlags", 0);
+    if (params->FootballNumFlags < 1) {
+        params->FootballNumFlags = 1;
+    } else if (params->FootballNumFlags > 2) {
+        params->FootballNumFlags = 2;
+    }
+
+    params->MinPlayers = ini.Get_Int("GameParms", "MinPlayers", 2);
+    params->IonCannon = ini.Get_Int("GameParms", "IonCannon", 1);
+    params->TeamCrates = ini.Get_Int("GameParms", "TeamCrates", 1);
+    params->SuperSeconds = ini.Get_Int("GameParms", "SuperSeconds", 30);
+    params->ArmageddonTimer = ini.Get_Int("GameParms", "ArmageddonTimer", 800);
+    params->SuperInvuln = ini.Get_Int("GameParms", "SuperInvuln", 1);
+
+    WDTCrateSteel = ini.Get_Int("Crates", "Steel", 50);
+    WDTCrateGreen = ini.Get_Int("Crates", "Green", 100);
+    WDTCrateOrange = ini.Get_Int("Crates", "Orange", 10);
+
+    if (WDTCrateSteel < 0 || WDTCrateGreen < 0 || WDTCrateOrange < 0
+        || WDTCrateSteel + WDTCrateGreen + WDTCrateOrange > 1000) {
+        WDTCrateSteel = 50;
+        WDTCrateGreen = 100;
+        WDTCrateOrange = 10;
+    }
+
+    params->Steel = WDTCrateSteel;
+    params->Green = WDTCrateGreen;
+    params->Orange = WDTCrateOrange;
+
+    if (params->ArmageddonTimer < 100) {
+        params->ArmageddonTimer = 100;
+    }
+
+    //introduced in Sole 1.01, always true since Sole 1.03
+    params->IsLamerCorrection = true; // ini.Get_IntA("GameParms", "IsLamerCorrection", 0);
+    params->CrateDensityOverride = ini.Get_Int("GameParms", "CrateDensityOverride", 0);
+    params->NumTeams = ini.Get_Int("GameParms", "NumTeams", 999);
+    params->PlayersPerTeam = ini.Get_Int("GameParms", "PlayersPerTeam", 999);
+    params->AllowNoTeam = ini.Get_Int("GameParms", "AllowNoTeam", 999);
+    params->AllowPickTeam = ini.Get_Int("GameParms", "AllowPickTeam", 999);
+    ini.Get_String("Login", "Channel", "Unknown", params->ChannelName, sizeof(params->ChannelName));
+    params->IsSquadChannel = ini.Get_Int("GameParms", "IsSquadChannel", 0);
+    params->PasswordCountdownSeconds = ini.Get_Int("GameParms", "PasswordCountdownSeconds", 30);
+    params->IsAutoTeaming = ini.Get_Int("GameParms", "IsAutoTeaming", 0);
+
+    if (params->IsAutoTeaming && params->NumTeams > 1) {
+        params->AllowNoTeam = 1;
+        params->AllowPickTeam = 0;
+    } else {
+        params->IsAutoTeaming = 0;
+    }
+
+    //Parsing weapon stats was added in 1.05
+    for (int index = 0; index < WEAPON_COUNT; index++) {
+        sprintf(buffer, "WEAPON_%02d_DAMAGE", index);
+        Weapons[index].Attack = ini.Get_Int("Weapons", buffer, 100);
+        sprintf(buffer, "WEAPON_%02d_ROF", index);
+        Weapons[index].ROF = ini.Get_Int("Weapons", buffer, 100);
+        sprintf(buffer, "WEAPON_%02d_RANGE", index);
+        Weapons[index].Range = ini.Get_Int("Weapons", buffer, 100);
+    }
+}
+
+void Host_Timer_Check_Loop(GAMEPARAMS* params)
+{
+    int i;
+    int spectators;
+    int players;
+    HousesType house;
+
+    if (GameToPlay == GAME_HOST) {
+        if (params->TimeLimit > 0) {
+            if (WDTGameTimer.Time() / 3600 >= params->TimeLimit) {
+                house = Who_Won_Or_Lost(params);
+                Host_Send_Game_Results_Packet_To_All(house);
+                Host_Send_Scenario_Change_Packet();
+            }
+        }
+
+        if (params->ScoreLimit > 0) {
+            for (i = 0; i < ActivePlayers.Count(); i++) {
+                if (ActivePlayers[i]->HousePtr->Int2 >= params->ScoreLimit) {
+                    house = Who_Won_Or_Lost(params);
+                    Host_Send_Game_Results_Packet_To_All(house);
+                    Host_Send_Scenario_Change_Packet();
+                }
+            }
+        }
+
+        if (params->LifeLimit > 0) {
+            players = 0;
+            spectators = 0;
+            for (i = 0; i < ActivePlayers.Count(); i++) {
+                if (ActivePlayers[i]->HousePtr->Class->House != HOUSE_SPECTATOR
+                    && ActivePlayers[i]->HousePtr->Class->House != HOUSE_ADMIN) {
+                    players++;
+                    if (!ActivePlayers[i]->HousePtr->IsVisionary) {
+                        spectators++;
+                    }
+                }
+            }
+            if ((players > 1 && spectators <= 1) || (players == 1 && !spectators)) {
+                house = Who_Won_Or_Lost(params);
+                Host_Send_Game_Results_Packet_To_All(house);
+                Host_Send_Scenario_Change_Packet();
+            }
+        }
+    }
+}
+
+HousesType Who_Won_Or_Lost(GAMEPARAMS* params)
+{
+    int index;
+    int points;
+    int highest_index;
+    int count;
+
+    if (GameParams.NumTeams == 0) {
+        points = 0;
+        highest_index = -1;
+
+        for (index = 0; index < ActivePlayers.Count(); index++) {
+            if (ActivePlayers[index]->HousePtr->Class->House == HOUSE_SPECTATOR
+                || ActivePlayers[index]->HousePtr->Class->House == HOUSE_ADMIN) {
+                continue;
+            }
+
+            if (params->LifeLimit > 0
+                && (ActivePlayers[index]->HousePtr->IsVisionary
+                    || (ActivePlayers[index]->HousePtr->Int1 >= params->LifeLimit
+                        && ActivePlayers[index]->HousePtr->IsDefeated))) {
+                continue;
+            }
+
+            if (ActivePlayers[index]->HousePtr->Int2 <= points) {
+                continue;
+            }
+
+            highest_index = index;
+            points = ActivePlayers[index]->HousePtr->Int2;
+        }
+
+        if (highest_index == -1) {
+            return HOUSE_NONE;
+        }
+
+        count = 0;
+        for (index = 0; index < ActivePlayers.Count(); index++) {
+            if (ActivePlayers[index]->HousePtr->Class->House == HOUSE_SPECTATOR
+                || ActivePlayers[index]->HousePtr->Class->House == HOUSE_ADMIN) {
+                continue;
+            }
+
+            if (params->LifeLimit > 0
+                && (ActivePlayers[index]->HousePtr->IsVisionary
+                    || (ActivePlayers[index]->HousePtr->Int1 >= params->LifeLimit
+                        && ActivePlayers[index]->HousePtr->IsDefeated))) {
+                continue;
+            }
+
+            if (ActivePlayers[index]->HousePtr->Int2 != points) {
+                continue;
+            }
+
+            count++;
+        }
+        if (count > 1) {
+            return HOUSE_COUNT;
+        }
+
+        return ActivePlayers[highest_index]->HousePtr->Class->House;
+
+    } else {
+        bool one_team_only = GameParams.IsMaxNumAIsScaled && GameParams.NumTeams == 1 && !GameParams.AllowNoTeam;
+
+        if (one_team_only) {
+            return HOUSE_BLUE_TEAM;
+        }
+        points = 0;
+        highest_index = -1;
+
+        for (index = 0; index < GameParams.NumTeams; index++) {
+            if (TeamScores[index] > points) {
+                highest_index = index;
+                points = TeamScores[index];
+            }
+        }
+
+        if (highest_index == -1) {
+            return HOUSE_NONE;
+        }
+
+        count = 0;
+
+        for (index = 0; index < GameParams.NumTeams; index++) {
+            if (TeamScores[index] == points) {
+                count++;
+            }
+        }
+
+        if (count > 1) {
+            return HOUSE_COUNT;
+        }
+
+        return (HousesType)(highest_index + HOUSE_BLUE_TEAM);
+    }
+
+    return (HOUSE_NONE);
+}
 
 /***********************************************************************************************
  * Recoil_Adjust -- Adjust pixel values in direction specified.                                *
@@ -315,6 +586,7 @@ COORDINATE UnitClass::Sort_Y(void) const
  *=============================================================================================*/
 void UnitClass::AI(void)
 {
+    int rof;
     Validate();
 
     /*
@@ -325,6 +597,8 @@ void UnitClass::AI(void)
     }
 
     TarComClass::AI();
+    if (!IsActive)
+        return;
 
     /*
     **	Delete this unit if it finds itself off the edge of the map and it is in
@@ -340,16 +614,12 @@ void UnitClass::AI(void)
     **	Rocket launchers will reload every so often.
     */
     if (*this == UNIT_MSAM && Ammo < Class->MaxAmmo) {
-        if (IsDriving) {
-            Reload = Reload + 1;
-        } else {
-            if (Reload.Expired()) {
-                Ammo++;
-                if (Ammo < Class->MaxAmmo) {
-                    Reload = TICKS_PER_SECOND * 30;
-                }
-                Mark(MARK_CHANGE);
+        if (Reload.Expired()) {
+            Ammo++;
+            if (Ammo < Class->MaxAmmo) {
+                Reload = TICKS_PER_SECOND * 30;
             }
+            Mark(MARK_CHANGE);
         }
     }
 
@@ -425,7 +695,7 @@ void UnitClass::AI(void)
     ** for Jurassic objects, animate them if they're walking
     */
     // Assume funpark mode might be required. ST - 10/14/2019 11:53AM
-    if (Class->IsPieceOfEight) { // && Special.IsJurassic && AreThingiesEnabled) {
+    if (Class->IsPieceOfEight) { // && Special.IsJurassic) {
         // Only animate if they're walking
         if (IsDriving || IsFiring) {
             if (!Fetch_Rate()) {
@@ -450,6 +720,17 @@ void UnitClass::AI(void)
         && (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA) && MissionQueue == MISSION_NONE
         && Map[Coord_Cell(Coord)].Cell_Building() != NULL) {
         Scatter(0, true, true);
+    }
+
+    /*
+	**	Check for demolition timeout. When timeout has expired, the unit explodes.
+	*/
+    if (IsGoingToBlow && CountDown.Expired()) {
+        int damage = 300;
+        new AnimClass(Class->Explosion, Coord);
+        Take_Damage(damage, 0, WARHEAD_FIRE, As_Techno(WhomToRepay), true);
+        Mark(MARK_CHANGE);
+        IsGoingToBlow = false;
     }
 
     /*
@@ -824,7 +1105,7 @@ bool UnitClass::Unlimbo(COORDINATE coord, DirType dir)
  *   06/30/1995 JLB : Lasers do maximum damage against gunboat.                                *
  *   08/16/1995 JLB : Harvester crushing doesn't occur on early missions.                      *
  *=============================================================================================*/
-ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
+ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source, bool unk)
 {
     Validate();
     ResultType res = RESULT_NONE;
@@ -847,7 +1128,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
     **	In order for a this to be damaged, it must either be a unit
     **	with a crew or a sandworm.
     */
-    res = TarComClass::Take_Damage(damage, distance, warhead, source);
+    res = TarComClass::Take_Damage(damage, distance, warhead, source, unk);
 
     if (res == RESULT_DESTROYED) {
         Death_Announcement(source);
@@ -864,6 +1145,10 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
 
             if (*this == UNIT_TRIC || *this == UNIT_TREX || *this == UNIT_RAPT || *this == UNIT_STEG) {
                 Sound_Effect(VOC_DINODIE1, Coord);
+            } else {
+                //Added after Sole 1.00
+                VocType voc = Sim_Random_Pick(VOC_SCREAM1, VOC_SCREAM5);
+                Sound_Effect(voc, Coord);
             }
 
             new AnimClass(anim, Coord);
@@ -880,7 +1165,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
             **	Very strong units that have an explosion will also rock the
             **	screen when they are destroyed.
             */
-            if (Class->MaxStrength > 400) {
+            if (GameToPlay == GAME_NORMAL && Class->MaxStrength + Mod1 > 400) {
                 Shake_The_Screen(3, Owner());
                 if (source && Owner() != source->Owner()) {
                     Shake_The_Screen(3, source->Owner());
@@ -893,34 +1178,11 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
         */
         Mark(MARK_UP);
         if (Class->IsCrew && !Class->IsTransporter) {
-            if (Random_Pick(0, 1) == 0) {
-                InfantryClass* i = 0;
-                if (Class->Primary == WEAPON_NONE) {
-                    i = new InfantryClass(INFANTRY_C1, House->Class->House);
-                    i->IsTechnician = true;
-                } else {
-                    i = new InfantryClass(INFANTRY_E1, House->Class->House);
-                }
-                if (i) {
-                    if (i->Unlimbo(Coord, DIR_N)) {
-                        i->Strength = Random_Pick(5, (int)i->Class->MaxStrength / 2);
-                        i->Scatter(0, true);
-                        if (!House->IsHuman) {
-                            i->Assign_Mission(MISSION_HUNT);
-                        } else {
-                            i->Assign_Mission(MISSION_GUARD);
-                        }
-                        if (select)
-                            i->Select();
-                    } else {
-                        delete i;
-                    }
-                }
-            }
+            // Do nothing in Sole.
         } else {
             if (*this != UNIT_HOVER) {
                 while (Is_Something_Attached()) {
-                    FootClass* object = Detach_Object();
+                    FootClass* object = Remove_From_Cargo();
 
                     if (!object)
                         break; // How can this happen?
@@ -991,51 +1253,6 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
         }
 
         /*
-        **	Try to crush anyone that fires on this unit if possible. The harvester
-        **	typically is the only one that will qualify here.
-        */
-        if (!Team && source && !IsTethered && !House->Is_Ally(source) && (!House->IsHuman || Special.IsSmartDefense)) {
-
-            /*
-            **	Try to crush the attacker if it can be crushed by this unit and this unit is
-            **	not equipped with a flame type weapon. If this unit has a weapon and the target
-            **	is not very close, then fire on it instead. In easy mode, they never run over the
-            **	player. In hard mode, they always do. In normal mode, they only overrun past
-            **	mission #8.
-            */
-            if ((Class->Primary == WEAPON_NONE
-                 || (Distance(source) < 0x0180
-                     && BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead != WARHEAD_FIRE))
-                && (GameToPlay != GAME_NORMAL || *this != UNIT_HARVESTER || BuildLevel > 8
-                    || PlayerPtr->Difficulty == DIFF_HARD)
-                && !(GameToPlay == GAME_NORMAL && PlayerPtr->Difficulty == DIFF_EASY) && Class->IsCrusher
-                && source->Is_Techno() && ((TechnoTypeClass const&)source->Class_Of()).IsCrushable) {
-
-                Assign_Destination(source->As_Target());
-                Assign_Mission(MISSION_MOVE);
-            } else {
-
-                /*
-                **	Try to return to base if possible.
-                */
-                if (*this == UNIT_HARVESTER && Pip_Count() && Health_Ratio() < 0x0080) {
-                    /*
-                    **	Find nearby refinery and head to it?
-                    */
-                    BuildingClass* building = Find_Docking_Bay(STRUCT_REFINERY, false);
-
-                    /*
-                    **	Since the refinery said it was ok to load, establish radio
-                    **	contact with the refinery and then await docking orders.
-                    */
-                    if (building && Transmit_Message(RADIO_HELLO, building) == RADIO_ROGER) {
-                        Assign_Mission(MISSION_ENTER);
-                    }
-                }
-            }
-        }
-
-        /*
         **	Computer controlled harvester will radio for help if they are attacked.
         */
         if (*this == UNIT_HARVESTER && !House->IsHuman && source) {
@@ -1063,12 +1280,27 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
  *   04/11/1994 JLB : Created.                                                                 *
  *   04/21/1994 JLB : Converted to operator new.                                               *
  *=============================================================================================*/
-void* UnitClass::operator new(size_t) noexcept
+void* UnitClass::operator new(size_t, int heap_index)
 {
-    void* ptr = (UnitClass*)Units.Allocate();
+    TARGET target;
+    NewDeletePacketData* data;
+
+    if (!IsNewAllowed)
+        return NULL;
+
+    void* ptr = Units.Allocate(heap_index);
     if (ptr) {
-        ((UnitClass*)ptr)->Set_Active();
+        ((UnitClass*)ptr)->IsActive = true;
     }
+
+    if (GameToPlay == GAME_HOST) {
+        target = Build_Target(KIND_UNIT, Units.ID((UnitClass*)ptr));
+        data = new NewDeletePacketData;
+        data->IsDeletePacket = false;
+        data->Whom = target;
+        NewDeletePacketDatas.Add(data);
+    }
+
     return (ptr);
 }
 
@@ -1090,12 +1322,22 @@ void* UnitClass::operator new(size_t) noexcept
  *=============================================================================================*/
 void UnitClass::operator delete(void* ptr)
 {
-    if (ptr) {
-        ((UnitClass*)ptr)->IsActive = false;
-    }
-    Units.Free((UnitClass*)ptr);
+    TARGET target;
+    NewDeletePacketData* data;
 
-    // Map.Validate();
+    if (IsDeleteAllowed) {
+        if (ptr) {
+            if (GameToPlay == GAME_HOST) {
+                data = new NewDeletePacketData;
+                target = Build_Target(KIND_UNIT, Units.ID((UnitClass*)ptr));
+                data->Whom = target;
+                data->IsDeletePacket = 1;
+                NewDeletePacketDatas.Add(data);
+            }
+            ((UnitClass*)ptr)->IsActive = false;
+        }
+        Units.Free((UnitClass*)ptr);
+    }
 }
 
 /***********************************************************************************************
@@ -1115,26 +1357,44 @@ void UnitClass::operator delete(void* ptr)
  *=============================================================================================*/
 UnitClass::~UnitClass(void)
 {
+    FootClass* obj;
     if (GameActive && Class) {
-
-#ifdef USE_RA_AI
-        //
-        // Added for RA AI in TD. ST - 7/26/2019 9:12AM
-        //
-        House->Tracking_Remove(this);
-#endif // USE_RA_AI
-
         /*
-        **	If there are any cargo members, delete them.
-        */
+		**	If there are any cargo members, delete them.
+		*/
         while (Is_Something_Attached()) {
-            delete Detach_Object();
+            obj = Remove_From_Cargo();
+            delete obj;
         }
 
         Limbo();
     }
     if (GameActive && Team)
         Team->Remove(this);
+}
+
+void UnitClass::Destruct(void)
+{
+    FootClass* obj;
+    if (GameActive && Class) {
+
+        /*
+		**	If there are any cargo members, delete them.
+		*/
+        while (Is_Something_Attached()) {
+            obj = Remove_From_Cargo();
+            delete obj;
+        }
+
+        Limbo();
+    }
+    if (GameActive && Team)
+        Team->Remove(this);
+
+    if (GameActive && House)
+        --House->CurUnits;
+
+    IsActive = false;
 }
 
 /***********************************************************************************************
@@ -1161,24 +1421,13 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     Flagged = HOUSE_NONE;
     Reload = 0;
     Ammo = Class->MaxAmmo;
+    IsGoingToBlow = false;
+    CountDown.Set(0);
+    WhomToRepay = TARGET_NONE;
     IsCloakable = Class->IsCloakable;
     TiberiumUnloadRefinery = NULL;
     if (Class->IsAnimating)
         Set_Rate(Options.Normalize_Delay(3));
-
-    /*
-    ** Keep count of the number of units created.
-    */
-    if (GameToPlay == GAME_INTERNET) {
-        House->UnitTotals.Increment_Unit_Total((int)classid);
-    }
-
-#ifdef USE_RA_AI
-    //
-    // Added for RA AI in TD. ST - 7/26/2019 9:12AM
-    //
-    House->Tracking_Add(this);
-#endif // USE_RA_AI
 }
 
 /***********************************************************************************************
@@ -1306,31 +1555,7 @@ void UnitClass::Enter_Idle_Mode(bool initial)
                 if (GameToPlay == GAME_NORMAL || House->IsHuman) {
                     order = MISSION_GUARD;
                 } else {
-                    // if (GameToPlay != GAME_NORMAL) {
-#ifndef USE_RA_AI
-                    // Don't use MISSION_TIMED_HUNT since this can trigger the Blitz behavior
-                    order = MISSION_TIMED_HUNT;
-#else
-                    //
-                    // Added for RA AI in TD. ST - 7/26/2019 9:12AM
-                    //
-                    // This applies only to non-human houses in a non-normal game type
-                    //
-                    order = MISSION_GUARD;
-
-                    if (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA) {
-                        return;
-                    }
-
-                    if (!Team) {
-                        if (House->IQ >= Rule.IQGuardArea) {
-                            if (Is_Weapon_Equipped()) {
-                                order = MISSION_GUARD_AREA;
-                            }
-                        }
-                    }
-
-#endif
+                    order = MISSION_HUNT;
 
                     // GB 2022 improvement by TobiasKarnat
                     // This shuffles build units around the base which gives AI
@@ -1434,7 +1659,7 @@ bool UnitClass::Unload_Hovercraft_Process(void)
                     bool first = true;
                     FootClass* secondary = 0;
                     while (Attached_Object()) {
-                        FootClass* u = (FootClass*)Detach_Object();
+                        FootClass* u = (FootClass*)Remove_From_Cargo();
 
                         if (!first && !secondary)
                             secondary = u;
@@ -1655,76 +1880,7 @@ bool UnitClass::Try_To_Deploy(void)
     Validate();
     if (!Target_Legal(NavCom) && !IsRotating) {
         if (*this == UNIT_MCV) {
-
-            /*
-            **	Determine if it is legal to deploy at this location. If not, tell the
-            **	player.
-            */
-            Mark(MARK_UP);
-            if (!BuildingTypeClass::As_Reference(STRUCT_CONST)
-                     .Legal_Placement(Coord_Cell(Adjacent_Cell(Center_Coord(), FACING_NW)))) {
-                if (PlayerPtr == House) {
-                    Speak(VOX_DEPLOY);
-                }
-                Mark(MARK_DOWN);
-                IsDeploying = false;
-                return (false);
-            }
-            Mark(MARK_DOWN);
-
-            /*
-            **	If the unit is not facing the correct direction, then start it rotating
-            **	toward the right facing, but still flag it as if it had deployed. This is
-            **	because it will deploy as soon as it reaches the correct facing.
-            */
-            if (PrimaryFacing.Current() != DIR_SW) {
-                Do_Turn(DIR_SW);
-                //				PrimaryFacing.Set_Desired(DIR_SW);
-                IsDeploying = true;
-                return (true);
-            }
-
-            /*
-            **	Since the unit is already facing the correct direction, actually do the
-            **	deploy logic. If for some reason this cannot occur, then don't delete the
-            **	unit, just mark it as not deploying.
-            */
-            Mark(MARK_UP);
-            BuildingClass* building = new BuildingClass(STRUCT_CONST, House->Class->House);
-            if (building) {
-                if (building->Unlimbo(Adjacent_Cell(Coord, FACING_NW))) {
-
-                    /*
-                    **	Always reveal the construction yard to the player that owned the
-                    **	mobile construction vehicle.
-                    */
-                    building->Revealed(House);
-
-                    /*
-                    **	Force the newly placed construction yard to be in the same strength
-                    **	ratio as the MCV that deployed into it.
-                    */
-                    int ratio = Health_Ratio();
-                    building->Strength = Fixed_To_Cardinal(building->Class->MaxStrength, ratio);
-                    /*
-                    ** Force the MCV to drop any flag it was carrying.  This will also set
-                    ** the owner house's flag home cell (since the house's FlagHome is
-                    ** presumably 0 at this point).
-                    */
-                    Stun();
-                    Delete_This();
-                    return (true);
-                } else {
-
-                    /*
-                    **	Could not deploy the construction yard at this location! Just revert
-                    **	back to normal "just sitting there" mode and await further instructions.
-                    */
-                    delete building;
-                }
-            }
-            Mark(MARK_DOWN);
-            IsDeploying = false;
+            PlayerPtr->Blowup_All();
         }
     }
     return (false);
@@ -1754,7 +1910,6 @@ void UnitClass::Per_Cell_Process(bool center)
     Validate();
     CELL cell = Coord_Cell(Coord);
     TechnoClass* whom;
-    HousesType house;
 
     /*
     **	If this is a unit that is driving onto a building then the unit must enter
@@ -1773,7 +1928,7 @@ void UnitClass::Per_Cell_Process(bool center)
                     SpecialFlag = true;
                     Limbo();
                     SpecialFlag = false;
-                    whom->Attach(this);
+                    whom->Add_To_Cargo(this);
                     return;
 
                 default:
@@ -1828,48 +1983,6 @@ void UnitClass::Per_Cell_Process(bool center)
         }
     }
 
-#ifdef OBSOLETE
-    /*
-    **	If this unit is on a teather, then cut it at this time so that
-    **	the "parent" unit is free to proceed. Note that the parent
-    **	unit might actually be a building.
-    */
-    if (IsTethered && center && !Map[cell].Cell_Building()) {
-        if (!Tiberium || *this != UNIT_HARVESTER) {
-            Transmit_Message(RADIO_UNLOADED);
-            if (*this == UNIT_HARVESTER) {
-                if (Target_Legal(ArchiveTarget)) {
-                    Assign_Mission(MISSION_HARVEST);
-                    Assign_Destination(ArchiveTarget);
-                    ArchiveTarget = TARGET_NONE;
-                } else {
-
-                    /*
-                    **	Since there is no place to go, move away to clear
-                    **	the pad for another harvester.
-                    */
-                    Scatter(0, true);
-                }
-            }
-        }
-    }
-#endif
-
-#ifdef OBSOLETE
-    /*
-    ** If the unit is at the center of the repair facility, and that was his
-    ** destination, then start him repairing.
-    */
-    if (center && !IsRepairing) {
-        BuildingClass* b = As_Building(NavCom);
-        if (b && *b == STRUCT_REPAIR && Coord == b->Center_Coord()) {
-            NavCom = 0;
-            IsRepairing = true;
-            Transmit_Message(RADIO_REPAIR_BEGIN_ANIM);
-        }
-    }
-#endif
-
     /*
     **	Check to see if this is merely the end of a rotation for the MCV as it is
     **	preparing to deploy. In this case, it should begin its deploy process.
@@ -1910,25 +2023,6 @@ void UnitClass::Per_Cell_Process(bool center)
         }
     }
 
-#ifdef OBSOLETE
-    /*
-    **	Destroy any crushable wall that is driven over by a tracked vehicle.
-    */
-    CellClass* cellptr = &Map[cell];
-    if (center && Class->Speed == SPEED_TRACK && cellptr->Overlay != OVERLAY_NONE) {
-        OverlayTypeClass const* optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
-
-        if (optr->IsCrushable) {
-            cellptr->Reduce_Wall(100);
-            cellptr->Reduce_Wall(100);
-            cellptr->Reduce_Wall(100);
-            cellptr->Reduce_Wall(100);
-            cellptr->Reduce_Wall(100);
-            cellptr->Reduce_Wall(100);
-        }
-    }
-#endif
-
     /*
     **	Check to see if crushing of any unfortunate infantry is warranted.
     */
@@ -1952,55 +2046,6 @@ void UnitClass::Per_Cell_Process(bool center)
     */
     if (center) {
         Commence();
-    }
-
-    /*
-    **	Certain units require some setup time after they come to a halt.
-    */
-    if (Special.IsDefenderAdvantage && /*center &&*/ !Target_Legal(NavCom) && Path[0] == FACING_NONE) {
-        if (*this == UNIT_MLRS || *this == UNIT_ARTY || *this == UNIT_MSAM) {
-            Arm = Rearm_Delay(false) * 2;
-        }
-    }
-
-    /*
-    **	If there is a house flag here, then this unit just might pick it up.
-    */
-    if (center && Flagged == HOUSE_NONE) {
-
-        if (Map[cell].IsFlagged && !House->Is_Ally(Map[cell].Owner)) {
-            HouseClass::As_Pointer(Map[cell].Owner)->Flag_Attach(this);
-        }
-    }
-
-    /*
-    **	If this is the unit's own flag-home-cell and the unit is carrying
-    ** a flag, destroy the house of the flag the unit is carrying.
-    */
-    if (Flagged != HOUSE_NONE) {
-
-        /*
-        **	If this vehicle is carrying your flag, then it will reveal the
-        **	map for you as well as itself. This gives you and opportunity to
-        **	attack the unit.
-        */
-        if (!IsOwnedByPlayer && Flagged == PlayerPtr->Class->House) {
-            Map.Sight_From(House,
-                           Coord_Cell(Coord),
-                           Class->SightRange,
-                           true); // Passed our house into Map.Sight_From since it now needs to know who it is
-                                  // performing the action on behalf of. ST - 3/28/2019 2:55PM
-        }
-
-        /*
-        **	If the flag reaches the home cell for the player, then the flag's
-        **	owner will be destroyed.
-        */
-        if (cell == HouseClass::As_Pointer(Owner())->FlagHome && center) {
-            house = Flagged; // Flag_Remove will clear 'Flagged', so save it
-            HouseClass::As_Pointer(house)->Flag_Remove(As_Target(), true);
-            HouseClass::As_Pointer(house)->Flag_To_Die();
-        }
     }
 
     TarComClass::Per_Cell_Process(center);
@@ -2552,7 +2597,7 @@ int UnitClass::Mission_Unload(void)
 
         case UNLOADING:
             if (How_Many()) {
-                FootClass* passenger = Detach_Object();
+                FootClass* passenger = Remove_From_Cargo();
 
                 if (passenger) {
                     DirType toface = DIR_S + PrimaryFacing;
@@ -2578,7 +2623,7 @@ int UnitClass::Mission_Unload(void)
                     **	it and then bail out of this deploy process.
                     */
                     if (!placed) {
-                        Attach(passenger);
+                        Add_To_Cargo(passenger);
                         Status = CLOSING_DOOR;
                     } else {
                         passenger->Look(false);
@@ -2606,43 +2651,26 @@ int UnitClass::Mission_Unload(void)
     case UNIT_MCV:
         switch (Status) {
         case 0:
-            Path[0] = FACING_NONE;
+            if (GameToPlay != GAME_CLIENT && Path[0] != FACING_NONE) {
+                Path[0] = FACING_NONE;
+            }
             Status = 1;
             break;
 
         case 1:
             if (!IsDriving) {
                 Try_To_Deploy();
-                if (IsDeploying) {
-                    Status = 2;
-                } else {
-                    /*
-                    ** Functionality from Red Alert for AI. ST - 7/25/2019 3:09PM
-                    */
-#ifndef USE_RA_AI
-                    Assign_Mission(MISSION_GUARD);
-#else  // USE_RA_AI
-                    if (!House->IsHuman && GameToPlay != GAME_NORMAL) {
-                        Assign_Mission(MISSION_HUNT);
+                if (IsActive) {
+                    if (IsDeploying) {
+                        Status = 2;
                     } else {
                         Assign_Mission(MISSION_GUARD);
                     }
-#endif // USE_RA_AI
                 }
             }
             break;
 
         case 2:
-#ifdef USE_RA_AI
-            /*
-            ** Functionality from Red Alert for AI. ST - 7/25/2019 3:09PM
-            */
-            if (GameToPlay != GAME_NORMAL) {
-                if (!IsDeploying) {
-                    Assign_Mission(MISSION_GUARD);
-                }
-            }
-#endif // USE_RA_AI
             break;
         }
         return (1);
@@ -2933,9 +2961,8 @@ int UnitClass::Mission_Enter(void)
 void UnitClass::Look(bool incremental)
 {
     Validate();
-    // if (!IsInLimbo && IsOwnedByPlayer) {				// Changed for mapping of multiple players
-    if (!IsInLimbo && House && (House->IsHuman || GameToPlay != GAME_NORMAL)) {
-        int sight = Class->SightRange;
+    if (!IsInLimbo && (Is_Owned_By_Player() || House == PlayerPtr || PlayerPtr->Is_Ally(Owner()))) {
+        int sight = Class->SightRange + (Mod5 / 256);
 
         if (sight) {
             Map.Sight_From(House,
@@ -2972,6 +2999,8 @@ short const* UnitClass::Overlap_List(void) const
     Validate();
     static short const _gunboat[] = {-3, -2, 2, 3, REFRESH_EOL};
     int size;
+    int len;
+    HouseClass* hptr;
 
     /*
     **	The gunboat is a special case.
@@ -2985,113 +3014,34 @@ short const* UnitClass::Overlap_List(void) const
         size += 24;
     }
     if (Is_Selected_By_Player() || Class->IsGigundo || IsAnimAttached || Flagged != HOUSE_NONE) {
+        if (AnimRefCount > 0) {
+            size = ICON_PIXEL_W * 11;
+            return Coord_Spillage_List(Coord, size);
+        }
         size = ICON_PIXEL_W * 2;
     }
+
+    if (TechnoUnk1 && (ShowNames == 1 || IsSelected)
+        && (Cloak != CLOAKED || House->Is_Ally(PlayerPtr) || (IsServerAdmin && !OfflineMode)
+            || PlayerPtr->Class->House == HOUSE_SPECTATOR)) {
+        if (PlayerNameDrawStyle == 3) {
+            Fancy_Text_Print("", 0, 0, 15, 0, TPF_3POINT | TPF_CENTER | TPF_FULLSHADOW);
+        } else {
+            Fancy_Text_Print("", 0, 0, 15, 0, TPF_8POINT | TPF_CENTER | TPF_FULLSHADOW);
+        }
+
+        hptr = HouseClass::As_Pointer(Owner());
+        if (hptr) {
+            len = String_Pixel_Width(hptr->Name) + 12;
+        } else {
+            len = 0;
+        }
+        size += FontHeight + 6;
+        size = MAX(len, size);
+    }
+
     return (Coord_Spillage_List(Coord, size) + 1);
 }
-
-#ifdef NEVER
-/********************************************************************************************* *
- * UnitClass::Blocking_Object -- Determines how a object blocks a unit                         *
- *                                                                                             *
- *    This routine is used by the Can_Enter_Cell logic when an object is in the desired cell   *
- *    and it needs to know if that causes blockage. If blocked, this routine will return why.  *
- *                                                                                             *
- * INPUT:      TechnoClass * pointer to object that is blocking unit                           *
- *                                                                                             *
- *               CELL           the cell the unit is being blocked in                          *
- *                                                                                             *
- * OUTPUT:      MoveBitType the way that the object is blocking the unit                       *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/08/1995 PWG : Created.                                                                 *
- *=============================================================================================*/
-MoveBitType UnitClass::Blocking_Object(TechnoClass const* techno, CELL cell) const
-{
-    Validate();
-    /*
-    ** There are some extra checks we need to make if the techno is a unit
-    */
-    bool unit = (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT);
-    CellClass const* cellptr = &Map[cell];
-
-    if (House->Is_Ally(techno)) {
-
-        if (techno == Contact_With_Whom() && IsTethered) {
-            return (MOVE_BIT_OK);
-        }
-
-        if (unit) {
-            /*
-            ** If the unit in question has a destination than we should
-            ** be prepared to wait for the unit to get out of our way.
-            */
-            if (((FootClass*)techno)->NavCom != TARGET_NONE) {
-                int face = Dir_Facing(PrimaryFacing);
-                int techface = Dir_Facing(((FootClass const*)techno)->PrimaryFacing) ^ 4;
-                if (face != techface && Distance((AbstractClass const*)techno) > 0x1FF) {
-                    return (MOVE_BIT_MOVING_BLOCK);
-                } else {
-                    //					Mono_Printf("Move No!\r");
-                    return (MOVE_BIT_NO);
-                }
-            }
-
-            return (MOVE_BIT_TEMP);
-        }
-    } else {
-
-        /*
-        ** If its an enemy unit, things are dealt with a little differently
-        */
-        if (unit) {
-
-#ifdef NEVER
-            /*
-            ** If this is an enemy unit and we are not doing a find path then
-            ** we need to tell the unit to uncloak just in case it is a
-            ** stealth tank.
-            */
-            if (!IsFindPath) {
-                techno->Do_Uncloak();
-            }
-#endif
-
-            /*
-            ** Can we just run it over?
-            */
-            if (techno->Class_Of().IsCrushable && (cellptr->Flag.Composite & 0xE0) == 0 && Class->IsCrusher) {
-
-                /*
-                ** Now lets run it over.
-                */
-                return (MOVE_BIT_OK);
-            }
-
-            /*
-            **	If the object is cloaked, then consider it passable for findpath purposes,
-            **	but not so for all other cases.
-            */
-            if (techno->Cloak == CLOAKED) {
-                if (House == techno->House)
-                    return (MOVE_BIT_NO);
-                if (IsFindPath)
-                    return (MOVE_BIT_OK);
-                return (MOVE_BIT_CLOAK);
-            }
-
-            /*
-            **	If our vehicle is weapon equipped, then report that the cell occupier
-            **	needs only to be destroyed in order to make the cell passable.
-            */
-            if (Class->Primary != WEAPON_NONE) {
-                return (MOVE_BIT_DESTROYABLE);
-            }
-        }
-    }
-    return (MOVE_BIT_NO);
-}
-#endif
 
 /***********************************************************************************************
  * UnitClass::Can_Enter_Cell -- Determines cell entry legality.                                *
@@ -3124,6 +3074,10 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
     if ((unsigned)cell >= MAP_CELL_TOTAL)
         return (MOVE_NO);
 
+    if (GameToPlay == GAME_CLIENT) {
+        return MOVE_OK;
+    }
+
     /*
     **	The gunboat can always move. This prevents it from trying to move around possible hover
     **	craft blockage.
@@ -3148,7 +3102,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
     if (cellptr->Overlay != OVERLAY_NONE) {
         OverlayTypeClass const* optr = &OverlayTypeClass::As_Reference(cellptr->Overlay);
 
-        if (optr->IsCrate && !House->IsHuman) {
+        if (optr->IsCrate && !House->IsHuman && GameToPlay == GAME_NORMAL) {
             return (MOVE_NO);
         }
 
@@ -3231,45 +3185,35 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
                 if (!obj->Is_Techno() || ((TechnoClass*)obj)->Cloak != CLOAKED) {
 
                     /*
-                    **	If this unit can crush infantry, and there is an enemy infantry in the
-                    **	cell, don't consider the cell impassible. This is true even if the unit
-                    **	doesn't contain a legitimate weapon.
+                    **	Any non-allied blockage is considered impassible if the unit
+                    **	is not equipped with a weapon.
                     */
-                    if (!Class->IsCrusher || !obj->Class_Of().IsCrushable) {
+                    if (Class->Primary == WEAPON_NONE)
+                        return (MOVE_NO);
 
-                        /*
-                        **	Any non-allied blockage is considered impassible if the unit
-                        **	is not equipped with a weapon.
-                        */
-                        if (Class->Primary == WEAPON_NONE)
-                            return (MOVE_NO);
+                    /*
+                    **	Some kinds of terrain are considered destroyable if the unit is equipped
+                    **	with the weapon that can destroy it. Otherwise, the terrain is considered
+                    **	impassable.
+                    */
+                    switch (obj->What_Am_I()) {
+                    case RTTI_TERRAIN:
+                        if (((TerrainClass*)obj)->Class->IsFlammable
+                            && BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead == WARHEAD_FIRE) {
 
-                        /*
-                        **	Some kinds of terrain are considered destroyable if the unit is equipped
-                        **	with the weapon that can destroy it. Otherwise, the terrain is considered
-                        **	impassable.
-                        */
-                        switch (obj->What_Am_I()) {
-                        case RTTI_TERRAIN:
-                            if (((TerrainClass*)obj)->Class->IsFlammable
-                                && BulletTypeClass::As_Reference(Weapons[Class->Primary].Fires).Warhead
-                                       == WARHEAD_FIRE) {
-
-                                if (retval < MOVE_DESTROYABLE)
-                                    retval = MOVE_DESTROYABLE;
-                            } else {
-                                return (MOVE_NO);
-                            }
-                            break;
-
-                        default:
                             if (retval < MOVE_DESTROYABLE)
                                 retval = MOVE_DESTROYABLE;
-                            break;
+                        } else {
+                            return (MOVE_NO);
                         }
-                    } else {
-                        crushable = true;
+                        break;
+
+                    default:
+                        if (retval < MOVE_DESTROYABLE)
+                            retval = MOVE_DESTROYABLE;
+                        break;
                     }
+                    crushable = true;
                 } else {
                     if (retval < MOVE_CLOAK)
                         retval = MOVE_CLOAK;
@@ -3305,12 +3249,10 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
                 **	cell destroyable if it has a weapon. If neither case applies, then
                 **	this vehicle should avoid the cell altogether.
                 */
-                if (!Class->IsCrusher) {
-                    if (Class->Primary != WEAPON_NONE) {
-                        retval = MOVE_DESTROYABLE;
-                    } else {
-                        return (MOVE_NO);
-                    }
+                if (Class->Primary != WEAPON_NONE) {
+                    retval = MOVE_DESTROYABLE;
+                } else {
+                    return (MOVE_NO);
                 }
             }
         }
@@ -3361,6 +3303,11 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
  *=============================================================================================*/
 void UnitClass::Init(void)
 {
+    IsNewAllowed = true;
+    IsDeleteAllowed = true;
+    for (int i = 0; i < Units.Length(); i++) {
+        Units.Raw_Ptr(i)->IsActive = false;
+    }
     Units.Free_All();
 }
 
@@ -3668,11 +3615,7 @@ ActionType UnitClass::What_Action(ObjectClass* object) const
     **	the object as a movable location.
     */
     if (action == ACTION_ATTACK && !Can_Player_Fire()) {
-        if (Class->IsCrusher && object->Class_Of().IsCrushable) {
-            action = ACTION_MOVE;
-        } else {
-            action = ACTION_SELECT;
-        }
+        action = ACTION_SELECT;
     }
 
     /*
@@ -3784,7 +3727,7 @@ void UnitClass::Read_INI(CCINIClass& ini)
         if (inhouse != HOUSE_NONE) {
             classid = UnitTypeClass::From_Name(strtok(NULL, ","));
 
-            if (classid != UNIT_NONE) {
+            if (classid != UNIT_NONE && UnitClass::New_Allowed()) {
 
                 if (HouseClass::As_Pointer(inhouse) != NULL) {
                     unit = new UnitClass(classid, inhouse);
@@ -3812,7 +3755,7 @@ void UnitClass::Read_INI(CCINIClass& ini)
                         }
 
                         if (unit->Unlimbo(coord, dir)) {
-                            unit->Strength = Fixed_To_Cardinal(unit->Class->MaxStrength, strength);
+                            unit->Strength = Fixed_To_Cardinal(unit->Class->MaxStrength + unit->Mod1, strength);
                             if (GameToPlay == GAME_NORMAL || unit->House->IsHuman) {
                                 unit->Assign_Mission(mission);
                                 unit->Commence();
@@ -4165,58 +4108,6 @@ int UnitClass::Mission_Attack(void)
 }
 
 /***********************************************************************************************
- * UnitClass::Flag_Attach -- Attaches a house flag to this unit.                               *
- *                                                                                             *
- *    This routine will attach a house flag to this unit.                                      *
- *                                                                                             *
- * INPUT:   house -- The house that is having its flag attached to it.                         *
- *                                                                                             *
- * OUTPUT:  Was the house flag successfully attached to this unit?                             *
- *                                                                                             *
- * WARNINGS:   A unit can only carry one flag at a time. This might be a reason for failure    *
- *             of this routine.                                                                *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   05/23/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool UnitClass::Flag_Attach(HousesType house)
-{
-    Validate();
-    if (house != HOUSE_NONE && Flagged == HOUSE_NONE) {
-        Flagged = house;
-        Mark(MARK_CHANGE);
-        return (true);
-    }
-    return (false);
-}
-
-/***********************************************************************************************
- * UnitClass::Flag_Remove -- Removes the house flag from this unit.                            *
- *                                                                                             *
- *    This routine will remove the house flag that is attached to this unit.                   *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  Was the flag successfully removed?                                                 *
- *                                                                                             *
- * WARNINGS:   This routine doesn't put the flag into a new location. That operation must      *
- *             be performed or else the house flag will cease to exist.                        *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   05/23/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool UnitClass::Flag_Remove(void)
-{
-    Validate();
-    if (Flagged != HOUSE_NONE) {
-        Flagged = HOUSE_NONE;
-        Mark(MARK_CHANGE);
-        return (true);
-    }
-    return (false);
-}
-
-/***********************************************************************************************
  * UnitClass::Stun -- Stuns the unit in preparation for unit removal.                          *
  *                                                                                             *
  *    This routine intercepts the stun operation for the unit and if there is a house flag     *
@@ -4234,9 +4125,6 @@ bool UnitClass::Flag_Remove(void)
 void UnitClass::Stun(void)
 {
     Validate();
-    if (Flagged != HOUSE_NONE) {
-        HouseClass::As_Pointer(Flagged)->Flag_Attach(Coord_Cell(Coord));
-    }
     TarComClass::Stun();
 }
 

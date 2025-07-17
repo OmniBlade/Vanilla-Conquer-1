@@ -44,6 +44,7 @@
  *   UnitTypeClass::Who_Can_Build_Me -- Determines which factory can build this unit type.     *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+#include "defines.h"
 #include "function.h"
 
 void const* UnitTypeClass::WakeShapes = 0;
@@ -61,7 +62,7 @@ static UnitTypeClass const UnitVisceroid(UNIT_VICE,
                                          true,          // Always use the given name for the vehicle?
                                          false,         //	Is this a typical transport vehicle?
                                          false,         // Can it be crushed by a heavy vehicle?
-                                         true,          // Can this unit squash infantry?
+                                         false,         // Can this unit squash infantry?
                                          false,         // Does this unit harvest Tiberium?
                                          true,          // Is invisible to radar?
                                          true,          // Is selectable by player?
@@ -71,7 +72,7 @@ static UnitTypeClass const UnitVisceroid(UNIT_VICE,
                                          false,         // Is it equipped with a combat turret?
                                          false,         // Fires multiple shots in quick succession?
                                          false,         // Can it be repaired in a repair facility?
-                                         false,         // Can the player construct or order this unit?
+                                         true,          // Can the player construct or order this unit?
                                          false,         // Is there a crew inside?
                                          false,         // Does it have a rotating radar dish?
                                          false,         // Is there an associated firing animation?
@@ -82,23 +83,22 @@ static UnitTypeClass const UnitVisceroid(UNIT_VICE,
                                          false,         // Is the unit capable of cloaking?
                                          true,          // Does the unit have a constant animation?
                                          -1,            // AMMO:			Number of shots it has (default).
-                                         150,           // STRENGTH:	Strength (in damage points).
-                                         4,             // SIGHTRANGE:	Range of sighting.
+                                         300,           // STRENGTH:	Strength (in damage points).
+                                         5,             // SIGHTRANGE:	Range of sighting.
                                          800,           // COST:			Cost to build (Credits).
                                          1,             // SCENARIO:	Starting availability scenario.
                                          80,
                                          20, // RISK/RWRD:	Risk/reward rating values.
-                                         HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                             | HOUSEF_MULTI6 | HOUSEF_GOOD | HOUSEF_BAD | HOUSEF_NEUTRAL
+                                         HOUSEF_GOOD | HOUSEF_BAD | HOUSEF_NEUTRAL
                                              | HOUSEF_JP, // OWNABLE:		Ownable by house (bit field).
                                          WEAPON_CHEMSPRAY,
                                          WEAPON_NONE,
-                                         ARMOR_WOOD,  // ARMOR:		Armor type
-                                         SPEED_TRACK, // MOVE:			Locomotion type.
-                                         MPH_MEDIUM,  // SPEED:		Miles per hour.
-                                         5,           // ROT:			Rate of turn (degrees per tick).
-                                         0,           // Turret center offset along body centerline.
-                                         MISSION_HUNT // ORDERS:		Default order to give new unit.
+                                         ARMOR_ALUMINUM,  // ARMOR:		Armor type
+                                         SPEED_TRACK,     // MOVE:			Locomotion type.
+                                         MPH_MEDIUM_FAST, // SPEED:		Miles per hour.
+                                         5,               // ROT:			Rate of turn (degrees per tick).
+                                         0,               // Turret center offset along body centerline.
+                                         MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
 // Flame tank
@@ -114,7 +114,7 @@ static UnitTypeClass const UnitFTank(UNIT_FTANK,
                                      false,         // Always use the given name for the vehicle?
                                      false,         //	Is this a typical transport vehicle?
                                      false,         // Can it be crushed by a heavy vehicle?
-                                     true,          // Can this unit squash infantry?
+                                     false,         // Can this unit squash infantry?
                                      false,         // Does this unit harvest Tiberium?
                                      false,         // Is invisible to radar?
                                      true,          // Is selectable by player?
@@ -135,15 +135,13 @@ static UnitTypeClass const UnitFTank(UNIT_FTANK,
                                      false,         // Is the unit capable of cloaking?
                                      false,         // Does the unit have a constant animation?
                                      -1,            // AMMO:			Number of shots it has (default).
-                                     300,           // STRENGTH:	Strength (in damage points).
-                                     4,             // SIGHTRANGE:	Range of sighting.
+                                     450,           // STRENGTH:	Strength (in damage points).
+                                     5,             // SIGHTRANGE:	Range of sighting.
                                      800,           // COST:			Cost to build (Credits).
                                      9,             // SCENARIO:	Starting availability scenario.
                                      80,
-                                     66, // RISK/RWRD:	Risk/reward rating values.
-                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
-                                         | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                                     66,                     // RISK/RWRD:	Risk/reward rating values.
+                                     HOUSEF_JP | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_FLAME_TONGUE,
                                      WEAPON_NONE,
                                      ARMOR_STEEL, // ARMOR:		Armor type
@@ -167,7 +165,7 @@ static UnitTypeClass const UnitSTank(UNIT_STANK,
                                      false,         // Always use the given name for the vehicle?
                                      false,         //	Is this a typical transport vehicle?
                                      false,         // Can it be crushed by a heavy vehicle?
-                                     true,          // Can this unit squash infantry?
+                                     false,         // Can this unit squash infantry?
                                      false,         // Does this unit harvest Tiberium?
                                      true,          // Is invisible to radar?
                                      true,          // Is selectable by player?
@@ -188,23 +186,21 @@ static UnitTypeClass const UnitSTank(UNIT_STANK,
                                      true,          // Is the unit capable of cloaking?
                                      false,         // Does the unit have a constant animation?
                                      -1,            // AMMO:			Number of shots it has (default).
-                                     110,           // STRENGTH:	Strength (in damage points).
+                                     250,           // STRENGTH:	Strength (in damage points).
                                      4,             // SIGHTRANGE:	Range of sighting.
                                      900,           // COST:			Cost to build (Credits).
                                      12,            // SCENARIO:	Starting availability scenario.
                                      80,
-                                     81, // RISK/RWRD:	Risk/reward rating values.
-                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
-                                         | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                                     81,                     // RISK/RWRD:	Risk/reward rating values.
+                                     HOUSEF_JP | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_DRAGON,
                                      WEAPON_NONE,
-                                     ARMOR_ALUMINUM,  // ARMOR:		Armor type
-                                     SPEED_TRACK,     // MOVE:			Locomotion type.
-                                     MPH_MEDIUM_FAST, // SPEED:		Miles per hour.
-                                     5,               // ROT:			Rate of turn (degrees per tick).
-                                     0,               // Turret center offset along body centerline.
-                                     MISSION_HUNT     // ORDERS:		Default order to give new unit.
+                                     ARMOR_ALUMINUM,    // ARMOR:		Armor type
+                                     SPEED_TRACK,       // MOVE:			Locomotion type.
+                                     MPH_MEDIUM_FASTER, // SPEED:		Miles per hour.
+                                     5,                 // ROT:			Rate of turn (degrees per tick).
+                                     0,                 // Turret center offset along body centerline.
+                                     MISSION_HUNT       // ORDERS:		Default order to give new unit.
 );
 
 // Light tank
@@ -220,7 +216,7 @@ static UnitTypeClass const UnitLTank(UNIT_LTANK,
                                      false,        // Always use the given name for the vehicle?
                                      false,        //	Is this a typical transport vehicle?
                                      false,        // Can it be crushed by a heavy vehicle?
-                                     true,         // Can this unit squash infantry?
+                                     false,        // Can this unit squash infantry?
                                      false,        // Does this unit harvest Tiberium?
                                      false,        // Is invisible to radar?
                                      true,         // Is selectable by player?
@@ -241,23 +237,21 @@ static UnitTypeClass const UnitLTank(UNIT_LTANK,
                                      false,        // Is the unit capable of cloaking?
                                      false,        // Does the unit have a constant animation?
                                      -1,           // AMMO:			Number of shots it has (default).
-                                     300,          // STRENGTH:	Strength (in damage points).
+                                     500,          // STRENGTH:	Strength (in damage points).
                                      3,            // SIGHTRANGE:	Range of sighting.
                                      600,          // COST:			Cost to build (Credits).
                                      5,            // SCENARIO:	Starting availability scenario.
                                      80,
-                                     56, // RISK/RWRD:	Risk/reward rating values.
-                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
-                                         | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                                     56,                     // RISK/RWRD:	Risk/reward rating values.
+                                     HOUSEF_JP | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_75MM,
                                      WEAPON_NONE,
-                                     ARMOR_STEEL, // ARMOR:		Armor type
-                                     SPEED_TRACK, // MOVE:			Locomotion type.
-                                     MPH_MEDIUM,  // SPEED:		Miles per hour.
-                                     5,           // ROT:			Rate of turn (degrees per tick).
-                                     0,           // Turret center offset along body centerline.
-                                     MISSION_HUNT // ORDERS:		Default order to give new unit.
+                                     ARMOR_STEEL,     // ARMOR:		Armor type
+                                     SPEED_TRACK,     // MOVE:			Locomotion type.
+                                     MPH_MEDIUM_FAST, // SPEED:		Miles per hour.
+                                     5,               // ROT:			Rate of turn (degrees per tick).
+                                     0,               // Turret center offset along body centerline.
+                                     MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
 // Medium tank
@@ -273,7 +267,7 @@ static UnitTypeClass const UnitMTank(UNIT_MTANK,
                                      false,        // Always use the given name for the vehicle?
                                      false,        //	Is this a typical transport vehicle?
                                      false,        // Can it be crushed by a heavy vehicle?
-                                     true,         // Can this unit squash infantry?
+                                     false,        // Can this unit squash infantry?
                                      false,        // Does this unit harvest Tiberium?
                                      false,        // Is invisible to radar?
                                      true,         // Is selectable by player?
@@ -294,15 +288,13 @@ static UnitTypeClass const UnitMTank(UNIT_MTANK,
                                      false,        // Is the unit capable of cloaking?
                                      false,        // Does the unit have a constant animation?
                                      -1,           // AMMO:			Number of shots it has (default).
-                                     400,          // STRENGTH:	Strength (in damage points).
+                                     450,          // STRENGTH:	Strength (in damage points).
                                      3,            // SIGHTRANGE:	Range of sighting.
                                      800,          // COST:			Cost to build (Credits).
                                      7,            // SCENARIO:	Starting availability scenario.
                                      80,
-                                     62, // RISK/RWRD:	Risk/reward rating values.
-                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
-                                         | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
+                                     62,                      // RISK/RWRD:	Risk/reward rating values.
+                                     HOUSEF_JP | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_105MM,
                                      WEAPON_NONE,
                                      ARMOR_STEEL, // ARMOR:		Armor type
@@ -326,7 +318,7 @@ static UnitTypeClass const UnitHTank(UNIT_HTANK,
                                      false,          // Always use the given name for the vehicle?
                                      false,          //	Is this a typical transport vehicle?
                                      false,          // Can it be crushed by a heavy vehicle?
-                                     true,           // Can this unit squash infantry?
+                                     false,          // Can this unit squash infantry?
                                      false,          // Does this unit harvest Tiberium?
                                      false,          // Is invisible to radar?
                                      true,           // Is selectable by player?
@@ -347,15 +339,13 @@ static UnitTypeClass const UnitHTank(UNIT_HTANK,
                                      false,          // Is the unit capable of cloaking?
                                      false,          // Does the unit have a constant animation?
                                      -1,             // AMMO:			Number of shots it has (default).
-                                     600,            // STRENGTH:	Strength (in damage points).
+                                     750,            // STRENGTH:	Strength (in damage points).
                                      4,              // SIGHTRANGE:	Range of sighting.
                                      1500,           // COST:			Cost to build (Credits).
                                      13,             // SCENARIO:	Starting availability scenario.
                                      80,
-                                     80, // RISK/RWRD:	Risk/reward rating values.
-                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
-                                         | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
+                                     80,                      // RISK/RWRD:	Risk/reward rating values.
+                                     HOUSEF_JP | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_120MM,
                                      WEAPON_MAMMOTH_TUSK,
                                      ARMOR_STEEL,     // ARMOR:		Armor type
@@ -379,7 +369,7 @@ static UnitTypeClass const UnitMHQ(UNIT_MHQ,
                                    false,        // Always use the given name for the vehicle?
                                    false,        //	Is this a typical transport vehicle?
                                    false,        // Can it be crushed by a heavy vehicle?
-                                   true,         // Can this unit squash infantry?
+                                   false,        // Can this unit squash infantry?
                                    false,        // Does this unit harvest Tiberium?
                                    false,        // Is invisible to radar?
                                    true,         // Is selectable by player?
@@ -406,8 +396,7 @@ static UnitTypeClass const UnitMHQ(UNIT_MHQ,
                                    99,           // SCENARIO:	Starting availability scenario.
                                    80,
                                    100, // RISK/RWRD:	Risk/reward rating values.
-                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                   HOUSEF_JP | HOUSEF_GOOD
                                        | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_NONE,
                                    WEAPON_NONE,
@@ -460,17 +449,16 @@ static UnitTypeClass const UnitHover(UNIT_HOVER,
                                      99,           // SCENARIO:	Starting availability scenario.
                                      80,
                                      40, // RISK/RWRD:	Risk/reward rating values.
-                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                     HOUSEF_JP | HOUSEF_GOOD
                                          | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_NONE,
                                      WEAPON_NONE,
-                                     ARMOR_ALUMINUM,  // ARMOR:		Armor type
-                                     SPEED_HOVER,     // MOVE:			Locomotion type.
-                                     MPH_MEDIUM_FAST, // SPEED:		Miles per hour.
-                                     127,             // ROT:			Rate of turn (degrees per tick).
-                                     0,               // Turret center offset along body centerline.
-                                     MISSION_HUNT     // ORDERS:		Default order to give new unit.
+                                     ARMOR_ALUMINUM,    // ARMOR:		Armor type
+                                     SPEED_HOVER,       // MOVE:			Locomotion type.
+                                     MPH_MEDIUM_FASTER, // SPEED:		Miles per hour.
+                                     127,               // ROT:			Rate of turn (degrees per tick).
+                                     0,                 // Turret center offset along body centerline.
+                                     MISSION_HUNT       // ORDERS:		Default order to give new unit.
 );
 
 // Mobile sam launcher
@@ -507,24 +495,23 @@ static UnitTypeClass const UnitSAM(UNIT_MSAM,
                                    false,          // Is the unit capable of cloaking?
                                    false,          // Does the unit have a constant animation?
                                    2,              // AMMO:			Number of shots it has (default).
-                                   120,            // STRENGTH:	Strength (in damage points).
+                                   300,            // STRENGTH:	Strength (in damage points).
                                    4,              // SIGHTRANGE:	Range of sighting.
                                    750,            // COST:			Cost to build (Credits).
                                    98,             // SCENARIO:	Starting availability scenario.
                                    80,
                                    30, // RISK/RWRD:	Risk/reward rating values.
-                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP |
+                                   HOUSEF_JP |
                                        //	HOUSEF_GOOD|
                                        HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_HONEST_JOHN,
                                    WEAPON_NONE,
-                                   ARMOR_ALUMINUM, // ARMOR:		Armor type
-                                   SPEED_TRACK,    // MOVE:			Locomotion type.
-                                   MPH_MEDIUM,     // SPEED:		Miles per hour.
-                                   5,              // ROT:			Rate of turn (degrees per tick).
-                                   0,              // Turret center offset along body centerline.
-                                   MISSION_HUNT    // ORDERS:		Default order to give new unit.
+                                   ARMOR_ALUMINUM,  // ARMOR:		Armor type
+                                   SPEED_TRACK,     // MOVE:			Locomotion type.
+                                   MPH_MEDIUM_SLOW, // SPEED:		Miles per hour.
+                                   5,               // ROT:			Rate of turn (degrees per tick).
+                                   0,               // Turret center offset along body centerline.
+                                   MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
 // Artillery
@@ -561,20 +548,18 @@ static UnitTypeClass const UnitArty(UNIT_ARTY,
                                     false,         // Is the unit capable of cloaking?
                                     false,         // Does the unit have a constant animation?
                                     -1,            // AMMO:			Number of shots it has (default).
-                                    75,            // STRENGTH:	Strength (in damage points).
+                                    350,           // STRENGTH:	Strength (in damage points).
                                     4,             // SIGHTRANGE:	Range of sighting.
                                     450,           // COST:			Cost to build (Credits).
                                     9,             // SCENARIO:	Starting availability scenario.
                                     80,
-                                    73, // RISK/RWRD:	Risk/reward rating values.
-                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP
-                                        | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                                    73,                     // RISK/RWRD:	Risk/reward rating values.
+                                    HOUSEF_JP | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_155MM,
                                     WEAPON_NONE,
                                     ARMOR_ALUMINUM,  // ARMOR:		Armor type
                                     SPEED_TRACK,     // MOVE:			Locomotion type.
-                                    MPH_MEDIUM_SLOW, // SPEED:		Miles per hour.
+                                    MPH_MEDIUM_FAST, // SPEED:		Miles per hour.
                                     2,               // ROT:			Rate of turn (degrees per tick).
                                     0,               // Turret center offset along body centerline.
                                     MISSION_HUNT     // ORDERS:		Default order to give new unit.
@@ -594,7 +579,7 @@ static UnitTypeClass const
                   true,             // Always use the given name for the vehicle?
                   false,            //	Is this a typical transport vehicle?
                   false,            // Can it be crushed by a heavy vehicle?
-                  true,             // Can this unit squash infantry?
+                  false,            // Can this unit squash infantry?
                   true,             // Does this unit harvest Tiberium?
                   false,            // Is invisible to radar?
                   true,             // Is selectable by player?
@@ -617,13 +602,12 @@ static UnitTypeClass const
                   -1,               // AMMO:			Number of shots it has (default).
                   600,              // STRENGTH:	Strength (in damage points).
                                     //	300,										// STRENGTH:	Strength (in damage points).
-                  2,                // SIGHTRANGE:	Range of sighting.
+                  3,                // SIGHTRANGE:	Range of sighting.
                   1400,             // COST:			Cost to build (Credits).
                   7,                // SCENARIO:	Starting availability scenario.
                   80,
-                  85, // RISK/RWRD:	Risk/reward rating values.
-                  HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5 | HOUSEF_MULTI6
-                      | HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                  85,                                   // RISK/RWRD:	Risk/reward rating values.
+                  HOUSEF_JP | HOUSEF_GOOD | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                   WEAPON_NONE,
                   WEAPON_NONE,
                   ARMOR_ALUMINUM,  // ARMOR:		Armor type
@@ -647,7 +631,7 @@ static UnitTypeClass const UnitMCV(UNIT_MCV,
                                    false,       // Always use the given name for the vehicle?
                                    false,       //	Is this a typical transport vehicle?
                                    false,       // Can it be crushed by a heavy vehicle?
-                                   true,        // Can this unit squash infantry?
+                                   false,       // Can this unit squash infantry?
                                    false,       // Does this unit harvest Tiberium?
                                    false,       // Is invisible to radar?
                                    true,        // Is selectable by player?
@@ -669,13 +653,12 @@ static UnitTypeClass const UnitMCV(UNIT_MCV,
                                    false,       // Does the unit have a constant animation?
                                    -1,          // AMMO:			Number of shots it has (default).
                                    600,         // STRENGTH:	Strength (in damage points).
-                                   2,           // SIGHTRANGE:	Range of sighting.
+                                   3,           // SIGHTRANGE:	Range of sighting.
                                    5000,        // COST:			Cost to build (Credits).
                                    15,          // SCENARIO:	Starting availability scenario.
                                    80,
                                    86, // RISK/RWRD:	Risk/reward rating values.
-                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                   HOUSEF_JP | HOUSEF_GOOD
                                        | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_NONE,
                                    WEAPON_NONE,
@@ -721,15 +704,13 @@ static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     false,        // Is the unit capable of cloaking?
                                     false,        // Does the unit have a constant animation?
                                     -1,           // AMMO:			Number of shots it has (default).
-                                    150,          // STRENGTH:	Strength (in damage points).
+                                    310,          // STRENGTH:	Strength (in damage points).
                                     2,            // SIGHTRANGE:	Range of sighting.
                                     400,          // COST:			Cost to build (Credits).
                                     5,            // SCENARIO:	Starting availability scenario.
                                     80,
-                                    41, // RISK/RWRD:	Risk/reward rating values.
-                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP
-                                        | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
+                                    41,                      // RISK/RWRD:	Risk/reward rating values.
+                                    HOUSEF_JP | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_M60MG,
                                     WEAPON_NONE,
                                     ARMOR_ALUMINUM,  // ARMOR:		Armor type
@@ -774,23 +755,21 @@ static UnitTypeClass const UnitBuggy(UNIT_BUGGY,
                                      false,          // Is the unit capable of cloaking?
                                      false,          // Does the unit have a constant animation?
                                      -1,             // AMMO:			Number of shots it has (default).
-                                     140,            // STRENGTH:	Strength (in damage points).
-                                     2,              // SIGHTRANGE:	Range of sighting.
+                                     230,            // STRENGTH:	Strength (in damage points).
+                                     4,              // SIGHTRANGE:	Range of sighting.
                                      300,            // COST:			Cost to build (Credits).
                                      5,              // SCENARIO:	Starting availability scenario.
                                      80,
-                                     42, // RISK/RWRD:	Risk/reward rating values.
-                                     HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                         | HOUSEF_MULTI6 | HOUSEF_JP
-                                         | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                                     42,                     // RISK/RWRD:	Risk/reward rating values.
+                                     HOUSEF_JP | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                      WEAPON_M60MG,
                                      WEAPON_NONE,
-                                     ARMOR_ALUMINUM,  // ARMOR:		Armor type
-                                     SPEED_WHEEL,     // MOVE:			Locomotion type.
-                                     MPH_MEDIUM_FAST, // SPEED:		Miles per hour.
-                                     10,              // ROT:			Rate of turn (degrees per tick).
-                                     0,               // Turret center offset along body centerline.
-                                     MISSION_HUNT     // ORDERS:		Default order to give new unit.
+                                     ARMOR_ALUMINUM, // ARMOR:		Armor type
+                                     SPEED_WHEEL,    // MOVE:			Locomotion type.
+                                     MPH_FAST,       // SPEED:		Miles per hour.
+                                     10,             // ROT:			Rate of turn (degrees per tick).
+                                     0,              // Turret center offset along body centerline.
+                                     MISSION_HUNT    // ORDERS:		Default order to give new unit.
 );
 
 // Attack cycle
@@ -827,24 +806,18 @@ static UnitTypeClass const UnitBike(UNIT_BIKE,
                                     false,          // Is the unit capable of cloaking?
                                     false,          // Does the unit have a constant animation?
                                     -1,             // AMMO:			Number of shots it has (default).
-#ifdef ADVANCED
-                                    90, // STRENGTH:	Strength (in damage points).
-#else
-                                    160, // STRENGTH:	Strength (in damage points).
-#endif
-                                    2,   // SIGHTRANGE:	Range of sighting.
-                                    500, // COST:			Cost to build (Credits).
-                                    5,   // SCENARIO:	Starting availability scenario.
+                                    210,            // STRENGTH:	Strength (in damage points).
+                                    4,              // SIGHTRANGE:	Range of sighting.
+                                    500,            // COST:			Cost to build (Credits).
+                                    5,              // SCENARIO:	Starting availability scenario.
                                     80,
-                                    45, // RISK/RWRD:	Risk/reward rating values.
-                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP
-                                        | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
+                                    45,                     // RISK/RWRD:	Risk/reward rating values.
+                                    HOUSEF_JP | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_DRAGON,
                                     WEAPON_NONE,
                                     ARMOR_WOOD,  // ARMOR:		Armor type
                                     SPEED_WHEEL, // MOVE:			Locomotion type.
-                                    MPH_FAST,    // SPEED:		Miles per hour.
+                                    MPH_FASTER,  // SPEED:		Miles per hour.
                                     10,          // ROT:			Rate of turn (degrees per tick).
                                     0,           // Turret center offset along body centerline.
                                     MISSION_HUNT // ORDERS:		Default order to give new unit.
@@ -884,14 +857,13 @@ static UnitTypeClass const UnitMLRS(UNIT_MLRS,
                                     false,         // Is the unit capable of cloaking?
                                     false,         // Does the unit have a constant animation?
                                     -1,            // AMMO:			Number of shots it has (default).
-                                    100,           // STRENGTH:	Strength (in damage points).
+                                    400,           // STRENGTH:	Strength (in damage points).
                                     4,             // SIGHTRANGE:	Range of sighting.
                                     800,           // COST:			Cost to build (Credits).
                                     11,            // SCENARIO:	Starting availability scenario.
                                     80,
                                     72, // RISK/RWRD:	Risk/reward rating values.
-                                    HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                        | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_BAD
+                                    HOUSEF_JP | HOUSEF_BAD
                                         | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                     WEAPON_MLRS,
                                     WEAPON_NONE,
@@ -916,7 +888,7 @@ static UnitTypeClass const UnitAPC(UNIT_APC,
                                    false,            // Always use the given name for the vehicle?
                                    true,             //	Is this a typical transport vehicle?
                                    false,            // Can it be crushed by a heavy vehicle?
-                                   true,             // Can this unit squash infantry?
+                                   false,            // Can this unit squash infantry?
                                    false,            // Does this unit harvest Tiberium?
                                    false,            // Is invisible to radar?
                                    true,             // Is selectable by player?
@@ -937,23 +909,22 @@ static UnitTypeClass const UnitAPC(UNIT_APC,
                                    false,            // Is the unit capable of cloaking?
                                    false,            // Does the unit have a constant animation?
                                    -1,               // AMMO:			Number of shots it has (default).
-                                   200,              // STRENGTH:	Strength (in damage points).
+                                   400,              // STRENGTH:	Strength (in damage points).
                                    4,                // SIGHTRANGE:	Range of sighting.
                                    700,              // COST:			Cost to build (Credits).
                                    5,                // SCENARIO:	Starting availability scenario.
                                    80,
                                    15, // RISK/RWRD:	Risk/reward rating values.
-                                   HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                       | HOUSEF_MULTI6 | HOUSEF_BAD | HOUSEF_JP
+                                   HOUSEF_BAD | HOUSEF_JP
                                        | HOUSEF_GOOD, // OWNABLE:		Ownable by house (bit field).
                                    WEAPON_M60MG,
                                    WEAPON_NONE,
-                                   ARMOR_STEEL,       // ARMOR:		Armor type
-                                   SPEED_TRACK,       // MOVE:			Locomotion type.
-                                   MPH_MEDIUM_FASTER, // SPEED:		Miles per hour.
-                                   5,                 // ROT:			Rate of turn (degrees per tick).
-                                   0,                 // Turret center offset along body centerline.
-                                   MISSION_HUNT       // ORDERS:		Default order to give new unit.
+                                   ARMOR_ALUMINUM, // ARMOR:		Armor type
+                                   SPEED_TRACK,    // MOVE:			Locomotion type.
+                                   MPH_MEDIUM,     // SPEED:		Miles per hour.
+                                   10,             // ROT:			Rate of turn (degrees per tick).
+                                   0,              // Turret center offset along body centerline.
+                                   MISSION_HUNT    // ORDERS:		Default order to give new unit.
 );
 
 // Gunboat
@@ -996,8 +967,7 @@ static UnitTypeClass const UnitGunBoat(UNIT_GUNBOAT,
                                        99,           // SCENARIO:	Starting availability scenario.
                                        80,
                                        40, // RISK/RWRD:	Risk/reward rating values.
-                                       HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5
-                                           | HOUSEF_MULTI6 | HOUSEF_JP | HOUSEF_GOOD
+                                       HOUSEF_JP | HOUSEF_GOOD
                                            | HOUSEF_BAD, // OWNABLE:		Ownable by house (bit field).
                                        WEAPON_TOMAHAWK,
                                        WEAPON_NONE,
@@ -1022,7 +992,7 @@ static UnitTypeClass const UnitTric(UNIT_TRIC,
                                     true,          // Always use the given name for the vehicle?
                                     false,         //	Is this a typical transport vehicle?
                                     false,         // Can it be crushed by a heavy vehicle?
-                                    true,          // Can this unit squash infantry?
+                                    false,          // Can this unit squash infantry?
                                     false,         // Does this unit harvest Tiberium?
                                     true,          // Is invisible to radar?
                                     true,          // Is selectable by player?
@@ -1032,7 +1002,7 @@ static UnitTypeClass const UnitTric(UNIT_TRIC,
                                     false,         // Is it equipped with a combat turret?
                                     false,         // Fires multiple shots in quick succession?
                                     false,         // Can it be repaired in a repair facility?
-                                    false,         // Can the player construct or order this unit?
+                                    true,         // Can the player construct or order this unit?
                                     false,         // Is there a crew inside?
                                     false,         // Does it have a rotating radar dish?
                                     true,          // Is there an associated firing animation?
@@ -1043,7 +1013,7 @@ static UnitTypeClass const UnitTric(UNIT_TRIC,
                                     false,         // Is the unit capable of cloaking?
                                     false,         // Does the unit have a constant animation?
                                     -1,            // AMMO:			Number of shots it has (default).
-                                    700,           // STRENGTH:	Strength (in damage points).
+                                    500,           // STRENGTH:	Strength (in damage points).
                                     5,             // SIGHTRANGE:	Range of sighting.
                                     0,             // COST:			Cost to build (Credits).
                                     99,            // SCENARIO:	Starting availability scenario.
@@ -1054,7 +1024,7 @@ static UnitTypeClass const UnitTric(UNIT_TRIC,
                                     WEAPON_NONE,
                                     ARMOR_STEEL,  // ARMOR:		Armor type
                                     SPEED_TRACK,  // MOVE:			Locomotion type.
-                                    MPH_SLOW,     // SPEED:		Miles per hour.
+                                    MPH_MEDIUM,     // SPEED:		Miles per hour.
                                     5,            // ROT:			Rate of turn (degrees per tick).
                                     0,            // Turret center offset along body centerline.
                                     MISSION_GUARD // ORDERS:		Default order to give new unit.
@@ -1073,7 +1043,7 @@ static UnitTypeClass const UnitTrex(UNIT_TREX,
                                     true,          // Always use the given name for the vehicle?
                                     false,         //	Is this a typical transport vehicle?
                                     false,         // Can it be crushed by a heavy vehicle?
-                                    true,          // Can this unit squash infantry?
+                                    false,          // Can this unit squash infantry?
                                     false,         // Does this unit harvest Tiberium?
                                     true,          // Is invisible to radar?
                                     true,          // Is selectable by player?
@@ -1083,7 +1053,7 @@ static UnitTypeClass const UnitTrex(UNIT_TREX,
                                     false,         // Is it equipped with a combat turret?
                                     false,         // Fires multiple shots in quick succession?
                                     false,         // Can it be repaired in a repair facility?
-                                    false,         // Can the player construct or order this unit?
+                                    true,         // Can the player construct or order this unit?
                                     false,         // Is there a crew inside?
                                     false,         // Does it have a rotating radar dish?
                                     true,          // Is there an associated firing animation?
@@ -1094,7 +1064,7 @@ static UnitTypeClass const UnitTrex(UNIT_TREX,
                                     false,         // Is the unit capable of cloaking?
                                     false,         // Does the unit have a constant animation?
                                     -1,            // AMMO:			Number of shots it has (default).
-                                    750,           // STRENGTH:	Strength (in damage points).
+                                    600,           // STRENGTH:	Strength (in damage points).
                                     5,             // SIGHTRANGE:	Range of sighting.
                                     0,             // COST:			Cost to build (Credits).
                                     99,            // SCENARIO:	Starting availability scenario.
@@ -1134,7 +1104,7 @@ static UnitTypeClass const UnitRapt(UNIT_RAPT,
                                     false,          // Is it equipped with a combat turret?
                                     false,          // Fires multiple shots in quick succession?
                                     false,          // Can it be repaired in a repair facility?
-                                    false,          // Can the player construct or order this unit?
+                                    true,          // Can the player construct or order this unit?
                                     false,          // Is there a crew inside?
                                     false,          // Does it have a rotating radar dish?
                                     true,           // Is there an associated firing animation?
@@ -1145,7 +1115,7 @@ static UnitTypeClass const UnitRapt(UNIT_RAPT,
                                     false,          // Is the unit capable of cloaking?
                                     false,          // Does the unit have a constant animation?
                                     -1,             // AMMO:			Number of shots it has (default).
-                                    180,            // STRENGTH:	Strength (in damage points).
+                                    300,            // STRENGTH:	Strength (in damage points).
                                     5,              // SIGHTRANGE:	Range of sighting.
                                     0,              // COST:			Cost to build (Credits).
                                     99,             // SCENARIO:	Starting availability scenario.
@@ -1156,7 +1126,7 @@ static UnitTypeClass const UnitRapt(UNIT_RAPT,
                                     WEAPON_NONE,
                                     ARMOR_STEEL,  // ARMOR:		Armor type
                                     SPEED_TRACK,  // MOVE:			Locomotion type.
-                                    MPH_FAST,     // SPEED:		Miles per hour.
+                                    MPH_FASTER,     // SPEED:		Miles per hour.
                                     5,            // ROT:			Rate of turn (degrees per tick).
                                     0,            // Turret center offset along body centerline.
                                     MISSION_GUARD // ORDERS:		Default order to give new unit.
@@ -1175,7 +1145,7 @@ static UnitTypeClass const UnitSteg(UNIT_STEG,
                                     true,          // Always use the given name for the vehicle?
                                     false,         //	Is this a typical transport vehicle?
                                     false,         // Can it be crushed by a heavy vehicle?
-                                    true,          // Can this unit squash infantry?
+                                    false,          // Can this unit squash infantry?
                                     false,         // Does this unit harvest Tiberium?
                                     true,          // Is invisible to radar?
                                     true,          // Is selectable by player?
@@ -1185,7 +1155,7 @@ static UnitTypeClass const UnitSteg(UNIT_STEG,
                                     false,         // Is it equipped with a combat turret?
                                     false,         // Fires multiple shots in quick succession?
                                     false,         // Can it be repaired in a repair facility?
-                                    false,         // Can the player construct or order this unit?
+                                    true,         // Can the player construct or order this unit?
                                     false,         // Is there a crew inside?
                                     false,         // Does it have a rotating radar dish?
                                     true,          // Is there an associated firing animation?
@@ -1196,7 +1166,7 @@ static UnitTypeClass const UnitSteg(UNIT_STEG,
                                     false,         // Is the unit capable of cloaking?
                                     false,         // Does the unit have a constant animation?
                                     -1,            // AMMO:			Number of shots it has (default).
-                                    600,           // STRENGTH:	Strength (in damage points).
+                                    800,           // STRENGTH:	Strength (in damage points).
                                     5,             // SIGHTRANGE:	Range of sighting.
                                     0,             // COST:			Cost to build (Credits).
                                     99,            // SCENARIO:	Starting availability scenario.
@@ -1207,7 +1177,7 @@ static UnitTypeClass const UnitSteg(UNIT_STEG,
                                     WEAPON_NONE,
                                     ARMOR_STEEL,  // ARMOR:		Armor type
                                     SPEED_TRACK,  // MOVE:			Locomotion type.
-                                    MPH_SLOW,     // SPEED:		Miles per hour.
+                                    MPH_SLOW_ISH,     // SPEED:		Miles per hour.
                                     5,            // ROT:			Rate of turn (degrees per tick).
                                     0,            // Turret center offset along body centerline.
                                     MISSION_GUARD // ORDERS:		Default order to give new unit.
@@ -1619,10 +1589,12 @@ void UnitTypeClass::Init(TheaterType theater)
  *=============================================================================================*/
 bool UnitTypeClass::Create_And_Place(CELL cell, HousesType house) const
 {
-    UnitClass* unit = new UnitClass(Type, house);
-    if (unit) {
-        return (unit->Unlimbo(Cell_Coord(cell), Random_Pick(DIR_N, DIR_MAX)));
-    }
+    if (UnitClass::New_Allowed()) {
+		UnitClass * unit = new UnitClass(Type, house);
+		if (unit) {
+			return(unit->Unlimbo(Cell_Coord(cell), Random_Pick(DIR_N, DIR_MAX)));
+		}
+	}
     return (false);
 }
 
@@ -1645,7 +1617,10 @@ bool UnitTypeClass::Create_And_Place(CELL cell, HousesType house) const
  *=============================================================================================*/
 ObjectClass* UnitTypeClass::Create_One_Of(HouseClass* house) const
 {
-    return (new UnitClass(Type, house->Class->House));
+    if (UnitClass::New_Allowed()) {
+		return(new UnitClass(Type, house->Class->House));
+	}
+	return NULL;
 }
 
 /***********************************************************************************************

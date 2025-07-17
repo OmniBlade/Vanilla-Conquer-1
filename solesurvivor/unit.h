@@ -50,14 +50,28 @@ class UnitClass : public TarComClass
 {
 public:
     /*
-    **	This records the house flag that this object is currently carrying.
+    ** This flag is set when a commando has raided the unit and planted
+    ** plastic explosives.  When the CommandoCountDown timer expires, the
+    ** unit takes massive damage.
     */
-    HousesType Flagged;
+    unsigned IsGoingToBlow : 1;
+
+    /*
+    **	Special countdown to destruction value. If the unit is destroyed,
+    **	it won't actually be removed from the map until this value reaches
+    **	zero. This delay is for cosmetic reasons.
+    */
+    TCountDownTimerClass CountDown;
+
+    /*
+    **	This is the saboteur responsible for this unit's destruction.
+    */
+    TARGET WhomToRepay;
 
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
     */
-    static void* operator new(size_t size) noexcept;
+    static void* operator new(size_t size, int heap_index = -1) noexcept;
     static void* operator new(size_t, void* ptr)
     {
         return (ptr);
@@ -66,11 +80,11 @@ public:
     static void operator delete(void*, void*)
     {
     }
-    UnitClass(void){};
+    UnitClass(void) {};
     UnitClass(UnitType classid, HousesType house);
     UnitClass(NoInitClass const& x)
         : TarComClass(x)
-        , HarvestTimer(x){};
+        , HarvestTimer(x) {};
     operator UnitType(void) const
     {
         return Class->Type;
@@ -147,7 +161,8 @@ public:
     **	Combat related.
     */
     virtual COORDINATE Target_Coord(void) const;
-    virtual ResultType Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0);
+    virtual ResultType
+    Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source = 0, bool unk = false);
     virtual TARGET As_Target(void) const;
     virtual void Stun(void);
 
@@ -218,10 +233,28 @@ private:
     */
     mutable BuildingClass* TiberiumUnloadRefinery;
 
-    /*
-    ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
-    *save/load
-    */
+public:
+    static bool New_Allowed()
+    {
+        return IsNewAllowed;
+    }
+    virtual bool Delete_Allowed()
+    {
+        return IsDeleteAllowed;
+    }
+    virtual void Destruct();
+
+    static void Set_New_Allowed(bool allowed)
+    {
+        IsNewAllowed = allowed;
+    }
+    static void Set_Delete_Allowed(bool allowed)
+    {
+        IsDeleteAllowed = allowed;
+    }
+
+    static bool IsNewAllowed;
+    static bool IsDeleteAllowed;
 };
 
 #endif
