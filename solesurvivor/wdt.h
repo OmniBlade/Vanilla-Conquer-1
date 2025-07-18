@@ -13,20 +13,24 @@
 #ifndef WDT_H
 #define WDT_H
 
-typedef struct PlayerNameTag {
-	DynamicVectorClass<TechnoClass *> Technos;
-	unsigned char Address[32];//struct?
-	char Name[MPLAYER_NAME_MAX];
-	HousesType House;
-	HouseClass *HousePtr;
-	RTTIType RTTI;
-	int Type;
-	int NumStartingUnits;
-	unsigned UnknownBool:1;
-	int SomeTiming;
-	float SomeScore;
+typedef struct PlayerNameTag
+{
+    DynamicVectorClass<TechnoClass*> Technos;
+    unsigned char Address[32]; //struct?
+    char Name[MPLAYER_NAME_MAX];
+    HousesType House;
+    HouseClass* HousePtr;
+    RTTIType RTTI;
+    int Type;
+    int NumStartingUnits;
+    unsigned UnknownBool : 1;
+    int SomeTiming;
+    float SomeScore;
 } PlayerNodeType;
 
 int Calculate_Points(HousesType player);
+void Remove_All_Crates(void);
+bool Overlay_Is_Crate(OverlayType);
+void Decode_Credits_Entry(int entry, char* str);
 
 #endif /* WDT_H */

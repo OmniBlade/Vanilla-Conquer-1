@@ -93,6 +93,7 @@ void Focus_Restore(void)
     VQA_ResumeAudio();
 #endif
     Map.Flag_To_Redraw(true);
+    Map.IsToDrawUnknown = true;
     Start_Primary_Sound_Buffer(true);
 
 #ifndef SDL_BUILD
@@ -191,18 +192,18 @@ long FAR PASCAL Windows_Procedure(HWND hwnd, UINT message, UINT wParam, LONG lPa
     switch (message) {
 
     case WM_DESTROY:
-        CCDebugString("C&C95 - WM_DESTROY message received.\n");
-        CCDebugString("C&C95 - About to call Prog_End.\n");
+        CCDebugString("Sole Survivor - WM_DESTROY message received.\n");
+        CCDebugString("Sole Survivor - About to call Prog_End.\n");
         Prog_End();
-        CCDebugString("C&C95 - About to release the video surfaces.\n");
+        CCDebugString("Sole Survivor - About to release the video surfaces.\n");
         VisiblePage.Un_Init();
         HiddenPage.Un_Init();
         AllSurfaces.Release();
         if (!InDebugger) {
-            CCDebugString("C&C95 - About to reset the video mode.\n");
+            CCDebugString("Sole Survivor - About to reset the video mode.\n");
             Reset_Video_Mode();
         }
-        CCDebugString("C&C95 - Posting the quit message.\n");
+        CCDebugString("Sole Survivor - Posting the quit message.\n");
         PostQuitMessage(0);
         /*
         ** If we are shutting down gracefully than flag that the message loop has finished.
@@ -210,23 +211,23 @@ long FAR PASCAL Windows_Procedure(HWND hwnd, UINT message, UINT wParam, LONG lPa
         ** before we exit.
         */
         if (ReadyToQuit) {
-            CCDebugString("C&C95 - We are now ready to quit.\n");
+            CCDebugString("Sole Survivor - We are now ready to quit.\n");
             ReadyToQuit = 2;
         } else {
-            CCDebugString("C&C95 - Emergency shutdown.\n");
+            CCDebugString("Sole Survivor - Emergency shutdown.\n");
 #ifdef NETWORKING
-            CCDebugString("C&C95 - Shut down the network stuff.\n");
+            CCDebugString("Sole Survivor - Shut down the network stuff.\n");
 #ifndef DEMO
             Shutdown_Network();
 #endif
-            CCDebugString("C&C95 - Kill the Winsock stuff.\n");
+            CCDebugString("Sole Survivor - Kill the Winsock stuff.\n");
             if (Winsock.Get_Connected())
                 Winsock.Close();
 #endif // NETWORKING
-            CCDebugString("C&C95 - Call ExitProcess.\n");
+            CCDebugString("Sole Survivor - Call ExitProcess.\n");
             ExitProcess(0);
         }
-        CCDebugString("C&C95 - Clean & ready to quit.\n");
+        CCDebugString("Sole Survivor - Clean & ready to quit.\n");
         return (0);
 
     case WM_ACTIVATEAPP:
@@ -339,8 +340,8 @@ void Create_Main_Window(HANDLE instance, int width, int height)
     wndclass.hIcon = LoadIconA((HINSTANCE)instance, MAKEINTRESOURCEA(CC_ICON));
     wndclass.hCursor = NULL;
     wndclass.hbrBackground = NULL;
-    wndclass.lpszMenuName = "Command & Conquer"; // NULL
-    wndclass.lpszClassName = "Command & Conquer";
+    wndclass.lpszMenuName = "Sole Survivor"; // NULL
+    wndclass.lpszClassName = "Sole Survivor";
 
     RegisterClassA(&wndclass);
 
@@ -348,8 +349,8 @@ void Create_Main_Window(HANDLE instance, int width, int height)
     // Create our main window
     //
     hwnd = CreateWindowExA(WS_EX_TOPMOST,
-                           "Command & Conquer",
-                           "Command & Conquer",
+                           "Sole Survivor",
+                           "Sole Survivor",
                            WS_POPUP | WS_MAXIMIZE,
                            0,
                            0,

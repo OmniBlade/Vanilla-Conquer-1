@@ -135,6 +135,8 @@ set(SURVIVOR_SRC
     unit.cpp
     visudlg.cpp
     voicethemes.cpp
+    wdt.cpp
+    wdtdlg.cpp
     winstub.cpp
 )
 
