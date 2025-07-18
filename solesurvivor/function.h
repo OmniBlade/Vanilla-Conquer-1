@@ -243,6 +243,7 @@ inline CELL Coord_YCell(COORDINATE coord)
 #include "ipxaddr.h"
 #include "common/miscasm.h"
 #include "common/face.h"
+#include "voicethemes.h"
 #include "wdt.h"
 /****************************************************************************
 **	This is a "node", used for the lists of available games & players.  The

@@ -185,7 +185,7 @@ void VisualControlsClass::Process(void)
         /*
         **	Invoke game callback.
         */
-        if (GameToPlay == GAME_NORMAL || GameToPlay == GAME_SKIRMISH) {
+        if (GameToPlay == GAME_NORMAL || GameToPlay == GAME_SKIRMISH || OfflineMode) {
             Call_Back();
         } else {
             if (Main_Loop()) {
