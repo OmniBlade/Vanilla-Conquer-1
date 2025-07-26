@@ -12,6 +12,7 @@
 #include "function.h"
 #include "helpscrn.h"
 #include "common/buffer.h"
+#include "mssleep.h"
 
 struct VPRect
 {
@@ -175,8 +176,8 @@ void Help_Menu(void)
 			last_desc = 0;
 		}
 
-		if (Keyboard::Check() != KN_NONE) {
-			KeyNumType key = Keyboard::Get();
+		if (Keyboard->Check() != KN_NONE) {
+			KeyNumType key = Keyboard->Get();
 
 			if (key == KN_BUTTON || key == KN_ESC || key == KN_SPACE) {
 				breakout = true;
@@ -185,7 +186,7 @@ void Help_Menu(void)
 
 		Wait_Vert_Blank();
 		Set_Palette(GamePalette);
-		Sleep(20);
+		ms_sleep(20);
 	}
 
 	Set_Logic_Page(SeenBuff);

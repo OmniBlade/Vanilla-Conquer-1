@@ -275,7 +275,7 @@ void GameOptionsClass::Process(void)
                              TPF_6POINT | TPF_NOSHADOW | TPF_RIGHT,
                              Scen.ScenarioName,
                              (unsigned int)Version_Number() >> 8,
-                             (unsigned char)Version_Number(),
+                             (unsigned int)Version_Number() & 0xFF,
                              VersionText);
 
             buttons->Draw_All();

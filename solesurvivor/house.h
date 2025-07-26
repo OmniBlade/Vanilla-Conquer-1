@@ -458,8 +458,6 @@ public:
         , SpeakPowerDelay(noinit)
         , SpeakMoneyDelay(noinit)
         , SpeakMaxedDelay(noinit)
-        , Attack(noinit)
-        , AITimer(noinit)
     {
     }
     // operator HousesType(void) const;
@@ -499,10 +497,6 @@ public:
     bool Is_Ally(HousesType house) const;
     bool Is_Ally(HouseClass const* house) const;
     bool Is_Ally(ObjectClass const* object) const;
-    unsigned int Get_Allies(void) const
-    {
-        return Allies;
-    }
 #ifdef CHEAT_KEYS
     void Debug_Dump(MonoClass* mono) const;
 #endif

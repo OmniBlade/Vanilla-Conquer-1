@@ -20,7 +20,7 @@
 #define MAX_INT_LEN    13
 
 // 200 characters of blat.
-static char* Blat =
+static const char Blat[] =
     "@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/"
     "^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^@%#!&*{!/^";
 
@@ -95,7 +95,7 @@ LanguageFilterClass::~LanguageFilterClass()
  * HISTORY:                                                                                    *
  *   08/20/96 JB Created                                                                       *
  *=============================================================================================*/
-bool LanguageFilterClass::Init(char* buffer, int length)
+bool LanguageFilterClass::Init(const char* buffer, int length)
 {
     char* local_string;
 
@@ -141,7 +141,7 @@ bool LanguageFilterClass::Init(char* buffer, int length)
  * HISTORY:                                                                                    *
  *   08/20/96 JB Created                                                                       *
  *=============================================================================================*/
-bool LanguageFilterClass::Init(char* file_name)
+bool LanguageFilterClass::Init(const char* file_name)
 {
     FILE* language_file_ptr;
     char buffer[256];
@@ -193,9 +193,8 @@ bool LanguageFilterClass::Init(char* file_name)
  * HISTORY:                                                                                    *
  *   11/02/96 DMA Created                                                                      *
  *=============================================================================================*/
-bool LanguageFilterClass::Add_Users_Words(char* file_name)
+bool LanguageFilterClass::Add_Users_Words(const char* /* file_name */)
 {
-    file_name = file_name;
     return true;
 }
 

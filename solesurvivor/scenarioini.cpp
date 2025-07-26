@@ -182,7 +182,7 @@ void Set_Scenario_Name(char* buf, int scenario, ScenarioPlayerType player, Scena
 }
 
 extern void GlyphX_Assign_Houses(void); // ST - 6/25/2019 11:08AM
-
+extern void Assign_Houses(void);
 /***********************************************************************************************
  * Read_Scenario_Ini -- Read specified scenario INI file.                                      *
  *                                                                                             *
@@ -433,7 +433,7 @@ bool Read_Scenario_Ini(char* root, bool fresh)
         // Assign_Houses();
         GlyphX_Assign_Houses();
 #else
-        Assign_Houses();
+        //Assign_Houses();
 #endif
     }
 
@@ -694,7 +694,9 @@ bool Make_Player_Unit(int player_index)
 
         if (tptr != NULL) {
             if (!Try_Place_Object(tptr, cell, GameParams.IsCaptureTheFlag)) {
-                DELETE_OBJ(tptr, sizeof(AbstractClass));
+                //DELETE_OBJ(tptr, sizeof(AbstractClass));
+                delete tptr;
+                tptr = NULL;
             }
 
             ActivePlayers[player_index]->Technos.Add(tptr);
@@ -1247,16 +1249,16 @@ bool Init_Flag_Homes()
     for (index = 0; index < 4; index++) {
         for (try_count = 0; try_count < 100; try_count++) {
             waypoint_check = WDT_Random_Pick(0, 9);
-            if (Waypoint[waypoint_check + 4] != -1 && !allocated[waypoint_check]) {
-                FlagHomes[index] = Waypoint[waypoint_check + 4];
+            if (Scen.Waypoint[waypoint_check + 4] != -1 && !allocated[waypoint_check]) {
+                FlagHomes[index] = Scen.Waypoint[waypoint_check + 4];
                 allocated[waypoint_check] = 1;
                 break;
             }
         }
         if (try_count == 100) {
             for (waypoint_check = 0; waypoint_check < 10; waypoint_check++) {
-                if (Waypoint[waypoint_check + 4] != -1 && !allocated[waypoint_check]) {
-                    FlagHomes[index] = Waypoint[waypoint_check + 4];
+                if (Scen.Waypoint[waypoint_check + 4] != -1 && !allocated[waypoint_check]) {
+                    FlagHomes[index] = Scen.Waypoint[waypoint_check + 4];
                     allocated[waypoint_check] = 1;
                     break;
                 }
@@ -1369,7 +1371,7 @@ void Fortify_Flag_Home(HousesType house)
                 if (bptr) {
                     if (!Try_Place_Object(bptr, hptr->FlagHome, 1)) {
                         CCDebugString("ERROR: Fortify_FlagHome error 3\n");
-                        DELETE_OBJ(bptr, sizeof(AbstractClass));
+                        delete bptr;
                     }
 
                     bptr->Mod1 = sole_array[0][2] / 2;
@@ -1393,7 +1395,7 @@ void Clear_Buildings_Of_House(HousesType house)
     for (int i = 0; i < Buildings.Count(); i++) {
         bptr = Buildings.Ptr(i);
         if (bptr->IsActive && bptr->Owner() == house) {
-            DELETE_OBJ(bptr, sizeof(AbstractClass));
+            delete bptr;
             i--;
         }
     }
@@ -1418,7 +1420,7 @@ void Setup_Flags_Of_House(HousesType house)
         for (idx1 = 0; idx1 < 4; idx1++) {
             if (idx1 != team) {
                 for (index = 0; index < 10; index++) {
-                    if (FlagHomes[idx1] == Waypoint[index + 4]) {
+                    if (FlagHomes[idx1] == Scen.Waypoint[index + 4]) {
                         state[index] = 1;
                         break;
                     }
@@ -1427,15 +1429,15 @@ void Setup_Flags_Of_House(HousesType house)
         }
         for (idx2 = 0; idx2 < 100; idx2++) {
             index = WDT_Random_Pick(0, 9);
-            if (Waypoint[index + 4] != -1 && !state[index]) {
-                FlagHomes[team] = Waypoint[index + 4];
+            if (Scen.Waypoint[index + 4] != -1 && !state[index]) {
+                FlagHomes[team] = Scen.Waypoint[index + 4];
                 break;
             }
         }
         if (idx2 == 100) {
             for (index = 0; index < 10; index++) {
-                if (Waypoint[index + 4] != -1 && !state[index]) {
-                    FlagHomes[team] = Waypoint[index + 4];
+                if (Scen.Waypoint[index + 4] != -1 && !state[index]) {
+                    FlagHomes[team] = Scen.Waypoint[index + 4];
                     break;
                 }
             }

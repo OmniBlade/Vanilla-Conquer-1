@@ -231,7 +231,7 @@ inline CELL Coord_YCell(COORDINATE coord)
 #include "intro.h"
 #include "ending.h"
 #include "logic.h"
-#include "queue.h"
+#include "common/queue.h"
 #include "event.h"
 #include "base.h" // defines the AI's pre-built base
 #include "scenario.h"
@@ -245,6 +245,10 @@ inline CELL Coord_YCell(COORDINATE coord)
 #include "common/face.h"
 #include "voicethemes.h"
 #include "wdt.h"
+#include "queueshared.h"
+#include "qclient.h"
+#include "qserver.h"
+#include "serverres.h"
 /****************************************************************************
 **	This is a "node", used for the lists of available games & players.  The
 **	'Game' structure is used for games; the 'Player' structure for players.
@@ -296,6 +300,7 @@ bool Is_Speaking(void);
 void Play_Wave(char* filename, bool is_special);
 int Priority_Sound_Effect(VocType voc, VolType volume, int variation = 1, signed short panvalue = 0);
 int Priority_Sound_Effect(VocType voc);
+void Init_Voice_Themes(void);
 
 /*
 **	COMBAT.CPP
@@ -306,6 +311,7 @@ void Explosion_Damage(COORDINATE coord, unsigned strength, TechnoClass* source, 
 /*
 **	CONQUER.CPP
 */
+int Scale_Value_Up(int value, unsigned char mult);
 void Center_About_Objects(void);
 bool Force_CD_Available(int cd);
 void Handle_View(int view, int action = 0);
@@ -393,6 +399,10 @@ int Get_Resolution_Factor(void);
 void Shake_The_Screen(int shakes, HousesType house = HOUSE_NONE);
 bool Is_Demo(void);
 bool Is_DOS_Files(void);
+
+void Clear_Team_Scores();
+void Show_Squad_Game_Prescreen(int time);
+const char* Local_Time_As_String(void);
 
 /*
 ** INTERPAL.CPP
@@ -494,13 +504,18 @@ void Write_Scenario_Ini(char* root);
 bool Read_Scenario_Ini(char* root, bool fresh = true);
 bool Read_Scenario_Ini_File(char* scenario_file_name, char* bin_file_name, const char* root, bool fresh);
 int Scan_Place_Object(ObjectClass* obj, CELL cell);
+bool Try_Place_Object(ObjectClass* obj, CELL cell, bool is_ctf);
+CELL Try_Place_Overlay(OverlayType overlay, CELL cell);
+void Setup_House_Flags(HousesType house);
+bool Init_Flag_Homes();
+bool Make_Player_Unit(int player_index);
 
 /*
 **	INIT.CPP
 */
 void Uninit_Game(void);
 unsigned Obfuscate(char const* string);
-void Anim_Init(bool unk);
+void Anim_Init(bool unk = false);
 bool Init_Game(int argc, char* argv[]);
 bool Select_Game(bool fade = false);
 bool Parse_Command_Line(int argc, char* argv[]);
@@ -611,6 +626,11 @@ bool Queue_Options(void);
 bool Queue_Exit(void);
 void Queue_AI(void);
 void OLD_Add_CRC(uint32_t* crc, uint32_t val);
+
+/*
+** QSERVER.CPP
+*/
+void Host_Print_Accepted_List(void);
 
 /*
 **	REINF.CPP
@@ -971,6 +991,8 @@ template <class T> inline T Random_Pick(T a, T b)
     return T(Scen.RandomNumber((int)a, (int)b));
 };
 
+#define WDT_Random_Pick(a, b) Random_Pick(a, b)
+
 inline bool Percent_Chance(int percent)
 {
     return (Scen.RandomNumber(0, 99) < percent);
@@ -1140,8 +1162,18 @@ extern char* TitlePicture;
 
 // Sole stuff
 void Get_Or_Set_Current_Directory(bool get);
-int Process_Crate_Pickup(WDTCrateType type, CELL cell, FootClass *object, HousesType house, int int_arg);
-int Get_Stat(SoleArrayType get_what, int initial_val, ObjectClass *obj);
+int Process_Crate_Pickup(WDTCrateType type, CELL cell, FootClass* object, HousesType house, int int_arg);
+int Get_Stat(SoleArrayType get_what, int initial_val, ObjectClass* obj);
 HousesType Who_Won_Or_Lost(GAMEPARAMS* params);
 void Host_Send_Game_Results_Packet_To_All(HousesType house);
 void Host_Send_Scenario_Change_Packet(void);
+void Host_Timer_Check_Loop(GAMEPARAMS* params); // UNIT.CPP, does it really belong there though?
+void Read_Host_Game_Params(GAMEPARAMS* params); // UNIT.CPP, does it really belong there though?
+void Announce_Goal(HousesType house, HousesType team, HousesType opponent); // FOOT.CPP
+bool Overlay_Is_Crate_Alt(OverlayType type, bool unk);                      // OVERLAY.CPP
+// serverstats.cpp
+void Read_Server_Stats(void);
+
+#ifdef WIN32
+HWND Create_Server_Window(void);
+#endif

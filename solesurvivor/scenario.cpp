@@ -139,6 +139,7 @@ bool Start_Scenario(char* root, bool briefing)
  *=============================================================================================*/
 void Set_Scenario_Difficulty(int difficulty)
 {
+#ifdef USE_RA_AI
     if (GameToPlay == GAME_NORMAL) {
         switch (difficulty) {
         case 0:
@@ -154,6 +155,7 @@ void Set_Scenario_Difficulty(int difficulty)
             break;
         }
     }
+#endif
 }
 
 /***********************************************************************************************

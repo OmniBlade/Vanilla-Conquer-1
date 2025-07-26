@@ -10,7 +10,6 @@
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
 #include "comms.h"
-#include "sockets.h"
 #include <time.h>
 
 int CommStatsClass::Static11;

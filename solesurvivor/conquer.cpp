@@ -96,7 +96,9 @@ extern void Register_Game_End_Time(void);
 extern void Send_Statistics_Packet(void);
 extern char* __nheapbeg;
 bool InMainLoop = false;
+int ColorListTimer_5586C0;
 
+extern unsigned int IdleTime; // from qserver.cpp
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif
@@ -323,12 +325,12 @@ void Main_Game(int argc, char* argv[])
         }
 
         if (GameToPlay == GAME_CLIENT) {
-            if (Get_WChat_Handle()) {
-                Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, 0);
-                VisiblePage.Clear();
-                ShowWindow(MainWindow, 6);
-                Tickle_WChat();
-            }
+            //if (Get_WChat_Handle()) {
+            //    Fade_Palette_To(BlackPalette, FADE_PALETTE_MEDIUM, 0);
+            //    VisiblePage.Clear();
+            //    ShowWindow(MainWindow, 6);
+            //    Tickle_WChat();
+            //}
         }
 
         /*
@@ -384,6 +386,7 @@ extern int DebugColour;
 void Keyboard_Process(KeyNumType& input)
 {
     HousesType house;
+    ObjectClass* obj;
 
     /*
     **	Don't do anything if there is not keyboard event.
@@ -629,7 +632,7 @@ void Keyboard_Process(KeyNumType& input)
     **	Toggles drawing player names in viewport.
     */
     case VK_N:
-        if (ShowNames == true) {
+        if (ShowNames) {
             ShowNames = false;
         } else {
             ShowNames = true;
@@ -730,7 +733,15 @@ void Keyboard_Process(KeyNumType& input)
     if (key != 0 && key == Options.KeyBase) {
         if (!IsTrackingCurrentObject) {
             ++ScenarioInit;
-            Map.Compute_Start_Pos();
+            int start_x = 0;
+            int start_y = 0;
+            Map.Compute_Start_Pos(start_x, start_y);
+            for (int i = 0; i < ARRAY_SIZE(Scen.Views); ++i) {
+                Scen.Views[i] = XY_Cell(start_x, start_y);
+            }
+            Scen.Waypoint[27] = XY_Cell(start_x, start_y);
+            COORDINATE pos = Cell_Coord(XY_Cell(start_x, start_y));
+            Map.Set_Tactical_Position(pos);
             --ScenarioInit;
         }
         Map.Flag_To_Redraw(true);
@@ -1382,7 +1393,7 @@ bool Main_Loop()
 
     if (GameToPlay == GAME_CLIENT && ClientEvent1_BattleState_Was_2) {
         GameActive = false;
-        ClientEvent1_BattleState_Was_2 = 0;
+        ClientEvent1_BattleState_Was_2 = false;
     }
 
     /*
@@ -1396,7 +1407,8 @@ bool Main_Loop()
     */
     Check_For_Focus_Loss();
 
-    Windows_Message_Loop();
+    //Windows_Message_Loop();
+    Keyboard->Check(); // Run event loop polling.
 
     /*
     ** Allocate extra memory for uncompressed shapes as needed
@@ -1589,7 +1601,7 @@ bool Main_Loop()
     */
     if (Debug_Check_Map) {
         if (!Map.Validate()) {
-            if (CCMessageBox().Process(
+            if (WWMessageBox().Process(
                     Text_String(TXT_MAP_ERROR), Text_String(TXT_MAP_ERROR_STOP), Text_String(TXT_MAP_ERROR_CONTINUE))
                 == 0) {
                 GameActive = false;
@@ -1977,7 +1989,7 @@ void Play_Movie(char const* name, ThemeType theme, bool clrscrn, bool unk)
     if (Options.NoMovies) {
         return;
     }
-    
+
     /*
     ** Don't play movies in editor mode
     */
@@ -2785,10 +2797,10 @@ int VQ_Call_Back(unsigned char*, int)
     Check_VQ_Palette_Set();
 
     if (AnimControl.ImageHeight == 240) {
-		Interpolate_2X_Scale(&SysMemPage, &UnknownViewport1, NULL, 1);
-	} else {
-		Interpolate_2X_Scale(&SysMemPage, &UnknownViewport1, NULL, 0);
-	}
+        Interpolate_2X_Scale(&SysMemPage, &UnknownViewport1, NULL, 1);
+    } else {
+        Interpolate_2X_Scale(&SysMemPage, &UnknownViewport1, NULL, 0);
+    }
 
     Frame_Limiter();
 
@@ -3582,45 +3594,14 @@ int Get_Resolution_Factor(void)
 {
     return ((SeenBuff.Get_Width() == 320) ? 0 : 1);
 }
-/***********************************************************************************************
- * Shake_The_Screen -- Dispatcher that shakes the screen.                                      *
- *                                                                                             *
- *    This routine will shake the game screen the number of shakes requested.                  *
- *                                                                                             *
- * INPUT:   shakes   -- The number of shakes to shake the screen.                              *
- *          house    -- House to perform the shake for (or HOUSE_NONE if all players).         *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   09/04/1996 BWG : Created.                                                                 *
- *=============================================================================================*/
-void cdecl Shake_The_Screen(/*int shakes*/)
-{
-#if 0
-	for (char h = HOUSE_FIRST; h < HOUSE_COUNT; ++h) {
-		if ((house != HOUSE_NONE) && (h != house)) {
-			continue;
-		}
-		HouseClass* hptr = HouseClass::As_Pointer((HousesType)h);
-		if ((hptr != nullptr) && hptr->IsActive && hptr->IsHuman) {
-			hptr->ScreenShakeTime = hptr->ScreenShakeTime + shakes + shakes;
-		}
-	}
-#endif
-}
-
-
 
 void Get_Or_Set_Current_Directory(bool get)
 {
-	static char _path[260];
-	static unsigned int _dnum;
-	static char _buffer[264];
+    static char _path[260];
+    static unsigned int _dnum;
+    static char _buffer[264];
 
-	unsigned num;
+    unsigned num;
 
 // TODO cross platform if needed?
 #if 0
@@ -3637,29 +3618,29 @@ void Get_Or_Set_Current_Directory(bool get)
 
 unsigned char Scale_Value_Down(int div, int mult)
 {
-	if (div== 0) {
-		return 0;
-	}
+    if (div == 0) {
+        return 0;
+    }
 
-	unsigned char r = 255 * mult / div;
-	return r;
+    unsigned char r = 255 * mult / div;
+    return r;
 }
 
 int Scale_Value_Up(int value, unsigned char mult)
 {
-	if (value == 0) {
-		return 0;
-	}
+    if (value == 0) {
+        return 0;
+    }
 
-	int r = value * mult / 255;
-	return r;
+    int r = value * mult / 255;
+    return r;
 }
 
 void Clear_Team_Scores()
 {
-	for (int i = 0; i < 4; i++) {
-		TeamScores[i] = 0;
-	}
+    for (int i = 0; i < 4; i++) {
+        TeamScores[i] = 0;
+    }
 }
 
 /**************************************************************************************************
@@ -3782,4 +3763,13 @@ bool Is_DOS_Files(void)
     }
 
     return is_dos;
+}
+
+const char* Local_Time_As_String(void)
+{
+    time_t t;
+
+    time(&t);
+    tm* ltime = localtime(&t);
+    return asctime(ltime);
 }

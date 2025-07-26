@@ -42,11 +42,11 @@ public:
     LanguageFilterClass(void);
     ~LanguageFilterClass(void);
 
-    bool Init(char* file_name);          // Loads from a file
-    bool Init(char* buffer, int length); // Loads from a buffer
+    bool Init(const char* file_name);          // Loads from a file
+    bool Init(const char* buffer, int length); // Loads from a buffer
 
     // 11/02/06 DMA
-    bool Add_Users_Words(char* file_name); // Loads user-defined word list
+    bool Add_Users_Words(const char* file_name); // Loads user-defined word list
 
     bool Filter(char* message, FilterStrengthType strength = FST_ALL);
 

@@ -9,37 +9,15 @@
 // distributed with this program. You should have received a copy of the
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
-#ifndef HELPSCRN_H
-#define HELPSCRN_H
 
-class HelpScreenClass
-{
-public:
-    struct SoleHelpBufferStruct
-    {
-        int ClipX;
-        int ClipY;
-        int ClipWidth;
-        int ClipHeight;
-        char Tooltip[64];
-        char Description[512];
-    };
+#ifndef QSERVER_H
+#define QSERVER_H
 
-    HelpScreenClass(void);
-    ~HelpScreenClass();
+class ReliableProtocolClass;
 
-    void Set_File_Name(const char* filename);
-    const char* Get_File_Name();
+void Host_Process_Message(char *message);
+void Host_Process_Accepted_List(void);
+void Host_Ban_Player(char *player_to_ban);
+bool Host_Swollow_Packets_While_Waiting(ReliableProtocolClass* protocol);
 
-    bool Load();
-    bool Get_Entry(int xpos, int ypos, const char*& tooltip, const char*& description);
-
-private:
-    void Read_Entry(char* entry, int index);
-
-    const char* HelpFile;
-    int EntryCount;
-    SoleHelpBufferStruct* Entries;
-};
-
-#endif
+#endif // QSERVER_H

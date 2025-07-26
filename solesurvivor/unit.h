@@ -76,7 +76,11 @@ public:
     {
         return (ptr);
     };
-    static void operator delete(void* ptr);
+    static void operator delete(void* ptr, int);
+    static void operator delete(void* ptr)
+    {
+        operator delete(ptr, -1);
+    }
     static void operator delete(void*, void*)
     {
     }
@@ -253,6 +257,7 @@ public:
         IsDeleteAllowed = allowed;
     }
 
+private:
     static bool IsNewAllowed;
     static bool IsDeleteAllowed;
 };

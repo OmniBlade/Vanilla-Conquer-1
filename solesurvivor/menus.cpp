@@ -34,7 +34,8 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
-#include "common/framelimit.h"
+#include "mssleep.h"
+#include "internet.h"
 
 /*****************************
 **	Function prototypes
@@ -437,6 +438,37 @@ int Do_Menu(char const** strings, bool blue)
 }
 #endif
 
+void Color_Cycle_Button_Text(CountDownTimerClass &ftimer, unsigned char *palette)
+{
+	static bool _up = false;
+
+	if ( !ftimer.Time() ) {
+		ftimer.Set(TIMER_SECOND/4);
+
+		/*
+		**	Pulse the pulsing text color.
+		*/
+		#define	MIN_BTN_CYCLE_COLOR	62
+		#define	MAX_BTN_CYCLE_COLOR	63
+
+		if (_up) {
+			palette[13]++;
+			if (palette[13] > MAX_BTN_CYCLE_COLOR) {
+				palette[13] = MAX_BTN_CYCLE_COLOR;
+				_up = false;
+			}
+		} else {
+			palette[13]--;
+			if (palette[13] < MIN_BTN_CYCLE_COLOR) {
+				palette[13] = MIN_BTN_CYCLE_COLOR;
+				_up = true;
+			}
+		}
+		Wait_Vert_Blank();
+		Set_Palette(palette);
+	}
+}
+
 /***************************************************************************
  * Main_Menu -- Menu processing                                            *
  *                                                                         *
@@ -452,7 +484,7 @@ int Do_Menu(char const** strings, bool blue)
  * HISTORY:                                                                *
  *   05/17/1995 BRR : Created.                                             *
  *=========================================================================*/
-int Main_Menu(unsigned long timeout)
+int Main_Menu(unsigned int timeout)
 {
 	enum {
 		D_DIALOG_W = 152*2,
@@ -562,8 +594,8 @@ int Main_Menu(unsigned long timeout)
 	**	Initialize
 	*/
 	Set_Logic_Page(UnknownViewport1);
-	Keyboard::Clear();
-	starttime = TickCount.Time();
+	Keyboard->Clear();
+	starttime = WinTickCount.Time();
 	/*
 	**	Create the list
 	*/
@@ -594,7 +626,7 @@ int Main_Menu(unsigned long timeout)
 	buttons[curbutton]->Turn_On();
 	buttons[curbutton]->Flag_To_Redraw();
 
-	Keyboard::Clear();
+	Keyboard->Clear();
 
 	Fancy_Text_Print(TXT_NONE, 0, 0, CC_GREEN, TBLACK, TPF_CENTER|TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW);
 
@@ -605,20 +637,20 @@ int Main_Menu(unsigned long timeout)
 	bool process = true;
 	while (process) {
 
-		CountDownTimerClass timer(BT_SYSTEM, (long)0);
+		CountDownTimerClass timer(BT_SYSTEM, 0);
 		/*
 		** If we have just received input focus again after running in the background then
 		** we need to redraw.
 		*/
 		if (AllSurfaces.SurfacesRestored){
-			AllSurfaces.SurfacesRestored=FALSE;
-			display=TRUE;
+			AllSurfaces.SurfacesRestored=false;
+			display=true;
 		}
 
 		/*
 		**	If timeout expires, bail
 		*/
-		if (timeout && TickCount.Time() - starttime > timeout) {
+		if (timeout && WinTickCount.Time() - starttime > timeout) {
 			retval = SEL_TIMEOUT;
 			process = false;
 		}
@@ -672,9 +704,10 @@ int Main_Menu(unsigned long timeout)
 				if (SetMenuChoiceTo1) {
 					retval = SEL_ONLINE;
 					process = false;
-				} else if (!Spawn_WChat()) {
-					CCMessageBox().Process(Text_String(TXT_CANNOT_FIND_WOL), TXT_OK);
 				}
+				// else if (!Spawn_WChat()) {
+				//	WWMessageBox().Process(Text_String(TXT_CANNOT_FIND_WOL), TXT_OK);
+				//}
 				break;
 
 			case (BUTTON_OFFLINE | KN_BUTTON):
@@ -732,9 +765,9 @@ int Main_Menu(unsigned long timeout)
 					buttons[curbutton]->Draw_Me(true);
 					Show_Mouse();
 					process = false;
-					if (!Spawn_WChat()) {
-						CCMessageBox().Process(Text_String(TXT_CANNOT_FIND_WOL), TXT_OK);
-					}
+					//if (!Spawn_WChat()) {
+					//	WWMessageBox().Process(Text_String(TXT_CANNOT_FIND_WOL), TXT_OK);
+					//}
 				} else {
 					buttons[curbutton]->IsPressed = true;
 					Hide_Mouse();
@@ -749,31 +782,31 @@ int Main_Menu(unsigned long timeout)
 				break;
 		}
 		
-		Sleep(50);
-		if (DDEShutdown) {
-			process = false;
-			retval = SEL_EXIT;
-		}
+		ms_sleep(50);
+		//if (DDEShutdown) {
+		//	process = false;
+		//	retval = SEL_EXIT;
+		//}
 		
-		if (Read_Game_Options(NULL)) {
-			ThemeType theme = Theme.What_Is_Playing();
-			if (theme != THEME_MAP1) {
-				Theme.Play_Song(THEME_NONE);
-				Theme.AI();
-			}
-			
-			if (!SpawnedFromWChat) {
-				Fade_Palette_To(BlackPalette, 0xF, 0);
-				VisiblePage.Clear();
-				ShowWindow(Get_WChat_Handle(), 6);
-				ShowWindow(MainWindow, 9);
-			}
-			retval = SEL_ONLINE;
-			process = false;
-		}
+		//if (Read_Game_Options(NULL)) {
+		//	ThemeType theme = Theme.What_Is_Playing();
+		//	if (theme != THEME_MAP1) {
+		//		Theme.Play_Song(THEME_NONE);
+		//		Theme.AI();
+		//	}
+		//	
+		//	//if (!SpawnedFromWChat) {
+		//	//	Fade_Palette_To(BlackPalette, 0xF, 0);
+		//	//	VisiblePage.Clear();
+		//	//	ShowWindow(Get_WChat_Handle(), 6);
+		//	//	ShowWindow(MainWindow, 9);
+		//	//}
+		//	retval = SEL_ONLINE;
+		//	process = false;
+		//}
 	}
 	
 
-	SpawnedFromWChat = false;
+	//SpawnedFromWChat = false;
 	return(retval);
 }

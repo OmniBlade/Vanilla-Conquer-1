@@ -581,7 +581,7 @@ Min & Max unit count values; index0 = bases OFF, index1 = bases ON
 int MPlayerCountMin[2] = {1,0};
 int MPlayerCountMax[2] = {50,12};
 
-long PlanetWestwoodPortNumber = 1234;					//Port number to send to
+int PlanetWestwoodPortNumber = 1234;					//Port number to send to
 
 int PacketLength[PACKET_COUNT] = {
 	{ sizeof(PacketHeaderStruct),         }, // EMPTY
@@ -618,7 +618,7 @@ int PacketLength[PACKET_COUNT] = {
 	{ sizeof(ServerPassPacketStruct),     }, // SERVER_PASSWORD
 };
 
-int ShowNames = true;
+bool ShowNames = true;
 int PlayerNameDrawStyle = 8;
 bool ShowServerDialog = true;
 bool CratesDisabled = true;
@@ -640,7 +640,7 @@ int Chosen_Type;
 bool IsTrackingCurrentObject;
 int UnknownGlobal0;
 bool Making_a_choice;
-int WDTRadarAdded;
+bool WDTRadarAdded;
 char WDTMapOverride[80];
 int WDTCrateShares[WDT_CRATE_COUNT];
 int WDTCrateSteel;
@@ -721,7 +721,7 @@ bool IsTeamMessage;
 */
 int MPlayerObiWan = 0;
 
-if 0
+#if 0
 /***************************************************************************
 ** These variables keep track of the multiplayer game scores.
 */
@@ -1084,7 +1084,6 @@ WWMouseClass* WWMouse = NULL;
 int AllDone;
 bool InMovie = false; // Are we currently playing a VQ movie?
 
-bool	SpawnedFromWChat;
 int		UnknownGlobal2;
 TheaterType LastTheater = THEATER_NONE;
 
@@ -1099,7 +1098,10 @@ bool Server; // Is this player acting as client or server
 // Sole
 bool DoFullRedraw = true;
 bool DDEShutdown;
+#ifdef WIN32
 HWND ServerDlg;
+HANDLE hInstance;
+#endif
 int GameOptionsBitfield;
 bool IsTrackingRedraw;
 char TeamMessages[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH];
@@ -1114,6 +1116,7 @@ bool ShowHelpText;
 bool ShowGameParams;
 bool ShowKeyCommands;
 bool ShowThanksToTesters;
+bool ShowAcceptedList;
 int UnknownGlobal5;
 char ButtonFiveText[1000];
 char ButtonFiveURL[1000];
@@ -1123,3 +1126,11 @@ int TeamPoints[4];
 int UnknownGlobal6;
 bool SetMenuChoiceTo1;
 int TeamScores[4];
+
+bool ClientEvent1_BattleState_Was_2;
+
+int SquadAcceptanceState;
+int SquadPostAcceptanceState;
+bool DebugLogTeams;
+
+CountDownTimerClass SquadGameCountdownTimer;

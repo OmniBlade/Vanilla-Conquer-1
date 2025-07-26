@@ -374,7 +374,7 @@ void EventClass::Execute(void)
     AnimClass* anim = 0;
     HouseClass* house = 0;
     HouseClass* hptr = 0;
-    TechnoClass* techno;
+
 #if 0
     char txt[80];
     int i;
@@ -437,7 +437,7 @@ void EventClass::Execute(void)
         HouseClass* house = hptr;
 
         sprintf(txt, Text_String(TXT_SPECIAL_WARNING), house->Name);
-        Messages.Add_Message(txt, MPlayerTColors[house->RemapColor], TPF_8POINT | TPF_FULLSHADOW, 1200, 0, 0);
+        Messages.Add_Message(txt, MPlayerTColors[house->RemapColor], TPF_8POINT | TPF_FULLSHADOW, 1200);
         Map.Flag_To_Redraw(false);
     } break;
 
@@ -601,7 +601,7 @@ void EventClass::Execute(void)
 
                 if (object && object->IsActive) {
                     if (PlayerPtr->Is_Ally(techno) || Special.IsVisibleTarget) {
-                        object->Clicked_As_Target();
+                        object->Clicked_As_Target(PlayerPtr->Class->House);
                     }
                 }
                 techno->Assign_Mission(Data.MegaMission.Mission);

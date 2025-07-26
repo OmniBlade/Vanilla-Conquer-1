@@ -102,11 +102,12 @@
 /*
 ** New sidebar for GlyphX multiplayer. ST - 3/26/2019 12:24PM
 */
-#include "sidebarglyphx.h"
+//#include "sidebarglyphx.h"
 #include "defines.h"
-#include "common/irandom.h"
+//#include "common/irandom.h"
 #include "ccini.h"
 #include "common/fixed.h"
+#include <time.h>
 
 /***********************************************************************************************
  * HouseClass::Validate -- validates house pointer															  *
@@ -218,6 +219,7 @@ void HouseClass::One_Time(void)
 #endif
 }
 
+#ifdef USE_RA_AI
 /***********************************************************************************************
  * HouseClass::Assign_Handicap -- Assigns the specified handicap rating to the house.          *
  *                                                                                             *
@@ -265,6 +267,7 @@ DiffType HouseClass::Assign_Handicap(DiffType handicap)
 
     return (old);
 }
+#endif
 
 #ifdef CHEAT_KEYS
 /***********************************************************************************************
@@ -578,7 +581,7 @@ bool HouseClass::Can_Build(TechnoTypeClass const* type, HousesType house) const
     if (!type || !type->IsBuildable || !((1L << house) & type->Ownable))
         return (false);
 
-    /*
+        /*
         **	The computer can always build everthing.
         */
 #ifdef USE_RA_AI
@@ -594,6 +597,7 @@ bool HouseClass::Can_Build(TechnoTypeClass const* type, HousesType house) const
     */
     int flags = ActiveBScan;
 
+#ifdef USE_RA_AI
     /*
     **	AI players update flags using building quantity tracker.
     **	Ensures consistent logic when determining building choices.
@@ -606,6 +610,7 @@ bool HouseClass::Can_Build(TechnoTypeClass const* type, HousesType house) const
             }
         }
     }
+#endif
 
     int pre = type->Pre;
     if (flags & STRUCTF_ADVANCED_POWER)
@@ -1025,15 +1030,20 @@ void HouseClass::AI(void)
                 ScenarioInit--;
             }
         }
+
+#ifdef USE_RA_AI
         if (GameToPlay == GAME_NORMAL && PlayerPtr->Difficulty == DIFF_HARD) {
             AlertTime = (TICKS_PER_MINUTE * Random_Pick(4, 10));
         } else {
             if (GameToPlay == GAME_NORMAL && PlayerPtr->Difficulty == DIFF_EASY) {
                 AlertTime = (TICKS_PER_MINUTE * Random_Pick(16, 40));
             } else {
+#endif
                 AlertTime = (TICKS_PER_MINUTE * Random_Pick(5, 20));
+#ifdef USE_RA_AI
             }
         }
+#endif
     }
 
     /*
@@ -1041,61 +1051,28 @@ void HouseClass::AI(void)
     ** (Use the same timer for some extra capture-the-flag logic.)
     */
     if (TeamTime.Expired()) {
+        TechnoClass* techno;
+        int damage;
+        int count;
+        bool moving;
         TeamTypeClass const* ttype = Suggested_New_Team(false);
         if (ttype) {
             ttype->Create_One_Of();
         }
 
         /*
-        ** Also use this timer to detect if someone is sitting on my flag cell.
-        */
-        if (Special.IsCaptureTheFlag && GameToPlay != GAME_NORMAL) {
-            TechnoClass* techno;
-            int moving;
-
-            /*
-            **	If this house's flag waypoint is a valid cell, see if there's
-            **	someone sitting on it.  If so, make the scatter.
-            */
-            if (FlagHome) {
-                techno = Map[FlagHome].Cell_Techno();
-                if (techno) {
-                    moving = false;
-                    if (techno->What_Am_I() == RTTI_INFANTRY || techno->What_Am_I() == RTTI_UNIT) {
-                        if (Target_Legal(((FootClass*)techno)->NavCom)) {
-                            moving = true;
-                        }
-                    }
-
-                    if (!moving) {
-                        techno->Scatter(0, true, true);
-                    }
-                }
-            }
-        }
-
-        /*
-        ** Randomly create a Visceroid or other disastrous multiplayer object.
-        ** Create the object, and use Scan_Place_Object to place the object near
-        ** the center of the map.
-        */
+		** Also use this timer to detect if someone is sitting on my flag cell.
+		*/
         if (!GameParams.AllowFlagSitting
             && (GameParams.IsCaptureTheFlag || GameParams.Football && GameParams.FootballNumFlags == 2)
             && GameToPlay != GAME_NORMAL) {
             if (Target_Legal(FlagLocation)) {
-                //stack doesn't match here
-                TechnoClass* techno;
-                CELL cell;
-                int damage;
-                int count;
-                int moving;
-
                 /*
 				**	If this house's flag waypoint is a valid cell, see if there's
 				**	someone sitting on it.  If so, make the scatter.  If they refuse,
 				**	blow them up.
 				*/
-                cell = As_Cell(FlagLocation);
+                CELL cell = As_Cell(FlagLocation);
                 if (cell) {
                     techno = Map[cell].Cell_Techno();
                     if (techno
@@ -1210,8 +1187,7 @@ void HouseClass::AI(void)
                     TechnoClass* obj = NULL;
                     CELL cell;
 
-                    // TODO BUG aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-                    if (UnitClass::New_Allowed()) {
+                    if (BuildingClass::New_Allowed()) {
                         obj = Create_Building();
                     }
 
@@ -2283,7 +2259,7 @@ void HouseClass::Make_Ally(HousesType house)
             }
 
             sprintf(buffer, Text_String(TXT_HAS_ALLIED), Name, HouseClass::As_Pointer(house)->Name);
-            Messages.Add_Message(buffer, MPlayerTColors[RemapColor], TPF_8POINT | TPF_FULLSHADOW, 1200, 0, 0);
+            Messages.Add_Message(buffer, MPlayerTColors[RemapColor], TPF_8POINT | TPF_FULLSHADOW, 1200);
             Map.Flag_To_Redraw(false);
         }
     }
@@ -2325,7 +2301,7 @@ void HouseClass::Make_Enemy(HousesType house)
             char buffer[80];
 
             sprintf(buffer, Text_String(TXT_AT_WAR), Name, enemy->Name);
-            Messages.Add_Message(buffer, MPlayerTColors[RemapColor], TPF_8POINT | TPF_FULLSHADOW, 600, 0, 0);
+            Messages.Add_Message(buffer, MPlayerTColors[RemapColor], TPF_8POINT | TPF_FULLSHADOW, 600);
             Map.Flag_To_Redraw(false);
         }
     }
@@ -3341,7 +3317,7 @@ void HouseClass::Clobber_All(void)
     int i;
 #define CLOBBER_ABSTRACT(ptr)                                                                                          \
     if (ptr->Delete_Allowed()) {                                                                                       \
-        DELETE_OBJ(ptr, sizeof(AbstractClass));                                                                        \
+        delete ptr;                                                                                                    \
         i--;                                                                                                           \
     } else {                                                                                                           \
         ptr->Destruct();                                                                                               \
@@ -3731,7 +3707,7 @@ TechnoTypeClass const* HouseClass::Suggest_New_Object(RTTIType objecttype) const
     case RTTI_UNIT:
     case RTTI_UNITTYPE:
         if (CurUnits < MaxUnit) {
-
+#ifdef USE_RA_AI
             /*
             **	A computer controlled house will try to build a replacement
             **	harvester if possible. Never replace harvesters if the game
@@ -3744,7 +3720,7 @@ TechnoTypeClass const* HouseClass::Suggest_New_Object(RTTIType objecttype) const
                     break;
                 techno = 0;
             }
-
+#endif
             int counter[UNIT_COUNT];
             if (GameToPlay == GAME_NORMAL) {
                 memset(counter, 0x00, sizeof(counter));
@@ -3975,7 +3951,7 @@ TechnoTypeClass const* HouseClass::Suggest_New_Object(RTTIType objecttype) const
  * HISTORY:                                                                                    *
  *   05/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool HouseClass::Flag_Remove(TARGET target, bool set_home)
+bool HouseClass::Flag_Remove(TARGET target, bool unk)
 {
     Validate();
     bool rc = false;
@@ -4057,7 +4033,7 @@ bool HouseClass::Flag_Remove(TARGET target, bool set_home)
  * HISTORY:                                                                                    *
  *   05/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool HouseClass::Flag_Attach(CELL cell bool set_home)
+bool HouseClass::Flag_Attach(CELL cell, bool set_home)
 {
     Validate();
     FlagPacketData* data;
@@ -4069,11 +4045,11 @@ bool HouseClass::Flag_Attach(CELL cell bool set_home)
 
     if (!Map.In_Radar(cell) && GameToPlay == GAME_HOST) {
         sprintf(buf,
-                "Map.In_Radar(%d) failed for HouseClass::Flag_Attach(%d, %d) at time %d\n",
+                "Map.In_Radar(%d) failed for HouseClass::Flag_Attach(%d, %d) at time %lld\n",
                 cell,
                 cell,
-                unk,
-                time(0)); //BUG
+                set_home,
+                (long long)time(0)); //BUG
         CCDebugString(buf);
         Messages.Add_Message(buf, 15, TPF_6POINT | TPF_NOSHADOW | TPF_BRIGHT_COLOR, 0);
         Map.Flag_To_Redraw(false);
@@ -4094,7 +4070,7 @@ bool HouseClass::Flag_Attach(CELL cell bool set_home)
         cptr->Redraw_Objects();
         FlagLocation = As_Target(cell);
         if (Class->House == PlayerPtr->ActLike || GameParams.Football && GameParams.FootballNumFlags == 1) {
-            Map.Sight_From(cell, 4, false);
+            Map.Sight_From(PlayerPtr, cell, 4, false);
         }
 
         return (true);
@@ -4122,7 +4098,7 @@ bool HouseClass::Flag_Attach(CELL cell bool set_home)
         **	a nearby cell where it can be placed.
         */
         CELL newcell = cell;
-        rc = Map[newcell].Flag_Place(Class->House);
+        rc = Map[newcell].Flag_Place(Class->House, set_home);
         if (!rc) {
 
             /*
@@ -4257,7 +4233,7 @@ void HouseClass::Make_CTF_Packet_Dropped(CELL cell, bool unk)
     }
 
     if (GameParams.Football && GameToPlay == GAME_CLIENT && Class->House == PlayerPtr->ActLike) {
-        Map.Sight_From(FlagHome, 4, 0);
+        Map.Sight_From(PlayerPtr, FlagHome, 4, 0);
     }
 
     if (GameToPlay == GAME_HOST) {
@@ -4309,17 +4285,17 @@ void HouseClass::Make_CTF_Packet_Picked_Up(CELL cell, bool unk)
  * HISTORY:                                                                                    *
  *   05/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool HouseClass::Flag_Attach(UnitClass* object, bool set_home)
+bool HouseClass::Flag_Attach(FootClass* object, bool set_home)
 {
     FlagPacketData* data;
     Validate();
 
-    if (GameToPlay == GAME_CLIENT && !unk) {
+    if (GameToPlay == GAME_CLIENT && !set_home) {
         return (false);
     }
 
     if (object && !object->IsInLimbo) {
-        Flag_Remove(FlagLocation /*, set_home*/, unk);
+        Flag_Remove(FlagLocation /*, set_home*/, set_home);
 
         TARGET target;
         int id;
@@ -4336,7 +4312,7 @@ bool HouseClass::Flag_Attach(UnitClass* object, bool set_home)
         /*
 		**	Attach the flag to the object.
 		*/
-        object->Flag_Attach(Class->House, unk);
+        object->Flag_Attach(Class->House, set_home);
 
         if (PlayerPtr->Class->House == object->Owner()) {
             Sound_Effect(VOC_DOWN);
@@ -4816,7 +4792,7 @@ void HouseClass::Blowup_All(bool keep_buildings)
                 while (Buildings.Ptr(i) == bptr && bptr->Strength) {
                     damage = 0x7fff;
                     bptr->TechnoUnk2 = false;
-					bptr->Take_Damage(damage, NULL, WARHEAD_HE, NULL);
+                    bptr->Take_Damage(damage, NULL, WARHEAD_HE, NULL);
                     count++;
                     if (count > 5) {
                         delete bptr;
@@ -4842,7 +4818,7 @@ void HouseClass::Blowup_All(bool keep_buildings)
                 damage = 0x7fff;
                 warhead = Random_Pick(WARHEAD_SA, WARHEAD_FIRE);
                 iptr->TechnoUnk2 = false;
-				iptr->Take_Damage(damage, NULL, WARHEAD_HE, NULL);
+                iptr->Take_Damage(damage, NULL, WARHEAD_HE, NULL);
                 if (iptr->IsActive) {
                     damage = 0x7fff;
                     iptr->Take_Damage(damage, 0, warhead);

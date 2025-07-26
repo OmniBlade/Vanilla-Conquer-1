@@ -10,7 +10,8 @@
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
 #include "comms.h"
-#include "sockets.h"
+#include "common/endianness.h"
+#include <string.h>
 
 #ifdef WIN32
 #define WM_HOSTBYADDRESS (WM_USER + 101)
@@ -23,8 +24,10 @@ ReliableCommClass::ReliableCommClass(int maxpacketsize)
 {
     Socket = INVALID_SOCKET;
     Protocol = NULL;
+#ifdef WIN32
     Window = 0;
     Async = 0;
+#endif
     Host.Addr.s_addr = INADDR_NONE;
     Host.DotAddr[0] = 0;
     Host.Name[0] = 0;
@@ -44,8 +47,10 @@ ReliableCommClass::ReliableCommClass(ProtocolClass* protocol, int maxpacketsize)
 {
     Socket = INVALID_SOCKET;
     Protocol = NULL;
+#ifdef WIN32
     Window = 0;
     Async = 0;
+#endif
     Host.Addr.s_addr = INADDR_NONE;
     Host.DotAddr[0] = 0;
     Host.Name[0] = 0;
@@ -133,7 +138,7 @@ int ReliableCommClass::Connect(void* addr, int len, int type)
         inaddr.sin_family = AF_INET;
         inaddr.sin_port = htons(Host.Port);
         inaddr.sin_addr.s_addr = Host.Addr.s_addr;
-        if (connect(Socket, (LPSOCKADDR)&inaddr, sizeof(inaddr)) == SOCKET_ERROR) {
+        if (connect(Socket, (struct sockaddr*)&inaddr, sizeof(inaddr)) == SOCKET_ERROR) {
             if (LastSocketError != WSAEWOULDBLOCK) {
 #if 0
                 WSACancelAsyncRequest(Async);
@@ -164,7 +169,7 @@ int ReliableCommClass::Connect(void* addr, int len, int type)
 int ReliableCommClass::Connect(ListenerClass* listener)
 {
     struct sockaddr_in addr;
-    int addrsize;
+    socklen_t addrsize;
 
     if (Protocol == NULL) {
         return (0);
@@ -175,7 +180,7 @@ int ReliableCommClass::Connect(ListenerClass* listener)
     }
 
     addrsize = sizeof(addr);
-    Socket = accept(listener->Socket, (LPSOCKADDR)&addr, &addrsize);
+    Socket = accept(listener->Socket, (struct sockaddr*)&addr, &addrsize);
     if (Socket == INVALID_SOCKET) {
         return (0);
     }
@@ -258,29 +263,31 @@ int ReliableCommClass::Send(void)
     len_ptr = (unsigned short*)SendEntry->Buffer;
     (*len_ptr) = htons((short)SendEntry->BufLen);
 
+#ifdef WIN32
     PostMessageA(Window, WM_ASYNCEVENT, 0, (LONG)FD_WRITE);
+#endif
 
     return (1);
 }
 
 unsigned short ReliableCommClass::Network_Short(unsigned short local_val)
 {
-    return (htons(local_val));
+    return (hton16(local_val));
 }
 
 unsigned short ReliableCommClass::Local_Short(unsigned short net_val)
 {
-    return (ntohs(net_val));
+    return (ntoh16(net_val));
 }
 
 unsigned long ReliableCommClass::Network_Long(unsigned long local_val)
 {
-    return (htonl(local_val));
+    return (hton32(local_val));
 }
 
 unsigned long ReliableCommClass::Local_Long(unsigned long net_val)
 {
-    return (ntohl(net_val));
+    return (ntoh32(net_val));
 }
 
 void ReliableCommClass::Create_Window(void)
@@ -342,7 +349,7 @@ int ReliableCommClass::Open_Socket(void)
     addr.sin_port = 0;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (bind(Socket, (LPSOCKADDR)&addr, sizeof(addr)) == SOCKET_ERROR) {
+    if (bind(Socket, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR) {
         Close_Socket();
         return (0);
     }
@@ -352,7 +359,7 @@ int ReliableCommClass::Open_Socket(void)
 
 void ReliableCommClass::Close_Socket(void)
 {
-    LINGER ling;
+    struct linger ling;
 
     if (Socket == INVALID_SOCKET) {
         return;
@@ -360,7 +367,7 @@ void ReliableCommClass::Close_Socket(void)
 
     ling.l_onoff = 0;
     ling.l_linger = 0;
-    setsockopt(Socket, SOL_SOCKET, SO_LINGER, (LPSTR)&ling, sizeof(ling));
+    setsockopt(Socket, SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling));
 
     if (closesocket(Socket) == SOCKET_ERROR) {
         // TODO BUG? Nothing
@@ -372,6 +379,7 @@ void ReliableCommClass::Close_Socket(void)
 #ifdef WIN32
 long __stdcall ReliableCommClass::Window_Proc(HWND hwnd, UINT message, UINT wParam, LONG lParam)
 {
+#if 0
     static char const* _http_response = "HTTP/1.0 200 OK\nServer: NealScape/1.0\nContent-Type: "
                                         "text/html\n\n<title>Sole Survivor</title><h1>Sole Survivor "
                                         "is "
@@ -432,7 +440,7 @@ long __stdcall ReliableCommClass::Window_Proc(HWND hwnd, UINT message, UINT wPar
             addr.sin_family = AF_INET;
             addr.sin_port = htons(obj->Host.Port);
             addr.sin_addr.s_addr = obj->Host.Addr.s_addr;
-            if (connect(obj->Socket, (LPSOCKADDR)&addr, sizeof(addr)) == SOCKET_ERROR) {
+            if (connect(obj->Socket, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR) {
                 if (LastSocketError != WSAEWOULDBLOCK) {
                     if (obj->Protocol) {
                         obj->Protocol->Connected_To_Server(0);
@@ -624,5 +632,8 @@ long __stdcall ReliableCommClass::Window_Proc(HWND hwnd, UINT message, UINT wPar
     default:
         return DefWindowProcA(hwnd, message, wParam, lParam);
     }
+#else
+    return (DefWindowProcA(hwnd, message, wParam, lParam));
+#endif
 }
 #endif

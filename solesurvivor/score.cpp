@@ -1024,9 +1024,9 @@ void ScoreClass::Presentation(void)
 }
 
 // ST = 12/17/2018 5:44PM
-#ifndef WinTickCount
-extern TimerClass WinTickCount;
-#endif
+//#ifndef WinTickCount
+//extern TimerClass WinTickCount;
+//#endif
 
 void Cycle_Wait_Click(void)
 {

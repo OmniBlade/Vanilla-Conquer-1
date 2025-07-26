@@ -10,6 +10,10 @@
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
 #include "serverres.h"
+#include "common/endianness.h"
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 
 GameResultClass::GameResultClass(int icount)
 {
@@ -155,7 +159,7 @@ void GameResultClass::Get_Game_State(GameResultClass::StateStruct *state)
 bool GameResultClass::Host_To_Net(void **dataptr, int *totalsize)
 {
 	StateStruct s;
-	u_long count;
+	unsigned count;
 	unsigned char *d;
 	GameResultEntry *r;
 	int size;
@@ -174,32 +178,32 @@ bool GameResultClass::Host_To_Net(void **dataptr, int *totalsize)
 		return true;
 	}
 	
-	s.TimeLimit = htonl(GameState.TimeLimit);
-	s.ScoreLimit = htonl(GameState.ScoreLimit);
-	s.LifeLimit = htonl(GameState.LifeLimit);
-	s.GameMode = htonl(GameState.GameMode);
-	s.IsLadderGame = htonl(GameState.IsLadderGame);
+	s.TimeLimit = htobe32(GameState.TimeLimit);
+	s.ScoreLimit = htobe32(GameState.ScoreLimit);
+	s.LifeLimit = htobe32(GameState.LifeLimit);
+	s.GameMode = htobe32(GameState.GameMode);
+	s.IsLadderGame = htobe32(GameState.IsLadderGame);
 	
 	memcpy(d, &s, sizeof(StateStruct));
 
-	count = htonl(ActiveCount);
+	count = htobe32(ActiveCount);
 	memcpy(d + sizeof(StateStruct), &count, sizeof(count));
 	
-	printf("Number of players in game results: %d, %d\n", ActiveCount, count);
+	printf("Number of players in game results: %d, %u\n", ActiveCount, count);
 	
 	r = (GameResultEntry*)((unsigned char *)d + sizeof(StateStruct) + sizeof(ActiveCount));
 	
 	for (i = 0; i < ActiveCount; i++) {
 		memcpy(r, &Results[i], sizeof(GameResultEntry));
-		r->ScoredPoints = htons(r->ScoredPoints);
-		r->TotalDeaths = htons(r->TotalDeaths);
-		r->chosentype = htons(r->chosentype);
-		r->IsWinnerOrLoser = htons(r->IsWinnerOrLoser);
-		r->PlayerCount = htonl(r->PlayerCount);
-		r->TimeIngame = htonl(r->TimeIngame);
-		r->dword1C_score = htonl(r->dword1C_score);
+		r->ScoredPoints = htobe16(r->ScoredPoints);
+		r->TotalDeaths = htobe16(r->TotalDeaths);
+		r->chosentype = htobe16(r->chosentype);
+		r->IsWinnerOrLoser = htobe16(r->IsWinnerOrLoser);
+		r->PlayerCount = htobe32(r->PlayerCount);
+		r->TimeIngame = htobe32(r->TimeIngame);
+		r->dword1C_score = htobe32(r->dword1C_score);
 		//BUG, this won't set the unmodified number..
-		r->timing3_score = (float)htonl(*(long *)&r->timing3_score);
+		r->timing3_score = (float)htobe32(*(long *)&r->timing3_score);
 		r++;
 	}
 	
@@ -220,15 +224,15 @@ bool GameResultClass::Net_To_Host(unsigned char *d, int unk)
 	r = (GameResultEntry *)d;
 	
 	memcpy(&GameState, r, sizeof(StateStruct));
-	GameState.TimeLimit = ntohl(GameState.TimeLimit);
-	GameState.ScoreLimit = ntohl(GameState.ScoreLimit);
-	GameState.LifeLimit = ntohl(GameState.LifeLimit);
-	GameState.GameMode = ntohl(GameState.GameMode);
-	GameState.IsLadderGame = ntohl(GameState.IsLadderGame);
+	GameState.TimeLimit = be32toh(GameState.TimeLimit);
+	GameState.ScoreLimit = be32toh(GameState.ScoreLimit);
+	GameState.LifeLimit = be32toh(GameState.LifeLimit);
+	GameState.GameMode = be32toh(GameState.GameMode);
+	GameState.IsLadderGame = be32toh(GameState.IsLadderGame);
 	
 	r = (GameResultEntry *)((unsigned char *)r + sizeof(StateStruct));
 	count = *(int *)r;
-	ActiveCount = ntohl(count);
+	ActiveCount = be32toh(count);
 	
 	r = (GameResultEntry*)((unsigned char *)r + sizeof(ActiveCount));
 	
@@ -241,15 +245,15 @@ bool GameResultClass::Net_To_Host(unsigned char *d, int unk)
 	for (i = 0; i < ActiveCount; i++) {
 		memcpy(&Results[i], r, sizeof(GameResultEntry));
 		
-		Results[i].ScoredPoints = ntohs(Results[i].ScoredPoints);
-		Results[i].TotalDeaths = ntohs(Results[i].TotalDeaths);
-		Results[i].chosentype = ntohs(Results[i].chosentype);
-		Results[i].IsWinnerOrLoser = ntohs(Results[i].IsWinnerOrLoser);
-		Results[i].PlayerCount = ntohl(Results[i].PlayerCount);
-		Results[i].TimeIngame = ntohl(Results[i].TimeIngame);
-		Results[i].dword1C_score = ntohl(Results[i].dword1C_score);
+		Results[i].ScoredPoints = be16toh(Results[i].ScoredPoints);
+		Results[i].TotalDeaths = be16toh(Results[i].TotalDeaths);
+		Results[i].chosentype = be16toh(Results[i].chosentype);
+		Results[i].IsWinnerOrLoser = be16toh(Results[i].IsWinnerOrLoser);
+		Results[i].PlayerCount = be32toh(Results[i].PlayerCount);
+		Results[i].TimeIngame = be32toh(Results[i].TimeIngame);
+		Results[i].dword1C_score = be32toh(Results[i].dword1C_score);
 		//BUG, this won't set the unmodified number..
-		Results[i].timing3_score = (float)ntohl(*(long *)&Results[i].timing3_score);
+		Results[i].timing3_score = (float)be32toh(*(long *)&Results[i].timing3_score);
 		++r;
 	}
 	return false;

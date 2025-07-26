@@ -53,6 +53,8 @@
 #include "common/vqaconfig.h"
 #include "common/winstub.h"
 #include "ccini.h"
+#include "statpanel.h"
+#include "serverres.h"
 
 #ifdef REMASTER_BUILD
 #ifdef MEGAMAPS
@@ -97,6 +99,7 @@ extern bool Debug_Smart_Print;
 extern bool Debug_Trap_Check_Heap;
 extern bool Debug_Instant_Build;
 extern bool Debug_Force_Crash;
+extern bool Debug_NEW;
 
 extern void const* WarFactoryOverlay;
 
@@ -389,7 +392,7 @@ extern bool Server; // Is this player acting as client or server
 // New Sole stuff, subject to change/movement
 extern int sole_array[SOLE_ARRAY_COUNT][3];
 extern int sole_array2[SOLE_ARRAY_COUNT];
-extern int ShowNames;
+extern bool ShowNames;
 extern int PlayerNameDrawStyle;
 extern bool IsTrackingCurrentObject;
 extern bool OfflineMode;
@@ -402,13 +405,25 @@ extern int TeamScores[4];
 extern int SpeedScale;
 extern int SquadGamePasswordCountDown;
 
+extern int ColorListTiming;
 extern bool MessageLogging;
+
+extern int SquadAcceptanceState;
+extern int SquadPostAcceptanceState;
+extern int CrateDensity;
 
 extern int WDTCrateShares[WDT_CRATE_COUNT];
 extern int WDTCrateDensity;
 extern int WDTCrateIonFactor;
 extern int WDTCrateTimerVal;
+extern bool ClientEvent1_BattleState_Was_2;
+
 extern GAMEPARAMS GameParams;
+
+extern TechnoClass *TechnoThatGotStealthCrate;
+
+extern CountDownTimerClass SquadGameCountdownTimer;
+extern CountDownTimerClass CrateKeepTimer;
 
 #include "voicethemes.h"
 extern DynamicVectorClass<VoiceThemeClass*> VoiceThemes;
@@ -417,6 +432,7 @@ extern bool IsTeamMessage;
 
 class ProtocolClass;
 class ListenerClass;
+class ListenerProtocolClass;
 class ReliableCommClass;
 class ReliableProtocolClass;
 struct PlayerNameTag;
@@ -452,11 +468,58 @@ extern StatsPanelClass StatPanel;
 extern DynamicVectorClass<char*> BannedPlayers;
 extern CELL FlagHomes[4];
 extern CELL FootballCells[2];
+extern char ButtonFiveText[1000];
+extern char ButtonFiveURL[1000];
+extern char ButtonSixText[1000];
+extern char ButtonSixURL[980];//should be 1000 but it will corrupt neighboring globals
+extern char TeamMessages[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH];
 extern int OfflinePoints;
+extern int OfflineDeathCount;
+extern int CurrentVoiceTheme;
+extern int PacketLength[PACKET_COUNT];
+extern bool SetMenuChoiceTo1;
 extern bool CratesDisabled;
+extern bool ShowHelpText;
+extern bool ShowGameParams;
+extern bool ShowKeyCommands;
+extern bool ShowThanksToTesters;
+extern bool ShowAcceptedList;
+extern bool ShowServerDialog;
+extern bool Making_a_choice;
+extern bool WDTRadarAdded;
+extern bool ServerConnectionLost;
 extern int WDTCrateSteel;
 extern int WDTCrateGreen;
 extern int WDTCrateOrange;
+extern char WDTMapOverride[80];
 extern TimerClass WDTGameTimer;
+extern bool DebugLogTeams;
+extern GameResultClass ServerGameResults; // GLOBALS.CPP
+extern TimerClass ArmageddonDelayTimer;
+
+extern ListenerProtocolClass *Protocol;
+extern ListenerClass *Listener;
+extern void *UnreliableComm;
+extern void *UnreliableProtocol;
+
+extern int ClientFPS;
+extern int LastClientFrame;
+extern CountDownTimerClass FramerateUpdateTimer;
+extern int RecievedBytesSec;
+extern int SentBytesSec;
+extern int SentTCP;
+extern int SentUDP;
+extern int RecievedTCP;
+extern int RecievedUDP;
+extern CountDownTimerClass TransmisionStatsTimer;
+
+extern RTTIType Chosen_RTTI;
+extern int Chosen_Type;
+extern bool DoFullRedraw;
+
+#ifdef WIN32
+extern HWND ServerDlg;
+extern HANDLE hInstance;
+#endif
 
 #endif

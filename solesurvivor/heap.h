@@ -65,7 +65,7 @@ public:
     };
 
     virtual int Set_Heap(int count, void* buffer = 0);
-    virtual void* Allocate(int index);
+    virtual void* Allocate(int index = -1);
     virtual void Clear(void);
     virtual int Free(void* pointer);
     virtual int Free_All(void);

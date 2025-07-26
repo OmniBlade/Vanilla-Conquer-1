@@ -3143,7 +3143,11 @@ enum VoiceSoundType
     VOX_THEME_SND_FIRST = 0,
     VOX_THEME_SND_NONE = -1,
 };
-inline VoiceSoundType operator++(VoiceSoundType& n, int);
+inline VoiceSoundType operator++(VoiceSoundType& n)
+{
+    n = (VoiceSoundType)(((int)n) + 1);
+    return n;
+}
 
 /****************************************************************************
 **	Used to store firing data for a unit.
@@ -4280,6 +4284,20 @@ static_assert(sizeof(WDTPacketStruct) == 422, "WDTPacketStruct does not match ex
 #define packet_size_of(id) (sizeof(((WDTPacketStruct*)0)->id) + sizeof(PacketHeaderStruct))
 
 #define MAX_PACKET_LEN sizeof(WDTPacketStruct)
+
+enum MainMenuSelection {
+	SEL_TIMEOUT = -1,				// main menu timeout--go into attract mode
+	SEL_OFFLINE,
+	SEL_ONLINE,
+	SEL_HELP,
+	SEL_SNEAK_PEEK,
+	SEL_FIVE,
+	SEL_SIX,
+	SEL_NEWS,
+	SEL_EXIT,						// exit to DOS
+	SEL_FAME,						// view the hall of fame
+	SEL_NONE,						// placeholder default value
+};
 
 /*
 **

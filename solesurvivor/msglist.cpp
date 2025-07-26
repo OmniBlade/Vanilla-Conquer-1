@@ -45,9 +45,9 @@
 #include "langfilt.h"
 
 // ST = 12/17/2018 5:44PM
-#ifndef WinTickCount
-extern TimerClass WinTickCount;
-#endif
+//#ifndef WinTickCount
+//extern TimerClass WinTickCount;
+//#endif
 
 char MessageListClass::MessageBuffers[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH];
 int MessageColors[MAX_NUM_MESSAGES];
@@ -205,7 +205,7 @@ void MessageListClass::Add_Message(const char *txt, int color, TextPrintType sty
 	MessageStyles[MessageIndex] = style;
 
 	if ( timeout > 0 ) {
-		MessageTimings[MessageIndex] = TickCount.Time() + timeout;
+		MessageTimings[MessageIndex] = WinTickCount.Time() + timeout;
 	} else {
 		MessageTimings[MessageIndex] = 0;
 	}
@@ -246,7 +246,7 @@ void MessageListClass::Move_Old_Messages(int index)
  * HISTORY:                                                                *
  *   05/22/1995 BRR : Created.                                             *
  *=========================================================================*/
-void MessageListClass::Add_Edit(int x, int y, int color, TextPrintType style, char *to)
+void MessageListClass::Add_Edit(int x, int y, int color, TextPrintType style, const char *to)
 {
 	IsEditing = true;
 
@@ -288,7 +288,7 @@ int MessageListClass::Manage (void)
 		/*.....................................................................
 		If this message's time is up, remove it from the list
 		.....................................................................*/
-		if (MessageTimings[i] != 0 && TickCount.Time() > MessageTimings[i]) {
+		if (MessageTimings[i] != 0 && WinTickCount.Time() > MessageTimings[i]) {
 			Move_Old_Messages(i);
 			i--;
 			changed = true;
@@ -343,7 +343,7 @@ int MessageListClass::Input(KeyNumType &input)
 		int timing1;
 		int time;
 
-		ascii = Keyboard::To_ASCII(input);
+		ascii = Keyboard->To_ASCII(input);
 
 		switch (ascii) {
 			/*------------------------------------------------------------------
@@ -360,7 +360,7 @@ int MessageListClass::Input(KeyNumType &input)
 			RETURN = send the message
 			------------------------------------------------------------------*/
 			case KA_RETURN:
-				time = timeGetTime();
+				time = WinTickCount.Time();
 				timing1 = MessageTimingIndex + 1;
 
 				if (timing1 > 9) {

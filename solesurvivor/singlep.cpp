@@ -69,7 +69,15 @@ ObjectClass* Create_Offline_Choice(void)
     PlayerPtr->IsDefeated = false;
 
     ++ScenarioInit;
-    Map.Compute_Start_Pos();
+    int start_x = 0;
+    int start_y = 0;
+    Map.Compute_Start_Pos(start_x, start_y);
+    for (int i = 0; i < ARRAY_SIZE(Scen.Views); ++i) {
+        Scen.Views[i] = XY_Cell(start_x, start_y);
+    }
+    Scen.Waypoint[27] = XY_Cell(start_x, start_y);
+    COORDINATE pos = Cell_Coord(XY_Cell(start_x, start_y));
+    Map.Set_Tactical_Position(pos);
     --ScenarioInit;
 
     Map.Flag_To_Redraw(true);
@@ -93,7 +101,15 @@ void Create_Offline_Unit(void)
             delete object;
         } else {
             ++ScenarioInit;
-            Map.Compute_Start_Pos();
+            int start_x = 0;
+            int start_y = 0;
+            Map.Compute_Start_Pos(start_x, start_y);
+            for (int i = 0; i < ARRAY_SIZE(Scen.Views); ++i) {
+                Scen.Views[i] = XY_Cell(start_x, start_y);
+            }
+            Scen.Waypoint[27] = XY_Cell(start_x, start_y);
+            COORDINATE pos = Cell_Coord(XY_Cell(start_x, start_y));
+            Map.Set_Tactical_Position(pos);
             --ScenarioInit;
 
             Map.Flag_To_Redraw(true);

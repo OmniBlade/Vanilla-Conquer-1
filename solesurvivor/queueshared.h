@@ -9,37 +9,10 @@
 // distributed with this program. You should have received a copy of the
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
-#ifndef HELPSCRN_H
-#define HELPSCRN_H
 
-class HelpScreenClass
-{
-public:
-    struct SoleHelpBufferStruct
-    {
-        int ClipX;
-        int ClipY;
-        int ClipWidth;
-        int ClipHeight;
-        char Tooltip[64];
-        char Description[512];
-    };
+#ifndef QUEUESHARED_H
+#define QUEUESHARED_H
 
-    HelpScreenClass(void);
-    ~HelpScreenClass();
+void Queue_AI_Normal(void);
 
-    void Set_File_Name(const char* filename);
-    const char* Get_File_Name();
-
-    bool Load();
-    bool Get_Entry(int xpos, int ypos, const char*& tooltip, const char*& description);
-
-private:
-    void Read_Entry(char* entry, int index);
-
-    const char* HelpFile;
-    int EntryCount;
-    SoleHelpBufferStruct* Entries;
-};
-
-#endif
+#endif // QUEUESHARED_H

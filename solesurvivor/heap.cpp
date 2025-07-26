@@ -181,15 +181,20 @@ int FixedHeapClass::Set_Heap(int count, void* buffer)
  * HISTORY:                                                                                    *
  *   02/21/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void* FixedHeapClass::Allocate(void)
+void* FixedHeapClass::Allocate(int index)
 {
+    int idx;
     if (ActiveCount < TotalCount) {
-        int index = FreeFlag.First_False();
+        if (index == -1) {
+            idx = FreeFlag.First_False();
+        } else {
+            idx = index;
+        }
 
-        if (index != -1) {
+        if (idx != -1) {
             ActiveCount++;
-            FreeFlag[index] = true;
-            return ((*this)[index]);
+            FreeFlag[idx] = true;
+            return ((*this)[idx]);
         }
     }
     return (0);
@@ -345,9 +350,9 @@ int FixedIHeapClass::Set_Heap(int count, void* buffer)
     return (false);
 }
 
-void* FixedIHeapClass::Allocate(void)
+void* FixedIHeapClass::Allocate(int index)
 {
-    void* ptr = FixedHeapClass::Allocate();
+    void* ptr = FixedHeapClass::Allocate(index);
     if (ptr) {
         ActivePointers.Add(ptr);
         memset(ptr, 0, Size);

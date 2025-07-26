@@ -339,7 +339,7 @@ void InfantryClass::Destruct()
  * HISTORY:                                                                                    *
  *   09/01/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void* InfantryClass::operator new(size_t) noexcept
+void* InfantryClass::operator new(size_t, int heap_index) noexcept
 {
     TARGET target;
     NewDeletePacketData* data;
@@ -376,7 +376,7 @@ void* InfantryClass::operator new(size_t) noexcept
  * HISTORY:                                                                                    *
  *   09/08/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void InfantryClass::operator delete(void* ptr)
+void InfantryClass::operator delete(void* ptr, int)
 {
     TARGET target;
     NewDeletePacketData* data;
@@ -689,7 +689,7 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window)
     //House->Remap_Table(IsBlushing, true), Map.UnitShadow);
 
     if (Flagged != HOUSE_NONE) {
-        CC_Draw_Shape(MixFileClass::Retrieve("FLAGFLY.SHP"),
+        CC_Draw_Shape(MFCD::Retrieve("FLAGFLY.SHP"),
                       Frame % 14,
                       x + 13,
                       y - 8,
@@ -802,7 +802,7 @@ void InfantryClass::Per_Cell_Process(bool center)
                     int temp = Special.IsScatter;
 
                     unit->IsGoingToBlow = true;
-                    unit->Clicked_As_Target(20);
+                    unit->Clicked_As_Target(PlayerPtr->Class->House, 20);
                     unit->CountDown.Set(20);
                     unit->WhomToRepay = As_Target();
                     unit->Make_Techno_Packet_Data(TECHNO_PACKET_DATA_DEMOLITION, 1);
@@ -1109,7 +1109,7 @@ void InfantryClass::Assign_Target(TARGET target, bool unk)
     if (!Target_Legal(NavCom) && Class->IsCapture && Class->Primary == WEAPON_NONE) {
         BuildingClass const* building = As_Building(target);
         if (building && building->Can_Capture()
-            && (GameToPlay != GAME_NORMAL || *building != STRUCT_EYE && Scenario < 13)) {
+            && (GameToPlay != GAME_NORMAL || *building != STRUCT_EYE && Scen.Scenario < 13)) {
             Assign_Destination(target);
         }
     }
@@ -3148,12 +3148,12 @@ ActionType InfantryClass::What_Action(ObjectClass* object) const
 	*/
     if (*this == INFANTRY_RAMBO && action == ACTION_ATTACK) {
         if (object->What_Am_I() == RTTI_BUILDING) {
-            bool control = Keyboard::Down(KN_LCTRL) || Keyboard::Down(KN_RCTRL);
+            bool control = Keyboard->Down(KN_LCTRL) || Keyboard->Down(KN_RCTRL);
             if (control) {
                 return (ACTION_SABOTAGE);
             }
         } else if (object->What_Am_I() == RTTI_UNIT) {
-            bool control = Keyboard::Down(KN_LCTRL) || Keyboard::Down(KN_RCTRL);
+            bool control = Keyboard->Down(KN_LCTRL) || Keyboard->Down(KN_RCTRL);
             if (control) {
                 return (ACTION_SABOTAGE);
             }

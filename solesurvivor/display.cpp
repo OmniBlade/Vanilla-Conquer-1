@@ -2467,7 +2467,7 @@ void DisplayClass::Draw_It(bool forced)
             for (int house = 0; house < 4; house++) {
                 if (Coord_X(FlagDrawLocation[house]) != -1) {
                     void const* flag_remap =
-                        HouseClass::As_Pointer((HousesType)(house + 6))->Remap_Table(false, REMAP_YELLOW);
+                        HouseClass::As_Pointer((HousesType)(house + 6))->Remap_Table(false, REMAP_GOLD);
                     CC_Draw_Shape(MFCD::Retrieve("FLAGFLY.SHP"),
                                   Frame % 14,
                                   Coord_X(FlagDrawLocation[house]) + (ICON_PIXEL_W / 2),

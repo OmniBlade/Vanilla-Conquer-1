@@ -49,10 +49,12 @@ set(SURVIVOR_SRC
     gauge.cpp
     globals.cpp
     goptions.cpp
+    gprotocol.cpp
     gscreen.cpp
     hdata.cpp
     heap.cpp
     help.cpp
+    helpscrn.cpp
     house.cpp
     iconset.cpp
     idata.cpp
@@ -84,7 +86,7 @@ set(SURVIVOR_SRC
     mplayer.cpp
     msgbox.cpp
     msglist.cpp
-    nulldlg.cpp
+    #nulldlg.cpp
     object.cpp
     odata.cpp
     options.cpp
@@ -107,6 +109,7 @@ set(SURVIVOR_SRC
     serverres.cpp
     serverstats.cpp
     shapebtn.cpp
+    sheddlg.cpp
     sidebar.cpp
     singlep.cpp
     slider.cpp
@@ -115,6 +118,7 @@ set(SURVIVOR_SRC
     sounddlg.cpp
     special.cpp
     startup.cpp
+    statpanel.cpp
     stats.cpp
     super.cpp
     tab.cpp
@@ -142,10 +146,10 @@ set(SURVIVOR_SRC
 
 if(NETWORKING)
     list(APPEND SURVIVOR_NET_SRC
-        ipxconn.cpp
-        ipxgconn.cpp
-        ipxmgr.cpp
-        netdlg.cpp
+        #ipxconn.cpp
+        #ipxgconn.cpp
+        #ipxmgr.cpp
+        #netdlg.cpp
     )
 endif()
 
@@ -206,7 +210,7 @@ if(BUILD_VANILLASS)
             MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
             MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
             MACOSX_BUNDLE_COPYRIGHT "Based on code released under GPLv3 by EA"
-            MACOSX_BUNDLE_ICON_FILE "vanillatd_icon.icns"
+            MACOSX_BUNDLE_ICON_FILE "vanillass_icon.icns"
         )
     endif()
 

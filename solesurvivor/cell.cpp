@@ -726,27 +726,8 @@ void CellClass::Overlap_Down(ObjectClass* object)
     **	If being placed down on a visible square, then flag this
     **	techno object as being revealed to the player.
     */
-    // Changes for GlyphX multiplayer. ST - 4/18/2019 9:50AM
-    // if (IsVisible) {
-    //	object->Revealed(PlayerPtr);
-    //}
-    if (GameToPlay != GAME_GLYPHX_MULTIPLAYER) {
-        if (IsVisible) {
-            object->Revealed(PlayerPtr);
-        }
-    } else {
-
-        if (object->Is_Techno()) {
-            TechnoClass* tech = static_cast<TechnoClass*>(object);
-            object->Revealed(tech->House);
-        } else {
-
-            for (int i = 0; i < MPlayerCount; i++) {
-                HousesType house_type = MPlayerHouses[i];
-                HouseClass* house = HouseClass::As_Pointer(house_type);
-                object->Revealed(house);
-            }
-        }
+    if (IsVisible) {
+        object->Revealed(PlayerPtr);
     }
 }
 
@@ -1312,7 +1293,7 @@ void CellClass::Draw_It(int x, int y, int draw_type) const
 			*/
             if (IsFlagged) {
                 //void const * remap = HouseClass::As_Pointer(Owner)->Remap_Table(false, false);
-                //CC_Draw_Shape(MixFileClass::Retrieve("FLAGFLY.SHP"), Frame % 14, x+(ICON_PIXEL_W/2), y+(ICON_PIXEL_H/2), WINDOW_TACTICAL, SHAPE_CENTER|SHAPE_GHOST|SHAPE_FADING, remap, Map.UnitShadow);
+                //CC_Draw_Shape(MFCD::Retrieve("FLAGFLY.SHP"), Frame % 14, x+(ICON_PIXEL_W/2), y+(ICON_PIXEL_H/2), WINDOW_TACTICAL, SHAPE_CENTER|SHAPE_GHOST|SHAPE_FADING, remap, Map.UnitShadow);
                 int h = Owner - HOUSE_FIRST_TEAM;
                 FlagDrawLocation[h] = XY_Coord(x, y);
             }
@@ -2392,7 +2373,7 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
                         return (false);
                     }
 
-                    if (unit->Delete_Allowed) {
+                    if (unit->Delete_Allowed()) {
                         delete unit;
                     } else {
                         unit->Destruct();
@@ -2538,7 +2519,7 @@ bool CellClass::Goodie_Check(FootClass* object, bool check_steel)
                     ObjectClass* obj = Logic[index];
 
                     if (obj && object->Is_Techno() && object->House->Class->House == obj->Owner()) {
-                        obj->Strength = obj->Class_Of().MaxStrengthh + obj->Mod1;
+                        obj->Strength = obj->Class_Of().MaxStrength + obj->Mod1;
                     }
                 }
                 break;

@@ -1445,14 +1445,14 @@ void FootClass::Per_Cell_Process(bool center)
     if (Flagged != HOUSE_NONE) {
         HousesType owner = Owner();
         if (!IsOwnedByPlayer && !HouseClass::As_Pointer(owner)->Is_Ally(PlayerPtr->Class->House)) {
-            Map.Sight_From(Coord_Cell(Coord), Techno_Type_Class()->SightRange + Mod5 / 256, true);
+            Map.Sight_From(NULL, Coord_Cell(Coord), Techno_Type_Class()->SightRange + Mod5 / 256, true);
         }
 
         if (GameParams.IsCaptureTheFlag && center && GameToPlay == GAME_HOST) {
             HousesType ctf_owner = Owner();
             HousesType ctf_team = HouseClass::As_Pointer(ctf_owner)->ActLike;
 
-            if (cell == HouseClass::As_Pointer(ctf_team)->FlagHome && !HouseClass::As_Pointer(ctf_team)->IsActive
+            if (cell == HouseClass::As_Pointer(ctf_team)->FlagHome && !HouseClass::As_Pointer(ctf_team)->IsToDie
                 && (ctf_team == HOUSE_BLUE_TEAM || ctf_team == HOUSE_ORANGE_TEAM || ctf_team == HOUSE_GREEN_TEAM
                     || ctf_team == HOUSE_GREY_TEAM)) {
                 HousesType flag_house = Flagged;

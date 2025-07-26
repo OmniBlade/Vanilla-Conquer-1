@@ -290,6 +290,7 @@ int TechnoTypeClass::Time_To_Build(HousesType house) const
         return time;
     }
 
+#ifdef USE_RA_AI
     /*
     **	For computer controlled buildings, slow down production on
     **	cheaper buildings.
@@ -298,6 +299,7 @@ int TechnoTypeClass::Time_To_Build(HousesType house) const
         && PlayerPtr->Class->House != hptr->Class->House) {
         time = (time + (PlayerPtr->Difficulty == DIFF_EASY ? 4000 : 2000)) / 2;
     }
+#endif
 
     /*
     **	Fudge factor, so that Nod builds a bit faster if the object must be delivered to
@@ -307,6 +309,7 @@ int TechnoTypeClass::Time_To_Build(HousesType house) const
         time -= (time / 4);
     }
 
+#ifdef USE_RA_AI
     /*
     **	Adjust time according to IQ setting of computer controlled house. The
     **	build time will range from double normal time at the slowest to
@@ -315,7 +318,7 @@ int TechnoTypeClass::Time_To_Build(HousesType house) const
     if (!hptr->IsHuman && Rule.Diff[hptr->Difficulty].IsBuildSlowdown) {
         time = (int)((time * Rule.MaxIQ * 2.0f) / (hptr->IQ + Rule.MaxIQ));
     }
-
+#endif
     /*
     **	Adjust the time to build based on the power output of the owning house.
     */
@@ -1026,7 +1029,7 @@ void TechnoClass::Per_Cell_Process(bool)
  *=============================================================================================*/
 void TechnoClass::Draw_It(int x, int y, WindowNumberType window)
 {
-    bool show_health_bar = false;
+    //bool show_health_bar = false;
 
     Clear_Redraw_Flag();
 
@@ -2758,7 +2761,7 @@ void TechnoClass::Player_Assign_Mission(MissionType mission, TARGET target, TARG
             Response_Attack();
             ObjectClass* trgt = As_Object(target);
             if (trgt) {
-                trgt->Clicked_As_Target();
+                trgt->Clicked_As_Target(PlayerPtr->Class->House);
             }
         } else {
             Response_Move();

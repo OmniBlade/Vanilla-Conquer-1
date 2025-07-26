@@ -11,10 +11,8 @@
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
 #include "function.h"
 #include "time.h"
-#include "comms.h"
+#include "comm/comms.h"
 //#include <io.h>				// for unlink
-
-extern void Get_Or_Set_Current_Directory(bool get);
 
 void Read_Server_Stats(void)
 {
@@ -34,11 +32,8 @@ void Read_Server_Stats(void)
     if (!Stats_INI_Read) {
         char FileName[260];
         Stats_INI_Read = 1;
-        Get_Or_Set_Current_Directory(0);
-        getcwd(FileName, sizeof(FileName));
-        strcat(FileName, "\\SERVER.INI");
-        CDFileClass fc(FileName);
-        INIFileClass ini;
+        CDFileClass fc("SERVER.INI");
+        INIClass ini;
         ini.Load(fc);
 
         StatsInterval = ini.Get_Int("Stats", "StatsInterval", 0);

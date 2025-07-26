@@ -1,8 +1,6 @@
 #include "function.h"
-#include "msgbox.h"
-#include <comms.h>
 #include "gprotocol.h"
-#include "sole_temp.h"
+#include <handleapi.h>
 
 char FacingString[256];
 int ProcessedRecieves;
@@ -10,8 +8,6 @@ int RecieveSetsProcessed;
 int SquadGamePasswordCountDown;
 int QuoteToShow;
 bool MessageLogging;
-
-int PlayerMessageLogHandle = -1;
 
 const char* KindNames[KIND_COUNT] = {
     "NONE",
@@ -29,50 +25,26 @@ const char* KindNames[KIND_COUNT] = {
     "TEAMTYPE",
 };
 
-extern int SentBytesSec;
-extern int SentTCP;
-extern int sole_array[SOLE_ARRAY_COUNT][3];
-extern int Scale_Value_Up(int value, unsigned char mult);
-extern int Get_Stat(SoleArrayType get_what, int initial_val, ObjectClass* obj);
-
 //Added in 1.04
 void Client_Log_Player_Message(char* msg)
 {
+#ifdef WIN32
+    static HANDLE PlayerMessageLogHandle = INVALID_HANDLE_VALUE;
     char buf[256];
     DWORD written;
 
     if (MessageLogging) {
-
         sprintf(buf, "%s\r\n", msg);
-        PlayerMessageLogHandle = (int)CreateFile("log.txt", 0x40000000u, 0, 0, 4u, 0x80u, 0);
+        PlayerMessageLogHandle = CreateFileA("log.txt", 0x40000000u, 0, 0, 4u, 0x80u, 0);
 
-        if (PlayerMessageLogHandle != -1) {
-            SetFilePointer((void*)PlayerMessageLogHandle, 0, 0, 2u);
-            WriteFile((void*)PlayerMessageLogHandle, buf, strlen(buf), &written, 0);
-            CloseHandle((void*)PlayerMessageLogHandle);
+        if (PlayerMessageLogHandle != INVALID_HANDLE_VALUE) {
+            SetFilePointer(PlayerMessageLogHandle, 0, 0, 2u);
+            WriteFile(PlayerMessageLogHandle, buf, strlen(buf), &written, 0);
+            CloseHandle(PlayerMessageLogHandle);
         }
     }
+#endif
 }
-
-extern bool ServerConnectionLost;
-extern CountDownTimerClass FramerateUpdateTimer;
-extern CountDownTimerClass TransmisionStatsTimer;
-extern int LastClientFrame;
-extern int ClientFPS;
-extern int RecievedBytesSec;
-extern int SentUDP;
-extern int RecievedTCP;
-extern int RecievedUDP;
-extern void CommStats_Set_Transmission_Stats(int rec_bytes_sec,
-                                             int sent_bytes_sec,
-                                             int sent_tcp,
-                                             int sent_udp,
-                                             int recieved_tcp,
-                                             int recieved_udp);
-
-extern void Queue_AI_Normal();
-extern void Client_Send_Event_Packet(void);
-extern bool Client_Process_Packet(int connectiontype);
 
 void Client_Queue_AI()
 {
@@ -88,7 +60,7 @@ void Client_Queue_AI()
                 Text_String(TXT_CONNECTION_LOST_3),
                 Text_String(TXT_TRY_DIFFERENT_CHANNEL));
 
-        CCMessageBox().Process(str);
+        WWMessageBox().Process(str);
         EventClass(EventClass::EXIT).Execute();
     } else {
         ProcessedRecieves = 0;
@@ -132,35 +104,6 @@ void Client_Queue_AI()
 
 extern int RecievedBytesSec;
 extern int RecievedTCP;
-extern int SquadAcceptanceState;
-extern int SquadPostAcceptanceState;
-extern int ClientEvent1_BattleState_Was_2;
-extern bool DebugLogTeams;
-extern CountDownTimerClass SquadGameCountdownTimer;
-extern void Clear_Team_Scores();
-extern void Client_Handle_Sight(); // From WDT.CPP?
-extern bool Client_Process_Initial_Game_State_Packet(int size);
-extern void CommStats_Set_Frame_Rate(int serverfps, int clientfps);         // From WDT.CPP
-extern void Add_WDT_Radar();                                                // From WDT.CPP
-extern void Victory_Dialog(HousesType team);                                // From WDTDLG.CPP
-void Client_Process_House_Packet(HouseUpdatePacketData* packet);            //Forward declare, move to qclient.h?
-void Client_Process_Delete_Object_Packet(NewDeletePacketData* packet);      //Forward declare, move to qclient.h?
-ObjectClass* Client_Process_New_Object_Packet(NewDeletePacketData* packet); //Forward declare, move to qclient.h?
-void Client_Process_Health_Packet(HealthPacketData* packet);                //Forward declare, move to qclient.h?
-void Client_Process_Damage_Packet(DamagePacketData* packet);                //Forward declare, move to qclient.h?
-void Client_Process_Squish_Packet(SquishPacketData* packet);                //Forward declare, move to qclient.h?
-void Client_Process_Capture_Packet(CapturePacketData* packet);              //Forward declare, move to qclient.h?
-void Client_Process_Cargo_Packet(CargoPacketData* packet);                  //Forward declare, move to qclient.h?
-void Client_Process_Flag_Packet(FlagPacketData* packet);                    //Forward declare, move to qclient.h?
-void Client_Process_CTF_Packet(CTFPacketData* packet);                      //Forward declare, move to qclient.h?
-void Client_Process_Movement_Packet(MovePacketData* packet);                //Forward declare, move to qclient.h?
-void Client_Process_Target_Packet(TargetPacketData* packet);                //Forward declare, move to qclient.h?
-void Client_Process_Fire_At_Packet(FireAtPacketData* packet);               //Forward declare, move to qclient.h?
-void Client_Process_Do_Turn_Packet(DoTurnPacketData* packet);               //Forward declare, move to qclient.h?
-void Client_Process_Techno_Packet(TechnoClass* obj,
-                                  TechnoPacketDataType type,
-                                  unsigned char value);  //Forward declare, move to qclient.h?
-void Client_Process_Change_Scenario(int scenario_index); //Forward declare, move to qclient.h?
 
 bool Client_Process_Packet(int connectiontype)
 {
@@ -209,7 +152,7 @@ bool Client_Process_Packet(int connectiontype)
 
         queue->UnQueue_Receive(0, 0, 0);
         break;
-    case PACKET_PLAYER_UNITS:
+    case PACKET_PLAYER_UNITS: {
         for (index = 0; index < packet->PlayerJoin.Count; index++) {
             tc = As_Techno(packet->PlayerJoin.Objects[index]);
 
@@ -230,10 +173,19 @@ bool Client_Process_Packet(int connectiontype)
 
         queue->UnQueue_Receive(0, 0, 0);
         ScenarioInit++;
-        Map.Compute_Start_Pos();
+        int start_x = 0;
+        int start_y = 0;
+        Map.Compute_Start_Pos(start_x, start_y);
+        for (int i = 0; i < ARRAY_SIZE(Scen.Views); ++i) {
+            Scen.Views[i] = XY_Cell(start_x, start_y);
+        }
+        Scen.Waypoint[27] = XY_Cell(start_x, start_y);
+        COORDINATE pos = Cell_Coord(XY_Cell(start_x, start_y));
+        Map.Set_Tactical_Position(pos);
         ScenarioInit--;
         Map.Flag_To_Redraw(true);
         break;
+    }
     case PACKET_FRAMERATE:
         CommStats_Set_Frame_Rate(packet->FrameRate.FPS, ClientFPS);
 
@@ -430,7 +382,7 @@ bool Client_Process_Packet(int connectiontype)
         queue->UnQueue_Receive(0, 0, 0);
 
         if (SquadPostAcceptanceState == 2) {
-            ClientEvent1_BattleState_Was_2 = 1;
+            ClientEvent1_BattleState_Was_2 = true;
         }
 
         if (DebugLogTeams) {
@@ -919,28 +871,28 @@ void Client_Process_Delete_Object_Packet(NewDeletePacketData* packet)
     case KIND_UNIT:
         UnitClass::Set_Delete_Allowed(true);
         obj = As_Unit(packet->Whom);
-        DELETE_OBJ(obj, sizeof(AbstractClass))
+        delete obj;
         UnitClass::Set_Delete_Allowed(false);
         break;
 
     case KIND_INFANTRY:
         InfantryClass::Set_Delete_Allowed(true);
         obj = As_Infantry(packet->Whom);
-        DELETE_OBJ(obj, sizeof(AbstractClass))
+        delete obj;
         InfantryClass::Set_Delete_Allowed(false);
         break;
 
     case KIND_BUILDING:
         BuildingClass::Set_Delete_Allowed(true);
         obj = As_Building(packet->Whom);
-        DELETE_OBJ(obj, sizeof(AbstractClass))
+        delete obj;
         BuildingClass::Set_Delete_Allowed(false);
         break;
 
     case KIND_AIRCRAFT:
         AircraftClass::Set_Delete_Allowed(true);
         obj = As_Aircraft(packet->Whom);
-        DELETE_OBJ(obj, sizeof(AbstractClass))
+        delete obj;
         AircraftClass::Set_Delete_Allowed(false);
         break;
     }
@@ -1035,13 +987,6 @@ void Client_Process_Health_Packet(HealthPacketData* packet)
 
     obj->Mark(MARK_CHANGE);
 }
-
-void Announce_Goal(HousesType, HousesType, HousesType);
-int Calculate_Points(HousesType);
-int WDT_Random_Pick(int minval, int maxval);
-extern int CurrentVoiceTheme;
-extern bool CaptureTheFlag;
-extern bool DebugLogTeams;
 
 void Client_Process_Damage_Packet(DamagePacketData* packet)
 {
@@ -1356,9 +1301,6 @@ void Client_Process_Movement_Packet(MovePacketData* packet)
     }
 }
 
-// Forward declare, defined later.
-void Client_Comm_Movement(FootClass* obj, CELL cell);
-
 void Client_Process_Unit_Movement_Packet(MovePacketData* packet)
 {
     FootClass* obj;
@@ -1603,12 +1545,12 @@ void Client_Process_Techno_Packet(TechnoClass* obj, TechnoPacketDataType type, u
         Map.Redraw_Tab();
         break;
 
-    case TECHNO_PACKET_DATA_DAMAGE:
+    case TECHNO_PACKET_DATA_SPEED:
         obj->Mod2 = Scale_Value_Up(sole_array[2][2], value);
         Map.Redraw_Tab();
         break;
 
-    case TECHNO_PACKET_DATA_SPEED:
+    case TECHNO_PACKET_DATA_DAMAGE:
         obj->Mod3 = Scale_Value_Up(sole_array[1][2], value);
         Map.Redraw_Tab();
         break;
@@ -1641,8 +1583,6 @@ void Client_Process_Techno_Packet(TechnoClass* obj, TechnoPacketDataType type, u
     }
 }
 
-const char* Local_Time_As_String(void);
-
 bool Client_Process_Initial_Game_State_Packet(int size)
 {
     WDTPacketStruct* wdt_packet;
@@ -1658,7 +1598,7 @@ bool Client_Process_Initial_Game_State_Packet(int size)
     packet = (GameStatePacketData*)TempPacketBuffer;
 
     do {
-        Check_Key();
+        Keyboard->Check();
 
         if (ReliableProtocols[0]->Queue->Num_Receive() > 0) {
             wdt_packet = (WDTPacketStruct*)ReliableProtocols[0]->Queue->Get_Receive(0)->Buffer;
@@ -1673,7 +1613,7 @@ bool Client_Process_Initial_Game_State_Packet(int size)
                     Show_Mouse();
                 }
 
-                CCMessageBox().Process(TXT_INVALID_STATE_RECEIVED);
+                WWMessageBox().Process(TXT_INVALID_STATE_RECEIVED);
                 Hide_Mouse();
                 return false;
             }
@@ -1692,7 +1632,7 @@ bool Client_Process_Initial_Game_State_Packet(int size)
     } while (current_size < size);
 
     if (current_size > size) {
-        CCMessageBox().Process(TXT_TOO_MANY_BYTES);
+        WWMessageBox().Process(TXT_TOO_MANY_BYTES);
         return false;
     }
 
@@ -1726,7 +1666,7 @@ bool Client_Process_Initial_Game_State_Packet(int size)
     }
 
     while (true) {
-        Check_Key();
+        Keyboard->Check();
 
         if (ReliableProtocols[0]->Queue->Num_Receive() > 0) {
             wdt_packet = (WDTPacketStruct*)ReliableProtocols[0]->Queue->Get_Receive(0)->Buffer;
@@ -1734,7 +1674,7 @@ bool Client_Process_Initial_Game_State_Packet(int size)
             RecievedTCP++;
 
             if (wdt_packet->Header.Type != PACKET_GAME_STATE_DONE) {
-                CCMessageBox().Process(TXT_INVALID_STATE_DONE);
+                WWMessageBox().Process(TXT_INVALID_STATE_DONE);
                 return false;
             }
             ReliableProtocols[0]->Queue->UnQueue_Receive(0, 0, 0);
@@ -1747,7 +1687,15 @@ bool Client_Process_Initial_Game_State_Packet(int size)
     char team[200];
 
     ScenarioInit++;
-    Map.Compute_Start_Pos();
+    int start_x = 0;
+    int start_y = 0;
+    Map.Compute_Start_Pos(start_x, start_y);
+    for (int i = 0; i < ARRAY_SIZE(Scen.Views); ++i) {
+        Scen.Views[i] = XY_Cell(start_x, start_y);
+    }
+    Scen.Waypoint[27] = XY_Cell(start_x, start_y);
+    COORDINATE pos = Cell_Coord(XY_Cell(start_x, start_y));
+    Map.Set_Tactical_Position(pos);
     ScenarioInit--;
     Map.Flag_To_Redraw(true);
     sprintf(str, "\r\n>>> Joined game at %s", Local_Time_As_String());
@@ -1820,9 +1768,9 @@ void Client_Comm_Movement(FootClass* obj, CELL cell)
     obj->Look(0);
 }
 
-char* Facing_List_As_String(FacingType* facing)
+const char* Facing_List_As_String(FacingType* facing)
 {
-    static char* const names[8] = {"N ", "NE ", "E ", "SE ", "S ", "SW ", "W ", "NW "};
+    static const char* const names[8] = {"N ", "NE ", "E ", "SE ", "S ", "SW ", "W ", "NW "};
 
     int i = 0;
     FacingString[0] = 0;
@@ -1837,9 +1785,9 @@ char* Facing_List_As_String(FacingType* facing)
     return FacingString;
 }
 
-char* Facing_Name(FacingType facing)
+const char* Facing_Name(FacingType facing)
 {
-    static char* const names[8] = {"N ", "NE ", "E ", "SE ", "S ", "SW ", "W ", "NW "};
+    static const char* const names[8] = {"N ", "NE ", "E ", "SE ", "S ", "SW ", "W ", "NW "};
 
     return names[facing];
 }
@@ -1962,14 +1910,6 @@ void Client_Process_Message(void)
     Map.Flag_To_Redraw(false);
 }
 
-extern TimerClass WDTGameTimer;
-extern void Add_WDT_Radar();
-extern const char* Local_Time_As_String();
-extern bool WDTRadarAdded;
-extern int SquadPostAcceptanceState;
-extern void Clear_Packet_Data_Vectors();
-extern void Remove_WDT_Radar();
-
 void Client_Process_Change_Scenario(int scenario_index)
 {
     char str[200];
@@ -1979,9 +1919,9 @@ void Client_Process_Change_Scenario(int scenario_index)
 
     bool had_sidebar = Map.IsSidebarActive;
 
-    Scenario = scenario_index;
+    Scen.Scenario = scenario_index;
 
-    Set_Scenario_Name(ScenarioName, Scenario, ScenPlayer, ScenDir, SCEN_VAR_A);
+    Set_Scenario_Name(Scen.ScenarioName, Scen.Scenario, ScenPlayer, ScenDir, SCEN_VAR_A);
 
     Hide_Mouse();
 
@@ -1995,10 +1935,10 @@ void Client_Process_Change_Scenario(int scenario_index)
     Debug_Unshroud = false;
     Frame = 0;
 
-    if (Start_Scenario(ScenarioName)) {
+    if (Start_Scenario(Scen.ScenarioName)) {
         Fade_Palette_To(BlackPalette, 15, Call_Back);
 
-        Map.Set_Cursor_Shape(MOUSE_NORMAL);
+        Map.Set_Cursor_Shape(NULL);
         Map.Set_Default_Mouse(MOUSE_NORMAL, false);
 
         Map.PendingObjectPtr = NULL;
@@ -2021,8 +1961,7 @@ void Client_Process_Change_Scenario(int scenario_index)
         DoList.Init();
         OutList.Init();
 
-        Keyboard::Clear();
-        Kbd.Clear();
+        Keyboard->Clear();
 
         InMainLoop = true;
         Clear_Packet_Data_Vectors();
@@ -2098,8 +2037,6 @@ void Client_Send_Command(int state, int obfuscated)
 }
 
 //Added in 1.04
-extern CountDownTimerClass SquadGameCountdownTimer;
-extern bool SquadGamePasswordCountDown;
 bool Handle_Squad_Game_Typed_Message(const char* message)
 {
     if (GameParams.IsSquadChannel && SquadGameCountdownTimer.Time() > 0) {

@@ -39,8 +39,8 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
-#include "soundint.h"
 #include "voicethemes.h"
+#include "common/endianness.h"
 
 /***************************************************************************
 **	Controls what special effects may occur on the sound effect.
@@ -749,16 +749,51 @@ bool Is_Speaking(void)
 
 typedef struct _riffchunk
 {
-    FOURCC fcc;
-    DWORD cb;
+    unsigned fcc;
+    unsigned cb;
 } RIFFCHUNK, *LPRIFFCHUNK;
 
 typedef struct _rifflist
 {
-    FOURCC fcc;
-    DWORD cb;
-    FOURCC fccListType;
+    unsigned fcc;
+    unsigned cb;
+    unsigned fccListType;
 } RIFFLIST, *LPRIFFLIST;
+
+#ifndef _WIN32
+typedef struct waveformat_tag {
+  unsigned short  wFormatTag;
+  unsigned short  nChannels;
+  unsigned nSamplesPerSec;
+  unsigned nAvgBytesPerSec;
+  unsigned short  nBlockAlign;
+} WAVEFORMAT;
+
+typedef struct pcmwaveformat_tag {
+  WAVEFORMAT wf;
+  unsigned short       wBitsPerSample;
+} PCMWAVEFORMAT, *PPCMWAVEFORMAT, *NPPCMWAVEFORMAT, *LPPCMWAVEFORMAT;
+#endif
+
+#if defined(__BIG_ENDIAN__)
+#define FOURCC(c0,c1,c2,c3) ((unsigned) ((((unsigned)((unsigned char)(c0)))<<24) +(((unsigned)((unsigned char)(c1)))<<16)+ (((unsigned)((unsigned char)(c2)))<<8) + ((((unsigned)((unsigned char)(c3))))))
+#else
+#if defined(__LITTLE_ENDIAN__)
+#define FOURCC(c3,c2,c1,c0) ((unsigned) ((((unsigned)((unsigned char)(c0)))<<24) +(((unsigned)((unsigned char)(c1)))<<16)+ (((unsigned)((unsigned char)(c2)))<<8) + ((((unsigned)((unsigned char)(c3)))))))
+#else
+#error BYTE_ORDER not defined
+#endif
+#endif
+
+// Replicated from soundio_common.cpp
+typedef enum
+{
+    SCOMP_NONE = 0,     // No compression -- raw data.
+    SCOMP_WESTWOOD = 1, // Special sliding window delta compression.
+    SCOMP_SOS = 99      // SOS frame compression.
+} SCompressType;
+
+#define WAVE_FORMAT_PCM 1
 
 void Play_Wave(char* filename, bool is_special)
 {
@@ -807,12 +842,12 @@ void Play_Wave(char* filename, bool is_special)
                 return;
             }
 
-            if (hdr.fcc != mmioFOURCC('R', 'I', 'F', 'F')) {
+            if (hdr.fcc != FOURCC('R', 'I', 'F', 'F')) {
                 fclose(handle);
                 return;
             }
 
-            if (hdr.fccListType != mmioFOURCC('W', 'A', 'V', 'E')) {
+            if (hdr.fccListType != FOURCC('W', 'A', 'V', 'E')) {
                 fclose(handle);
                 return;
             }
@@ -830,7 +865,7 @@ void Play_Wave(char* filename, bool is_special)
                 left -= sizeof(RIFFCHUNK);
 
                 switch (hdr.fcc) {
-                case mmioFOURCC('f', 'm', 't', ' '):
+                case FOURCC('f', 'm', 't', ' '):
                     if (fread(&format, sizeof(PCMWAVEFORMAT), 1, handle) != 1) {
                         fclose(handle);
                         return;
@@ -851,7 +886,7 @@ void Play_Wave(char* filename, bool is_special)
                     }
                     break;
 
-                case mmioFOURCC('d', 'a', 't', 'a'):
+                case FOURCC('d', 'a', 't', 'a'):
                     left -= hdr.cb;
                     data_loaded = true;
                     size = hdr.cb;

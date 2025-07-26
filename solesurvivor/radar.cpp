@@ -64,7 +64,6 @@
  *   RadarClass::Coord_To_Radar_Pixel -- Converts a coordinate to a radar pixel position       *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#include "defines.h"
 #include "function.h"
 #include <stdlib.h>
 

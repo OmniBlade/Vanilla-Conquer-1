@@ -44,7 +44,6 @@
  *   UnitTypeClass::Who_Can_Build_Me -- Determines which factory can build this unit type.     *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-#include "defines.h"
 #include "function.h"
 
 void const* UnitTypeClass::WakeShapes = 0;

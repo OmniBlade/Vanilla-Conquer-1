@@ -22,7 +22,9 @@ ListenerClass::ListenerClass(void)
 {
     Socket = INVALID_SOCKET;
     Protocol = NULL;
+#ifdef WIN32
     Window = 0;
+#endif
     IsListening = 0;
 
     Create_Window();
@@ -32,7 +34,9 @@ ListenerClass::ListenerClass(ProtocolClass* protocol)
 {
     Socket = INVALID_SOCKET;
     Protocol = NULL;
+#ifdef WIN32
     Window = 0;
+#endif
     IsListening = 0;
 
     Create_Window();
@@ -182,7 +186,7 @@ int ListenerClass::Open_Socket(unsigned short port)
 
 void ListenerClass::Close_Socket(void)
 {
-    LINGER ling;
+    struct linger ling;
 
     if (Socket == INVALID_SOCKET) {
         return;
@@ -203,6 +207,7 @@ void ListenerClass::Close_Socket(void)
 #ifdef WIN32
 long __stdcall ListenerClass::Window_Proc(HWND hwnd, UINT message, UINT wParam, LONG lParam)
 {
+#if 0
     int rc;
     ListenerClass* obj;
 
@@ -231,6 +236,8 @@ long __stdcall ListenerClass::Window_Proc(HWND hwnd, UINT message, UINT wParam, 
     default:
         return (DefWindowProcA(hwnd, message, wParam, lParam));
     }
-
+#else
+    return (DefWindowProcA(hwnd, message, wParam, lParam));
+#endif
 }
 #endif

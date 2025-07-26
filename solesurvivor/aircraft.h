@@ -48,8 +48,12 @@ public:
     AircraftTypeClass const* const Class;
 
     //-----------------------------------------------------------------------------
-    void* operator new(size_t, int heap_index = -1) noexcept;
-    void operator delete(void*);
+    static void* operator new(size_t, int heap_index = -1) noexcept;
+    static void operator delete(void*, int);
+    static void operator delete(void* ptr)
+    {
+        operator delete(ptr, -1);
+    }
     static void* operator new(size_t, void* ptr)
     {
         return (ptr);
@@ -274,6 +278,7 @@ private:
     */
     int ReinforcementStart;
 
+public:
     /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
@@ -297,6 +302,7 @@ private:
         IsDeleteAllowed = allowed;
     }
 
+private:
     static bool IsNewAllowed;
     static bool IsDeleteAllowed;
 };

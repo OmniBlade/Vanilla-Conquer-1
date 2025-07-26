@@ -10,7 +10,8 @@
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
 #include "comms.h"
-#include "sockets.h"
+#include "common/endianness.h"
+#include <string.h>
 
 #ifdef WIN32
 #define WM_HOSTBYADDRESS (WM_USER + 101)
@@ -25,8 +26,10 @@ UnreliableCommClass::UnreliableCommClass(int maxpacketsize, void* addr, int len,
 
     Socket = INVALID_SOCKET;
     Protocol = NULL;
+#ifdef WIN32
     Window = 0;
     Async = 0;
+#endif
     DefaultDest.Address.TCPIP.Host[0] = 0;
     DefaultDest.Address.TCPIP.Port = 0;
     DefaultAddr.Addr.s_addr = INADDR_NONE;
@@ -64,8 +67,10 @@ UnreliableCommClass::UnreliableCommClass(ProtocolClass* protocol, int maxpackets
 
     Socket = INVALID_SOCKET;
     Protocol = NULL;
+#ifdef WIN32
     Window = 0;
     Async = 0;
+#endif
     DefaultDest.Address.TCPIP.Host[0] = 0;
     DefaultDest.Address.TCPIP.Port = 0;
     DefaultAddr.Addr.s_addr = INADDR_NONE;
@@ -127,7 +132,9 @@ int UnreliableCommClass::Send(void)
         return (0);
     }
 
+#ifdef WIN32
     PostMessageA(Window, WM_ASYNCEVENT, 0, (LONG)FD_WRITE);
+#endif
 
     return (1);
 }
@@ -153,9 +160,11 @@ void UnreliableCommClass::Set_Default_Destination(void* addr, int len, int type)
         DestResolved = 0;
     }
 
+#if 0
     if (!DestResolved && !Async) {
         Resolve_Address();
     }
+#endif
 }
 
 void UnreliableCommClass::Create_Window(void)
@@ -213,10 +222,10 @@ int UnreliableCommClass::Open_Socket(unsigned short port)
     }
 
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = hton16(port);
+    addr.sin_addr.s_addr = hton32(INADDR_ANY);
 
-    if (bind(Socket, (LPSOCKADDR)&addr, sizeof(addr)) == SOCKET_ERROR) {
+    if (bind(Socket, (struct sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR) {
         Close_Socket();
         return (0);
     }
@@ -226,7 +235,7 @@ int UnreliableCommClass::Open_Socket(unsigned short port)
 
 void UnreliableCommClass::Close_Socket(void)
 {
-    LINGER ling;
+    struct linger ling;
 
     if (Socket == INVALID_SOCKET) {
         return;
@@ -234,7 +243,7 @@ void UnreliableCommClass::Close_Socket(void)
 
     ling.l_onoff = 0;
     ling.l_linger = 0;
-    setsockopt(Socket, SOL_SOCKET, SO_LINGER, (LPSTR)&ling, sizeof(ling));
+    setsockopt(Socket, SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling));
 
     if (closesocket(Socket) == SOCKET_ERROR) {
         // TODO BUG, empty if?
@@ -246,6 +255,7 @@ void UnreliableCommClass::Close_Socket(void)
 #ifdef WIN32
 long __stdcall UnreliableCommClass::Window_Proc(HWND hwnd, UINT message, UINT wParam, LONG lParam)
 {
+#if 0
     UnreliableCommClass* obj;
     int event;
     struct sockaddr_in addr;
@@ -290,7 +300,7 @@ long __stdcall UnreliableCommClass::Window_Proc(HWND hwnd, UINT message, UINT wP
         switch (event) {
         case FD_READ:
             addrlen = sizeof(addr);
-            len = recvfrom(obj->Socket, obj->ReceiveBuf, obj->ReceiveLen, 0, (LPSOCKADDR)&addr, &addrlen);
+            len = recvfrom(obj->Socket, obj->ReceiveBuf, obj->ReceiveLen, 0, (struct sockaddr*)&addr, &addrlen);
             if (len == SOCKET_ERROR) {
                 return (0);
             }
@@ -328,9 +338,9 @@ long __stdcall UnreliableCommClass::Window_Proc(HWND hwnd, UINT message, UINT wP
             }
 
             addr.sin_family = AF_INET;
-            addr.sin_port = htons(obj->DefaultAddr.Port);
+            addr.sin_port = hton16(obj->DefaultAddr.Port);
             addr.sin_addr = obj->DefaultAddr.Addr;
-            rc = sendto(obj->Socket, entry->Buffer, entry->BufLen, 0, (LPSOCKADDR)&addr, sizeof(addr));
+            rc = sendto(obj->Socket, entry->Buffer, entry->BufLen, 0, (struct sockaddr*)&addr, sizeof(addr));
 
             if (rc == SOCKET_ERROR) {
                 if (WSAGetLastError() != WSAEWOULDBLOCK) {
@@ -349,14 +359,19 @@ long __stdcall UnreliableCommClass::Window_Proc(HWND hwnd, UINT message, UINT wP
     default:
         return (DefWindowProcA(hwnd, message, wParam, lParam));
     }
+#else
+    return (DefWindowProcA(hwnd, message, wParam, lParam));
+#endif
 }
 #endif
 
 void UnreliableCommClass::Resolve_Address(void)
 {
+#if 0
     if (Async) {
         return;
     }
+#endif
 
     DestResolved = 0;
     DefaultAddr.Addr.s_addr = inet_addr(DefaultDest.Address.TCPIP.Host);

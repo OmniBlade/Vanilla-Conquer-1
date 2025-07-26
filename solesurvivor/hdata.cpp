@@ -34,9 +34,9 @@
  *   HouseTypeClass::As_Reference -- Fetches a reference to the house specified.               *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+#include "function.h"
 #include "defines.h"
 #include "externs.h"
-#include "function.h"
 
 /*
 **	These are the colors used to identify the various owners.
@@ -114,8 +114,8 @@ static HouseTypeClass const HouseSpectator(HOUSE_SPECTATOR,
                                            0,                    // LEMON:		Lemon vehicle frequency.
                                            COLOR_NEUTRAL,        // COLOR:		Dark Radar map color.
                                            COLOR_BRIGHT_NEUTRAL, // COLOR:		Bright Radar map color.
-                                           REMAP_AQUA,           // Remap color ID number.
-                                           RemapBlueGreen,       // Default remap table.
+                                           REMAP_LTBLUE,           // Remap color ID number.
+                                           RemapLtBlue,       // Default remap table.
                                            'M'                   // VOICE:		Voice prefix character.
 );
 
@@ -126,8 +126,8 @@ static HouseTypeClass const HouseTeam1(HOUSE_BLUE_TEAM,
                                        0,                    // LEMON:		Lemon vehicle frequency.
                                        COLOR_NEUTRAL,        // COLOR:		Dark Radar map color.
                                        COLOR_BRIGHT_NEUTRAL, // COLOR:		Bright Radar map color.
-                                       REMAP_AQUA,           // Remap color ID number.
-                                       RemapBlueGreen,       // Default remap table.
+                                       REMAP_LTBLUE,           // Remap color ID number.
+                                       RemapLtBlue,       // Default remap table.
                                        'M'                   // VOICE:		Voice prefix character.
 );
 

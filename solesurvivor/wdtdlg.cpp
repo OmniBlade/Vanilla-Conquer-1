@@ -10,28 +10,16 @@
 // GNU General Public License along with permitted additional restrictions
 // with this program. If not, see https://github.com/electronicarts/CnC_Remastered_Collection
 #include "function.h"
-#include <comms.h>
+#include "mssleep.h"
+#include "comm/comms.h"
+#include "gprotocol.h"
 //#include <io.h>
 #include <common/filepcx.h>
+#include <common/internet.h>
 
-//extern bool ServerConnectionLost;
-//extern int ColorListTiming;
-//extern int CurrentVoiceTheme;
-//extern bool SpawnedFromWChat;
-//int Read_Game_Options(char* name);
-//HWND Get_WChat_Handle(void);
-//void Draw_Choice_Entry(RTTIType rtti, int type, int xpos, int ypos, HousesType house, int unused, bool draw_name);
-//
-//#define ARRAY_SIZE(x) int(sizeof(x) / sizeof(x[0]))
-//extern bool DebugLogTeams;      // CONQUER.CPP
-//extern TimerClass WDTGameTimer; // GLOBALS.CPP
-//extern int PacketLength[];      // TEMP.CPP
-//extern RTTIType Chosen_RTTI;
-//extern int Chosen_Type;
-//extern long PlanetWestwoodPortNumber;
-//extern int OfflinePoints;
-//extern int OfflineDeathCount;
-//extern int WDT_Random_Pick(int minval, int maxval);
+#ifdef _WIN32
+#include <io.h>
+#endif
 
 int Client_Enter_Host_Address_Dialog(char* host_address)
 {
@@ -187,7 +175,6 @@ int Client_Enter_Host_Address_Dialog(char* host_address)
 // Match apart from retval stack
 bool Client_Wait_For_WDT_Connection(void)
 {
-    // Not quite matching?
     typedef enum
     {
         REDRAW_NONE = 0,
@@ -203,12 +190,12 @@ bool Client_Wait_For_WDT_Connection(void)
 
     RedrawType display;
     WDTPacketStruct destination;
-    unsigned short bufx[16]; // TODO unused?
-    int rc = 0;
+    unsigned char bufx[32]; // TODO written to but not unused?
+    bool rc = false;
     GadgetClass* commands;
     char str[80] = {0};
-    int conn_sent;
-    WDTPacketStruct* packet_1;
+    bool conn_sent;
+    WDTPacketStruct* packet;
     bool process;
     KeyNumType input;
 
@@ -270,126 +257,131 @@ bool Client_Wait_For_WDT_Connection(void)
         }
 
         if (ReliableProtocols[0]->ConnectionState == -1) {
-            CCMessageBox().Process(TXT_UNABLE_TO_CONNECT);
+            WWMessageBox().Process(TXT_UNABLE_TO_CONNECT);
             process = false;
             rc = 1;
-            break;
-        }
 
-        switch (ReliableProtocols[0]->ConnectionState) {
-        case 0:
-            if (conn_sent) {
-                if (GameParams.IsSquadChannel) {
-                    CCMessageBox().Process("Connection refused.\r\rThis probably means that a squad game is in "
-                                           "progress,\rand entry is closed until it finishes.");
+        } else {
+
+            switch (ReliableProtocols[0]->ConnectionState) {
+            case 0:
+                if (conn_sent) {
+                    if (GameParams.IsSquadChannel) {
+                        WWMessageBox().Process("Connection refused.\r\rThis probably means that a squad game is in "
+                                               "progress,\rand entry is closed until it finishes.");
+                    } else {
+                        WWMessageBox().Process("Connection refused!");
+                    }
+
+                    process = false;
+                    rc = 1;
+                    continue;
                 } else {
-                    CCMessageBox().Process("Connection refused!");
+                    break;
                 }
-
+            case 1:
+                if (!conn_sent) {
+                    strcpy((char*)bufx, ReliableComms[0]->Host.DotAddr);
+                    ((unsigned short*)bufx)[15] = PlanetWestwoodPortNumber;
+                    conn_sent = true;
+                    destination.Header.Type = (PacketType)101;
+                    strcpy(destination.Connection.PlayerName, MPlayerName);
+                    destination.Connection.Side = MPlayerHouse;
+                    destination.Connection.ChosenRTTI = Chosen_RTTI;
+                    destination.Connection.ChosenType = Chosen_Type;
+                    destination.Connection.field_15 = 1;
+                    destination.Connection.field_19 = 0;
+                    destination.Connection.VersionNumber = Version_Number();
+                    ReliableProtocols[0]->Queue->Queue_Send(&destination, PacketLength[PACKET_CONNECTION]);
+                    ReliableComms[0]->Send();
+                }
+                break;
+            case -1:
+                WWMessageBox().Process(TXT_UNABLE_TO_CONNECT);
                 process = false;
                 rc = 1;
                 continue;
-            } else {
-                break;
-            }
-        case 1:
-            if (!conn_sent) {
-                strcpy((char*)bufx, ReliableComms[0]->Host.DotAddr);
-                bufx[15] = PlanetWestwoodPortNumber;
-                conn_sent = true;
-                destination.Header.Type = (PacketType)101;
-                strcpy(destination.Connection.PlayerName, MPlayerName);
-                destination.Connection.Side = MPlayerHouse;
-                destination.Connection.ChosenRTTI = Chosen_RTTI;
-                destination.Connection.ChosenType = Chosen_Type;
-                destination.Connection.field_15 = 1;
-                destination.Connection.field_19 = 0;
-                destination.Connection.VersionNumber = Version_Number();
-                ReliableProtocols[0]->Queue->Queue_Send(&destination, PacketLength[PACKET_CONNECTION]);
-                ReliableComms[0]->Send();
-            }
-            break;
-        case -1:
-            CCMessageBox().Process(TXT_UNABLE_TO_CONNECT);
-            process = false;
-            rc = 1;
-            continue;
-        default:
-            break;
-        }
-
-        if (conn_sent && ReliableProtocols[0]->Queue->Num_Receive() > 0) {
-            int i;
-            packet_1 = (WDTPacketStruct*)ReliableProtocols[0]->Queue->Get_Receive(0)->Buffer;
-
-            switch (packet_1->Header.Type) {
-            case PACKET_GAME_OPTIONS:
-                ScenPlayer = SCEN_PLAYER_MPLAYER;
-                ScenDir = SCEN_DIR_FIRST;
-                MPlayerHouse = packet_1->GameOptions.House;
-                MPlayerLocalID = packet_1->GameOptions.LocalID;
-                MPlayerPrefColor = packet_1->GameOptions.PrefColor; // useless
-                MPlayerColorIdx = packet_1->GameOptions.PrefColor;  // useless
-                Scenario = packet_1->GameOptions.Scenario;
-                MPlayerCredits = packet_1->GameOptions.Credits; // useless
-                MPlayerBases = packet_1->GameOptions.Bases;
-                MPlayerTiberium = packet_1->GameOptions.Tiberium;
-                MPlayerGoodies = packet_1->GameOptions.Goodies; // useless
-                MPlayerGhosts = 0;                              // useless
-                BuildLevel = packet_1->GameOptions.BuildLevel;
-                MPlayerUnitCount = packet_1->GameOptions.UnitCount; // useless?
-                Special = *((SpecialClass*)&packet_1->GameOptions.Special);
-                GameParams = packet_1->GameOptions.GameParams;
-                WDTGameTimer.Set(packet_1->GameOptions.GameTime, TRUE);
-                GameOptionsBitfield = packet_1->GameOptions.Bit2_1;
-
-                for (i = 0; i < 4; i++) {
-                    TeamScores[i] = packet_1->GameOptions.TeamScore[i];
-                }
-
-                if (DebugLogTeams) {
-                    char buff[300];
-                    sprintf(buff, "*Receiving TeamScore in PACKET_GAME_OPTIONS during Wait_For_WDT_Connection\n");
-                    CCDebugString(buff);
-                }
-
-                for (i = 0; i < 25; i++) {
-                    char buff[300];
-                    Weapons[i].Attack = packet_1->GameOptions.WeaponAttack[i];
-                    Weapons[i].ROF = packet_1->GameOptions.WeaponROF[i];
-                    Weapons[i].Range = packet_1->GameOptions.WeaponRange[i];
-                    sprintf(
-                        buff, "W %02d:\t\t%d\t\t%d\t\t%d\n", i, Weapons[i].Attack, Weapons[i].ROF, Weapons[i].Range);
-                    CCDebugString(buff);
-                }
-
-                if (MPlayerTiberium) {
-                    Special.IsTGrowth = true;
-                    Special.IsTSpread = true;
-                } else {
-                    Special.IsTGrowth = false;
-                    Special.IsTSpread = false;
-                }
-
-                ScenarioIdx = -1;
-
-                for (i = 0; i < MPlayerFilenum.Count(); i++) {
-                    if (packet_1->GameOptions.Scenario == MPlayerFilenum[i]) {
-                        ScenarioIdx = i;
-                    }
-                }
-
-                if (ScenarioIdx == -1) {
-                    CCMessageBox().Process(TXT_SCENARIO_NOT_FOUND);
-                    rc = 1;
-                }
-
-                process = false;
-                ReliableProtocols[0]->Queue->UnQueue_Receive(0, 0, 0);
-                break;
-
             default:
                 break;
+            }
+
+            if (conn_sent && ReliableProtocols[0]->Queue->Num_Receive() > 0) {
+                int i;
+                packet = (WDTPacketStruct*)ReliableProtocols[0]->Queue->Get_Receive(0)->Buffer;
+
+                switch (packet->Header.Type) {
+                case PACKET_GAME_OPTIONS:
+                    ScenPlayer = SCEN_PLAYER_MPLAYER;
+                    ScenDir = SCEN_DIR_FIRST;
+                    MPlayerHouse = packet->GameOptions.House;
+                    MPlayerLocalID = packet->GameOptions.LocalID;
+                    MPlayerPrefColor = packet->GameOptions.PrefColor; // useless
+                    MPlayerColorIdx = packet->GameOptions.PrefColor;  // useless
+                    Scen.Scenario = packet->GameOptions.Scenario;
+                    MPlayerCredits = packet->GameOptions.Credits; // useless
+                    MPlayerBases = packet->GameOptions.Bases;
+                    MPlayerTiberium = packet->GameOptions.Tiberium;
+                    MPlayerGoodies = packet->GameOptions.Goodies; // useless
+                    MPlayerGhosts = 0;                            // useless
+                    BuildLevel = packet->GameOptions.BuildLevel;
+                    MPlayerUnitCount = packet->GameOptions.UnitCount; // useless?
+                    Special = *((SpecialClass*)&packet->GameOptions.Special);
+                    GameParams = packet->GameOptions.GameParams;
+                    WDTGameTimer.Set(packet->GameOptions.GameTime, true);
+                    GameOptionsBitfield = packet->GameOptions.Bit2_1;
+
+                    for (i = 0; i < 4; i++) {
+                        TeamScores[i] = packet->GameOptions.TeamScore[i];
+                    }
+
+                    if (DebugLogTeams) {
+                        char buff[300];
+                        sprintf(buff, "*Receiving TeamScore in PACKET_GAME_OPTIONS during Wait_For_WDT_Connection\n");
+                        CCDebugString(buff);
+                    }
+
+                    for (i = 0; i < 25; i++) {
+                        char buff[300];
+                        Weapons[i].Attack = packet->GameOptions.WeaponAttack[i];
+                        Weapons[i].ROF = packet->GameOptions.WeaponROF[i];
+                        Weapons[i].Range = packet->GameOptions.WeaponRange[i];
+                        sprintf(buff,
+                                "W %02d:\t\t%d\t\t%d\t\t%d\n",
+                                i,
+                                Weapons[i].Attack,
+                                Weapons[i].ROF,
+                                Weapons[i].Range);
+                        CCDebugString(buff);
+                    }
+
+                    if (MPlayerTiberium) {
+                        Special.IsTGrowth = true;
+                        Special.IsTSpread = true;
+                    } else {
+                        Special.IsTGrowth = false;
+                        Special.IsTSpread = false;
+                    }
+
+                    ScenarioIdx = -1;
+
+                    for (i = 0; i < MPlayerFilenum.Count(); i++) {
+                        if (packet->GameOptions.Scenario == MPlayerFilenum[i]) {
+                            ScenarioIdx = i;
+                        }
+                    }
+
+                    if (ScenarioIdx == -1) {
+                        WWMessageBox().Process(TXT_SCENARIO_NOT_FOUND);
+                        rc = 1;
+                    }
+
+                    process = false;
+                    ReliableProtocols[0]->Queue->UnQueue_Receive(0, 0, 0);
+                    break;
+
+                default:
+                    break;
+                }
             }
         }
     }
@@ -742,7 +734,7 @@ bool Unit_Choice_Dialog(void)
     Hide_Mouse();
     Set_Palette(BlackPalette);
     VisiblePage.Clear();
-    Mem_Copy(MixFileClass::Retrieve("TEMPERAT.PAL"), GamePalette, 768);
+    Mem_Copy(MFCD::Retrieve("TEMPERAT.PAL"), GamePalette, 768);
     Set_Palette(GamePalette);
     InMainLoop = true;
     Show_Mouse();
@@ -779,7 +771,7 @@ bool Unit_Choice_Dialog(void)
         Call_Back();
         Wait_Vert_Blank();
         Set_Palette(GamePalette);
-        Sleep(20);
+        ms_sleep(20);
 
         /*
 		** .................... Refresh display if needed ......................
@@ -1060,7 +1052,7 @@ bool Unit_Choice_Dialog(void)
 
         case (KN_LMOUSE | WWKEY_RLS_BIT): {
             mouse_x = Get_Mouse_X();
-            mouse_y = Dialog_Get_Mouse_Y();
+            mouse_y = Get_Mouse_Y();
 
             if (mouse_x > choice_rect_x1 && mouse_x < choice_rect_x2 && mouse_y > choice_rect_y1
                 && mouse_y < choice_rect_y2) {
@@ -1156,7 +1148,7 @@ void Draw_Choice_Entry(RTTIType rtti, int type, int xpos, int ypos, HousesType h
             image = techno->Get_Image_Data();
             draw_X = xpos + 32;
             draw_Y = ypos + 24;
-            flags |= SHAPE_CENTER;
+            flags = flags | SHAPE_CENTER;
             frame = 0;
         } else {
             draw_X = xpos;
@@ -1193,7 +1185,7 @@ bool Wait_For_Options(void)
     KeyNumType input;
     int rc = 0;
     GadgetClass* commands = NULL;
-    HWND handle;
+    //HWND handle;
 
     TextButtonClass cancel_btn(
         BUTTON_CANCEL, TXT_CANCEL, TPF_CENTER | TPF_6PT_GRAD | TPF_USE_GRAD_PAL | TPF_NOSHADOW, 275, 209, 90, 18);
@@ -1245,13 +1237,13 @@ bool Wait_For_Options(void)
         }
 
         input = commands->Input();
-        handle = Get_WChat_Handle();
+        // handle = Get_WChat_Handle();
 
-        if (handle == NULL) {
-            rc = 1;
-            process = false;
-            SpawnedFromWChat = false;
-        }
+        //if (handle == NULL) {
+        //    rc = 1;
+        //    process = false;
+        //    SpawnedFromWChat = false;
+        //}
 
         switch (input) {
         case (KN_ESC): // fallthrough
@@ -1263,14 +1255,16 @@ bool Wait_For_Options(void)
             break;
         }
 
-        if (Read_Game_Options(NULL) != 0) {
-            break;
-        }
+        //if (Read_Game_Options(NULL) != 0) {
+        //    break;
+        //}
     }
 
     Set_Palette(BlackPalette);
     VisiblePage.Clear();
+#ifdef _WIN32
     ShowWindow(MainWindow, 9);
+#endif
     Hide_Mouse();
     Load_Title_Screen("HTITLE.PCX", &UnknownViewport2, Palette);
     Set_Palette(Palette);
@@ -1594,7 +1588,7 @@ void Victory_Dialog(HousesType team)
     while (process) {
 
         if (AllSurfaces.SurfacesRestored) {
-            AllSurfaces.SurfacesRestored = FALSE;
+            AllSurfaces.SurfacesRestored = false;
             display = REDRAW_ALL;
         }
 
@@ -1793,7 +1787,7 @@ void Secret_Credits_Dialog(void)
     while (process) {
 
         if (AllSurfaces.SurfacesRestored) {
-            AllSurfaces.SurfacesRestored = FALSE;
+            AllSurfaces.SurfacesRestored = false;
             display = REDRAW_ALL;
         }
 

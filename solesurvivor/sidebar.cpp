@@ -860,10 +860,6 @@ bool SidebarClass::Activate(int control)
     int sidewidth = SeenBuff.Get_Width() - sidex;
     int sideheight = SeenBuff.Get_Height() - sidey;
 
-    if (AllowAttract) {
-        return (old);
-    }
-
     /*
     **	Determine the new state of the sidebar.
     */
@@ -2510,7 +2506,6 @@ void SidebarClass::Color_List_Remove_Player(const char *name)
 	}
 }
 
-extern bool DebugLogTeams; // CONQUER.CPP
 // Matching
 void SidebarClass::Color_List_Add_Teams(void)
 {

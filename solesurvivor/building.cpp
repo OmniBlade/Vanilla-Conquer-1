@@ -1743,7 +1743,7 @@ void* BuildingClass::operator new(size_t, int heap_index) noexcept
  * HISTORY:                                                                                    *
  *   04/21/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void BuildingClass::operator delete(void* ptr)
+void BuildingClass::operator delete(void* ptr, int)
 {
     TARGET target;
     NewDeletePacketData* data;
@@ -3623,10 +3623,6 @@ bool BuildingClass::Captured(HouseClass* newowner, bool unk)
             }
         }
 
-        if (oldowner) {
-            oldowner->Check_Pertinent_Structures();
-        }
-
         return (true);
     }
     return (false);
@@ -4022,7 +4018,7 @@ int BuildingClass::Mission_Deconstruction(void)
             **	Destroy all attached objects. ST - 4/24/2020 9:38PM
             */
             while (Attached_Object()) {
-                FootClass* obj = Detach_Object();
+                FootClass* obj = Remove_From_Cargo();
 
                 Detach_All(true);
                 delete obj;

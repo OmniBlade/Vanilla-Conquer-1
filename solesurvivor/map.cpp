@@ -2026,7 +2026,7 @@ CELL MapClass::Pick_Random_Cell(void)
 	team_count = 0;
 
 	for (index = 0; index < 4; index++) {
-		if (Waypoint[index] != -1) {
+		if (Scen.Waypoint[index] != -1) {
 			team_count++;
 		}
 	}
@@ -2037,11 +2037,11 @@ CELL MapClass::Pick_Random_Cell(void)
 		counter = -1;
 
 		for (index = 0; index < 28; index++) {
-			if (Waypoint[index] != -1) {
+			if (Scen.Waypoint[index] != -1) {
 				counter++;
 
 				if(counter == randn) {
-					cell = Waypoint[index];
+					cell = Scen.Waypoint[index];
 					break;
 				}
 			}

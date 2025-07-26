@@ -57,7 +57,7 @@
 DriveClass::DriveClass(void)
     : Class(0)
     , SimLeptonX(0)
-    , SimLeptonY(0){}; // Added SimLeptonX and Y. ST - 4/30/2019 8:06AM
+    , SimLeptonY(0) {}; // Added SimLeptonX and Y. ST - 4/30/2019 8:06AM
 
 /***********************************************************************************************
  * DriveClass::Do_Turn -- Tries to turn the vehicle to the specified direction.                *
@@ -248,9 +248,7 @@ void DriveClass::Overrun_Square(CELL cell, bool threaten)
                 /*
                 **	Scattering is controlled by the game difficulty level.
                 */
-                if (((GameToPlay == GAME_NORMAL && PlayerPtr->Difficulty == DIFF_HARD) || Special.IsScatter
-                     || Scen.Scenario > 8)
-                    && !(GameToPlay == GAME_NORMAL && PlayerPtr->Difficulty == DIFF_EASY)) {
+                if (Special.IsScatter || Scen.Scenario > 8) {
                     cellptr->Incoming(0, true);
                 }
             }
@@ -707,7 +705,7 @@ bool DriveClass::While_Moving(void)
                             track = newtrack;
 
                             //			Mono_Printf("**Jumping from track %d to track %d. **\n", tracknum,
-                            //track->Track);Keyboard::Get();
+                            //track->Track);Keyboard->Get();
 
                             tracknum = track->Track;
                             TrackIndex = RawTracks[tracknum - 1].Entry - 1; // Anticipate increment.

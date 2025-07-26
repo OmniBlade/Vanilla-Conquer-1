@@ -12,8 +12,6 @@
 #ifndef SERVERRES_H
 #define SERVERRES_H
 
-#include "function.h"
-
 class GameResultClass
 {
 public:

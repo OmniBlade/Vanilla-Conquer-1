@@ -38,7 +38,9 @@ char SrverDlg_LosePowerups[20];
 
 void Fill_In_Server_Dlg_Values(void);
 
-#ifdef WIN32
+#ifdef _WIN32
+
+#include <direct.h>
 
 void Update_Server_Dialog(HWND hdlg)
 {
@@ -70,13 +72,13 @@ void Update_Server_Dialog(HWND hdlg)
     SetWindowTextA(GetDlgItem(hdlg, 127), SrverDlg_LosePowerups);
 }
 
-extern long CALLBACK _export Server_Dlg_Proc(HWND hwnd, UINT message, WPARAM arg1, LPARAM arg2);
+extern long CALLBACK Server_Dlg_Proc(HWND hwnd, UINT message, WPARAM arg1, LPARAM arg2);
 extern HWND ServerDlg;
 
 HWND Create_Server_Window(void)
 {
     if (GameToPlay == GAME_HOST) {
-        ServerDlg = CreateDialogParam((HINSTANCE)hInstance, (LPCSTR)1, 0, (DLGPROC)Server_Dlg_Proc, 0);
+        ServerDlg = CreateDialogParamA((HINSTANCE)hInstance, (LPCSTR)1, 0, (DLGPROC)Server_Dlg_Proc, 0);
         ShowWindow(ServerDlg, 1);
         SetForegroundWindow(ServerDlg);
         Update_Server_Dialog(ServerDlg);
@@ -86,14 +88,13 @@ HWND Create_Server_Window(void)
 }
 
 extern void Host_Disconnect();
-extern void Prog_End();
 
 extern TimerClass WDTGameTimer;
 
-long CALLBACK _export Server_Dlg_Proc(HWND hdlg, UINT message, WPARAM arg1, LPARAM arg2)
+long CALLBACK Server_Dlg_Proc(HWND hdlg, UINT message, WPARAM arg1, LPARAM arg2)
 {
     if (hdlg) {
-        printf("hdlg is %d\n", hdlg);
+        printf("hdlg is %p\n", hdlg);
     } else {
         printf("Null dlg handle\n");
     }

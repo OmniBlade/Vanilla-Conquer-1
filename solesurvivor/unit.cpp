@@ -1280,7 +1280,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
  *   04/11/1994 JLB : Created.                                                                 *
  *   04/21/1994 JLB : Converted to operator new.                                               *
  *=============================================================================================*/
-void* UnitClass::operator new(size_t, int heap_index)
+void* UnitClass::operator new(size_t, int heap_index) noexcept
 {
     TARGET target;
     NewDeletePacketData* data;
@@ -1320,7 +1320,7 @@ void* UnitClass::operator new(size_t, int heap_index)
  * HISTORY:                                                                                    *
  *   04/21/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void UnitClass::operator delete(void* ptr)
+void UnitClass::operator delete(void* ptr, int)
 {
     TARGET target;
     NewDeletePacketData* data;
@@ -1556,14 +1556,6 @@ void UnitClass::Enter_Idle_Mode(bool initial)
                     order = MISSION_GUARD;
                 } else {
                     order = MISSION_HUNT;
-
-                    // GB 2022 improvement by TobiasKarnat
-                    // This shuffles build units around the base which gives AI
-                    // more space for buildings and reduces risk that unit blocks
-                    // refinery, by screaming_chicken (more simplified).
-                    if (initial && Frame > 1000) {
-                        this->ArchiveTarget = ::As_Target(House->Where_To_Go((FootClass*)this));
-                    }
                 }
             }
         }
@@ -3362,9 +3354,12 @@ void UnitClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
             return;
         if (Target_Legal(NavCom) && !nokidding)
             return;
+#ifdef USE_RA_AI        
         if (threat == 0) {
             Assign_Destination(::As_Target(Map.Nearby_Location(Coord_Cell(Coord))));
-        } else if (((!Target_Legal(TarCom) && !Target_Legal(NavCom)) || forced || nokidding
+        } else
+#endif
+        if (((!Target_Legal(TarCom) && !Target_Legal(NavCom)) || forced || nokidding
                     || Random_Pick(1, 4) == 1)) {
             FacingType toface;
             FacingType newface;

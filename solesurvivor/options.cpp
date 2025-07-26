@@ -618,15 +618,13 @@ void OptionsClass::Load_Settings(void)
                    "TeamMessage3",
                    "Got their flag, need escort, quick!",
                    TeamMessages[3],
-                   MAX_MESSAGE_LENGTH,
-                   buffer);
+                   MAX_MESSAGE_LENGTH);
     ini.Get_String("TeamMessages", "TeamMessage4", "Their base is destroyed!", TeamMessages[4], MAX_MESSAGE_LENGTH);
     ini.Get_String("TeamMessages",
                    "TeamMessage5",
                    "Our base is destroyed! Defend our flag!",
                    TeamMessages[5],
-                   MAX_MESSAGE_LENGTH,
-                   buffer);
+                   MAX_MESSAGE_LENGTH);
     ini.Get_String("TeamMessages", "TeamMessage6", "Converge on their base NOW!", TeamMessages[6], MAX_MESSAGE_LENGTH);
     ini.Get_String(
         "TeamMessages", "TeamMessage7", "Help needed: campers at base!", TeamMessages[7], MAX_MESSAGE_LENGTH);
@@ -741,14 +739,6 @@ void OptionsClass::Load_Settings(void)
     ini.Get_String(OPTIONS, "TrueNames", "", workbuf, sizeof(workbuf));
     if (Obfuscate(workbuf) == PARM_TRUENAME) {
         Special.IsNamed = true;
-    }
-
-    /*
-    **	Enable 6 player games if special flag is detected.
-    */
-    ini.Get_String(OPTIONS, "Players", "", workbuf, sizeof(workbuf));
-    if (Obfuscate(workbuf) == PARM_6PLAYER) {
-        MPlayerMax = 6;
     }
 
     /*

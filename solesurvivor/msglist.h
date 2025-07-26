@@ -69,7 +69,7 @@ public:
     /*
     **	Message-editing routines
     */
-    void Add_Edit(int x, int y, int color, TextPrintType style, char* to);
+    void Add_Edit(int x, int y, int color, TextPrintType style, const char* to);
     char* Get_Edit_Buf(void)
     {
         return EditBuf;

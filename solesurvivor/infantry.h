@@ -117,7 +117,11 @@ public:
     {
         return (ptr);
     };
-    static void operator delete(void* ptr);
+    static void operator delete(void* ptr, int);
+    static void operator delete(void* ptr)
+    {
+        operator delete(ptr, -1);
+    }
     static void operator delete(void*, void*)
     {
     }
@@ -125,7 +129,7 @@ public:
     InfantryClass(NoInitClass const& x)
         : FootClass(x)
         , Class(this->Class)
-        , Comment(x) {};
+        , Comment(x){};
     InfantryClass(InfantryType classid, HousesType house);
     virtual ~InfantryClass(void);
     virtual RTTIType What_Am_I(void) const;

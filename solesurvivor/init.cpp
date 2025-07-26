@@ -268,7 +268,7 @@ bool Init_Game(int, char*[])
         Keyboard->Check();
     } while (!GameInFocus);
     AllSurfaces.SurfacesRestored = false;
-    Keyboard::Check();
+    Keyboard->Check();
 
     CCDebugString("C&C95 - About to load the language file\n");
     /*
@@ -760,11 +760,6 @@ bool Select_Game(bool fade)
             /*
             **	Display menu and fetch selection from player.
             */
-            if (Special.IsFromInstall) {
-                MenuSelection = SEL_START_NEW_GAME;
-                Theme.Queue_Song(THEME_NONE);
-            }
-
             if (MenuSelection != SEL_OFFLINE) {
                 OfflineMode = false;
             }
@@ -822,7 +817,7 @@ bool Select_Game(bool fade)
 
                 if (!Listener) {
                     if (!Host_Init_Listener()) {
-                        CCMessageBox().Process("Unable to initialize server!", TXT_OK);
+                        WWMessageBox().Process("Unable to initialize server!", TXT_OK);
                         MenuSelection = SEL_NONE;
                         display = true;
                         break;
@@ -832,8 +827,9 @@ bool Select_Game(bool fade)
                 Read_MultiPlayer_Settings();
                 ScenPlayer = SCEN_PLAYER_MPLAYER;
                 ScenDir = SCEN_DIR_FIRST;
-                randomize();
-                Scenario = Host_Pick_Random_Map();
+                //randomize();
+                srand((unsigned)time(NULL));
+                Scen.Scenario = Host_Pick_Random_Map();
                 Whom = HOUSE_NEUTRAL;
                 GameToPlay = GAME_HOST;
                 display = true;
@@ -845,7 +841,7 @@ bool Select_Game(bool fade)
                 Read_MultiPlayer_Settings();
                 if (!UnreliableComm) {
                     if (!Client_Connect_To_IP(Host)) {
-                        CCMessageBox().Process(Text_String(TXT_CANNOT_INIT_CLIENT), TXT_OK);
+                        WWMessageBox().Process(Text_String(TXT_CANNOT_INIT_CLIENT), TXT_OK);
                         MenuSelection = SEL_NONE;
                         display = true;
                         break;
@@ -854,7 +850,7 @@ bool Select_Game(bool fade)
                 if (!Client_Wait_For_WDT_Connection()) {
                     Client_Disconnect();
                     MenuSelection = SEL_NONE;
-                    Tickle_WChat();
+                    // Tickle_WChat();
                     display = true;
                     break;
                 }
@@ -897,35 +893,41 @@ bool Select_Game(bool fade)
                 break;
 
             case SEL_FIVE:
+#ifdef _WIN32
                 Hide_Mouse();
                 Fade_Palette_To(BlackPalette, 0xFu, 0);
                 VisiblePage.Clear();
                 ShowWindow(MainWindow, 6);
                 ShellExecuteA(0, 0, ButtonFiveURL, 0, 0, 1);
                 Show_Mouse();
+#endif
                 display = true;
                 fade = true;
                 MenuSelection = SEL_NONE;
                 break;
 
             case SEL_SIX:
+#ifdef _WIN32
                 Hide_Mouse();
                 Fade_Palette_To(BlackPalette, 0xFu, 0);
                 VisiblePage.Clear();
                 ShowWindow(MainWindow, 6);
                 ShellExecuteA(0, 0, ButtonSixURL, 0, 0, 1);
                 Show_Mouse();
+#endif
                 display = true;
                 fade = true;
                 MenuSelection = SEL_NONE;
                 break;
             case SEL_NEWS:
+#ifdef _WIN32
                 Hide_Mouse();
                 Fade_Palette_To(BlackPalette, 0xFu, 0);
                 VisiblePage.Clear();
                 ShowWindow(MainWindow, 6);
                 ShellExecuteA(0, 0, "ssnews.txt", 0, 0, 1);
                 Show_Mouse();
+#endif
                 display = true;
                 fade = true;
                 MenuSelection = SEL_NONE;
@@ -945,7 +947,7 @@ bool Select_Game(bool fade)
         if (GameToPlay == GAME_HOST) {
             if (!Listener) {
                 if (!Host_Init_Listener()) {
-                    CCMessageBox().Process("Unable to initialize server!", TXT_OK);
+                    WWMessageBox().Process("Unable to initialize server!", TXT_OK);
                     Prog_End();
                     exit(0);
                 }
@@ -953,8 +955,8 @@ bool Select_Game(bool fade)
 
             ScenPlayer = SCEN_PLAYER_MPLAYER;
             ScenDir = SCEN_DIR_EAST;
-            randomize();
-            Scenario = Host_Pick_Random_Map();
+            srand((unsigned)time(NULL));
+            Scen.Scenario = Host_Pick_Random_Map();
             Whom = HOUSE_NEUTRAL;
         }
     }
@@ -1188,7 +1190,7 @@ static void Play_Intro(bool for_real)
 extern LPDIRECTSOUND SoundObject;
 extern LPDIRECTSOUNDBUFFER PrimaryBufferPtr;
 #endif
-void Anim_Init(void)
+void Anim_Init(bool unk)
 {
 #ifndef REMASTER_BUILD
     /* Configure player with INI file */
@@ -1690,34 +1692,22 @@ void Add_CRC(unsigned int* crc, unsigned int val)
  *=========================================================================*/
 void Init_Random(void)
 {
-    //
-    // If we're playing a recording, the Seed is loaded in
-    // Load_Recording_Values().  Just init the random # and return.
-    //
-    if (PlaybackGame) {
-        RandNumb = Seed;
-        Scen.RandomNumber = Seed;
-        return;
-    }
-
     /*
     **	Initialize the random number Seed.  For multiplayer, this will have been done
     ** in the connection dialogs.  For single-player games, AND if we're not playing
     ** back a recording, init the Seed to a random value.
     */
-    if (GameToPlay == GAME_NORMAL || GameToPlay == GAME_SKIRMISH && PlaybackGame) {
-
-        /*
-        ** Set the optional user-specified seed
-        */
-        if (CustomSeed != 0) {
-            Seed = CustomSeed;
-        } else {
-            srand((unsigned)time(NULL));
-            Seed = rand();
-        }
+    
+    /*
+    ** Set the optional user-specified seed
+    */
+    if (CustomSeed != 0) {
+        Seed = CustomSeed;
+    } else {
+        srand((unsigned)time(NULL));
+        Seed = rand();
     }
-
+    
     /*
     **	Initialize the random-number generators
     */

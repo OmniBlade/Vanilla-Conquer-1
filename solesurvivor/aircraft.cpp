@@ -161,7 +161,7 @@ TARGET AircraftClass::As_Target(void) const
  * HISTORY:                                                                                    *
  *   07/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void* AircraftClass::operator new(size_t, int heap_index)
+void* AircraftClass::operator new(size_t, int heap_index) noexcept
 {
     TARGET target;
     NewDeletePacketData* data;
@@ -199,7 +199,7 @@ void* AircraftClass::operator new(size_t, int heap_index)
  * HISTORY:                                                                                    *
  *   07/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void AircraftClass::operator delete(void* ptr)
+void AircraftClass::operator delete(void* ptr, int)
 {
     TARGET target;
     NewDeletePacketData* data;

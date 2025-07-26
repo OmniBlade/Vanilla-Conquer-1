@@ -107,11 +107,11 @@ private:
 
 #ifdef WIN32
     static long __stdcall Window_Proc(HWND hwnd, UINT message, UINT wParam, LONG lParam);
+    HWND Window;
 #endif
 
     SOCKET Socket;
     ProtocolClass* Protocol;
-    HWND Window;
     int IsListening : 1;
 };
 
@@ -152,9 +152,8 @@ private:
 #ifdef WIN32
     HWND Window;
     HANDLE Async;
-#endif
-
     char Hbuf[MAXGETHOSTSTRUCT];
+#endif
     SendQueueType* SendEntry;
     int SendLen;
     char* ReceiveBuf;
@@ -196,8 +195,8 @@ private:
 #ifdef WIN32
     HWND Window;
     HANDLE Async;
-#endif
     char Hbuf[MAXGETHOSTSTRUCT];
+#endif
     struct DestAddress DefaultDest;
     struct TCPHost DefaultAddr;
     char* ReceiveBuf;
