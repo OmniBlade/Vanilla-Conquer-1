@@ -3040,3 +3040,128 @@ FootClass* TeamClass::Fetch_A_Leader(void) const
 
     return (leader);
 }
+
+bool TeamClass::Save(Pipe &file) const
+{
+    //if (!AbstractClass::Save(file)) {
+    //    return false;
+    //}
+    bool tmp;
+    uint8_t tmpu8;
+    int32_t tmpi32;
+
+    Class.Save(file);
+    House.Save(file);
+
+    tmp = IsForcedActive;
+    file.Put(tmp);
+    tmp = IsHasBeen;
+    file.Put(tmp);
+    tmp = IsFullStrength;
+    file.Put(tmp);
+    tmp = IsUnderStrength;
+    file.Put(tmp);
+    tmp = IsReforming;
+    file.Put(tmp);
+    tmp = IsLagging;
+    file.Put(tmp);
+    tmp = IsAltered;
+    file.Put(tmp);
+    tmp = JustAltered;
+    file.Put(tmp);
+    tmp = IsMoving;
+    file.Put(tmp);
+    tmp = IsNextMission;
+    file.Put(tmp);
+    tmp = IsLeaveMap;
+    file.Put(tmp);
+    tmp = Suspended;
+    file.Put(tmp);
+
+    file.Put(Zone);
+    file.Put(ClosestMember);
+    file.Put(MissionTarget);
+    file.Put(Target);
+    file.Put(Total);
+    file.Put(Risk);
+
+    static_assert(sizeof(tmpu8) == sizeof(Formation), "Type size mismatch in save/load code");
+    tmpu8 = Formation;
+    file.Put(tmpu8);
+
+    SuspendTimer.Save(file);
+    Trigger.Save(file);
+
+    file.Put(CurrentMission);
+
+    TimeOut.Save(file);
+
+    tmpi32 = static_cast<int32_t>(static_cast<intptr_t>(Member));
+    file.Put(tmpi32);
+
+    file.Put(Quantity, sizeof(Quantity));
+
+    return false;
+}
+
+bool TeamClass::Load(Straw &file)
+{
+    //if (!AbstractClass::Load(file)) {
+    //    return false;
+    //}
+    bool tmp;
+    uint8_t tmpu8;
+    int32_t tmpi32;
+
+    Class.Load(file);
+    House.Load(file);
+
+    file.Get(tmp);
+    IsForcedActive = tmp;
+    file.Get(tmp);
+    IsHasBeen = tmp;
+    file.Get(tmp);
+    IsFullStrength = tmp;
+    file.Get(tmp);
+    IsUnderStrength = tmp;
+    file.Get(tmp);
+    IsReforming = tmp;
+    file.Get(tmp);
+    IsLagging = tmp;
+    file.Get(tmp);
+    IsAltered = tmp;
+    file.Get(tmp);
+    JustAltered = tmp;
+    file.Get(tmp);
+    IsMoving = tmp;
+    file.Get(tmp);
+    IsNextMission = tmp;
+    file.Get(tmp);
+    IsLeaveMap = tmp;
+    file.Get(tmp);
+    Suspended = tmp;
+
+    file.Get(Zone);
+    file.Get(ClosestMember);
+    file.Get(MissionTarget);
+    file.Get(Target);
+    file.Get(Total);
+    file.Get(Risk);
+
+    file.Get(tmpu8);
+    Formation = static_cast<FormationType>(tmpu8);
+    
+    SuspendTimer.Load(file);
+    Trigger.Load(file);
+
+    file.Get(CurrentMission);
+
+    TimeOut.Load(file);
+
+    file.Get(tmpi32);
+    Member = reinterpret_cast<FootClass*>(static_cast<intptr_t>(tmpi32));
+
+    file.Get(Quantity, sizeof(Quantity));
+
+    return false;
+}

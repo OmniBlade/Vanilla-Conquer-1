@@ -126,13 +126,13 @@ int BaseNodeClass::operator>(BaseNodeClass const&)
 bool BaseClass::Load(Straw& file)
 {
     int num_struct;
-    int i;
+    unsigned i;
     BaseNodeClass node;
 
     /*
     ** Read in & check the size of this class
     */
-    if (file.Get(&i, sizeof(i)) != sizeof(i)) {
+    if (!file.Get(i)) {
         return (false);
     }
 
@@ -143,11 +143,14 @@ bool BaseClass::Load(Straw& file)
     /*
     ** Read in the House & the number of structures in the base
     */
-    if (file.Get(&House, sizeof(House)) != sizeof(House)) {
+    uint8_t tmp8;
+    if (!file.Get(tmp8)) {
         return (false);
     }
 
-    if (file.Get(&num_struct, sizeof(num_struct)) != sizeof(num_struct)) {
+    House = static_cast<HousesType>(tmp8);
+
+    if (!file.Get(num_struct)) {
         return (false);
     }
 
@@ -155,9 +158,16 @@ bool BaseClass::Load(Straw& file)
     ** Read each node entry & add it to the list
     */
     for (i = 0; i < num_struct; i++) {
-        if (file.Get(&node, sizeof(node)) != sizeof(node)) {
+        if (!file.Get(tmp8)) {
             return (false);
         }
+
+        node.Type = static_cast<StructType>(tmp8);
+
+        if (!file.Get(node.Cell)) {
+            return (false);
+        }
+
         Nodes.Add(node);
     }
 
@@ -183,29 +193,32 @@ bool BaseClass::Load(Straw& file)
 bool BaseClass::Save(Pipe& file) const
 {
     int num_struct;
-    int i;
+    unsigned i;
     BaseNodeClass node;
 
     /*
     ** Write the size of this class
     */
     i = sizeof(*this);
-    file.Put(&i, sizeof(i));
+    file.Put(i);
 
     /*
     ** Write the House & the number of structures in the base
     */
-    file.Put(&House, sizeof(House));
+    uint8_t tmp8 = House;
+    file.Put(tmp8);
 
     num_struct = Nodes.Count();
-    file.Put(&num_struct, sizeof(num_struct));
+    file.Put(num_struct);
 
     /*
     ** Write each node entry
     */
     for (i = 0; i < num_struct; i++) {
         node = Nodes[i];
-        file.Put(&node, sizeof(node));
+        tmp8 = node.Type;
+        file.Put(tmp8);
+        file.Put(node.Cell);
     }
 
     return (true);

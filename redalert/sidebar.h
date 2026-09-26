@@ -380,6 +380,9 @@ public:
 
     bool Scroll(bool up, int column);
 
+    virtual bool Save(Pipe &pipe) const;
+    virtual bool Load(Straw &straw);
+
 private:
     bool Activate_Repair(int control);
     bool Activate_Upgrade(int control);

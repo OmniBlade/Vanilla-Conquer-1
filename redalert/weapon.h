@@ -71,6 +71,22 @@ public:
     void Decode_Pointers(void)
     {
     }
+    
+    /*
+    **	IO.
+    */
+    bool Save(Pipe &file) const
+    {
+        // WeaponTypeClass derivatives shouldn't need to be stored in the save file.
+        assert(false);
+        return false;
+    }
+
+    bool Load(Straw &file)
+    {
+        assert(false);
+        return false;
+    }
     ThreatType Allowed_Threats(void) const;
     bool Is_Wall_Destroyer(void) const;
 

@@ -188,6 +188,15 @@
 #endif
 
 /**********************************************************************
+** Some constants for the versions used for different save games.
+** CURRENT_SAVE_VERSION should be bumped and handling added for the old
+** version if any classes, structure or globals are altered that are
+** included in the save file.
+*/
+#define CURRENT_SAVE_VERSION 0x1
+#define RA303_SAVE_VERSION 0x100618B
+
+/**********************************************************************
 ** This is the multiplier factor to convert low resution coordinates
 **	into their actual resolution counterparts.
 */

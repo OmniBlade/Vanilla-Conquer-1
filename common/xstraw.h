@@ -80,6 +80,8 @@ private:
 class FileStraw : public Straw
 {
 public:
+    using Straw::Get;
+     
     FileStraw(FileClass* file)
         : File(file)
         , HasOpened(false)

@@ -95,6 +95,9 @@ public:
     virtual void Revert_Mouse_Shape(void) = 0;
     virtual void Mouse_Small(bool wsmall) = 0;
 
+    virtual bool Save(Pipe &file) const;
+    virtual bool Load(Straw &file);
+
     /*
     **	This points to the buttons that are used for input. All of the derived classes will
     **	attached their specific buttons to this list.

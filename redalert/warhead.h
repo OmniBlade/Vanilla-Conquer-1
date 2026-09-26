@@ -63,6 +63,23 @@ public:
     void Decode_Pointers(void)
     {
     }
+    
+    /*
+    **	IO.
+    */
+    bool Save(Pipe &file) const
+    {
+        // WarheadTypeClass derivatives shouldn't need to be stored in the save file.
+        assert(false);
+        return false;
+    }
+
+    bool Load(Straw &file)
+    {
+        assert(false);
+        return false;
+    }
+
     char const* Name(void) const
     {
         return (IniName);

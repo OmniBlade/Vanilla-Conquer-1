@@ -35,6 +35,9 @@
 #ifndef CARRY_H
 #define CARRY_H
 
+class Straw;
+class Pipe;
+
 class CarryoverClass : public LinkClass
 {
 public:
@@ -45,6 +48,9 @@ public:
     }
 
     bool Create(void) const;
+
+    bool Load(Straw& file);
+    bool Save(Pipe& file) const;
 
     // protected:
     /*

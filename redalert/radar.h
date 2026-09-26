@@ -129,6 +129,9 @@ public:
     bool Spy_Next_House(void);
     void Activate_Pulse(void);
 
+    virtual bool Save(Pipe &pipe) const;
+    virtual bool Load(Straw &straw);
+
 protected:
     /*
     **	Radar map constant values.

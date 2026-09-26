@@ -145,3 +145,34 @@ bool CarryoverClass::Create(void) const
 
     return (false);
 }
+
+bool CarryoverClass::Load(Straw& file)
+{
+    static_assert(sizeof(Type) == sizeof(uint8_t), "Type union not of expected size.");
+    uint8_t tmp8;
+
+    file.Get(tmp8);
+    RTTI = static_cast<RTTIType>(tmp8);
+    file.Get(tmp8);
+    memcpy(&Type, &tmp8, sizeof(tmp8));
+    file.Get(Cell);
+    file.Get(Strength);
+    file.Get(tmp8);
+    House = static_cast<HousesType>(tmp8);
+    return true;
+}
+
+bool CarryoverClass::Save(Pipe& file) const
+{
+    uint8_t tmp8;
+
+    tmp8 = RTTI;
+    file.Put(tmp8);
+    memcpy(&tmp8, &Type, sizeof(tmp8));
+    file.Put(tmp8);
+    file.Put(Cell);
+    file.Put(Strength);
+    tmp8 = House;
+    file.Put(tmp8);
+    return true;
+}

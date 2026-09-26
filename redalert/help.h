@@ -63,6 +63,9 @@ public:
     void Set_Cost(int cost);
     short const* Overlap_List(void) const;
 
+    virtual bool Save(Pipe &pipe) const;
+    virtual bool Load(Straw &straw);
+
 private:
     static char const* HelpText;
     int HelpX;

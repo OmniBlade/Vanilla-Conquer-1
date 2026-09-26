@@ -180,6 +180,20 @@ public:
     */
     virtual void AI(void){};
 
+
+    /*
+    **	IO.
+    */
+    //virtual bool Save(Pipe &file) const
+    //{
+    //    return true;
+    //}
+    //
+    //virtual bool Load(Straw &file)
+    //{
+    //    return true;
+    //}
+
     /*
     ** Set the new recently created flag every time the active flag is set. ST - 8/19/2019 5:41PM
     */

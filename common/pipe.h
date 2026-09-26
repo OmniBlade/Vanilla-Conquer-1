@@ -72,6 +72,12 @@ public:
     /*
     **	Write fixed width data to the stream.
     */
+    void Put(bool val)
+    {
+        bool data = val;
+        Put(&data, sizeof(data));
+    }
+
     void Put(int8_t val)
     {
         uint8_t data = val;

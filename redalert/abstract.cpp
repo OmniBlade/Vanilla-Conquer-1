@@ -206,3 +206,29 @@ int AbstractTypeClass::Get_Ownable(void) const
 {
     return (HOUSEF_ALLIES | HOUSEF_SOVIET | HOUSEF_OTHERS);
 }
+
+bool AbstractTypeClass::Save(Pipe &file) const
+{
+    uint8_t tmpu8;
+
+    tmpu8 = RTTI;
+    file.Put(tmpu8);
+    file.Put(ID);
+    file.Put(IniName, sizeof(IniName));
+    file.Put(FullName);
+
+    return false;
+}
+
+bool AbstractTypeClass::Load(Straw &file)
+{
+    uint8_t tmpu8;
+
+    file.Get(tmpu8);
+    RTTI = static_cast<RTTIType>(tmpu8);
+    file.Get(ID);
+    file.Get(IniName, sizeof(IniName));
+    file.Get(FullName);
+
+    return false;
+}

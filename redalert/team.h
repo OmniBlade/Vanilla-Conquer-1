@@ -242,6 +242,12 @@ public:
     bool Is_Leaving_Map(void) const;
     void Scan_Limit(void);
 
+    /*
+    **	IO.
+    */
+    virtual bool Save(Pipe &file) const;
+    virtual bool Load(Straw &file);
+
 private:
     /*
     **	The current mission index into the mission list is recorded here.
@@ -282,11 +288,6 @@ private:
     SmartPtr<FootClass> Member;
 
     unsigned char Quantity[TeamTypeClass::MAX_TEAM_CLASSCOUNT];
-
-    /*
-    ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
-    *save/load
-    */
 };
 
 #endif

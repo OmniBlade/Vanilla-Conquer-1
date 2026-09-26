@@ -168,6 +168,12 @@ public:
     void Decode_Pointers(void);
 
     /*
+    **	IO.
+    */
+    virtual bool Save(Pipe &file) const;
+    virtual bool Load(Straw &file);
+
+    /*
     **	As_Pointer gets a pointer to the trigger object give its name
     */
     static TeamTypeClass* As_Pointer(char const* name);
@@ -297,11 +303,6 @@ public:
     */
     int ClassCount;
     TeamMemberClass Members[MAX_TEAM_CLASSCOUNT];
-
-    /*
-    ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
-    *save/load
-    */
 
     static char const* TMissions[TMISSION_COUNT];
 };

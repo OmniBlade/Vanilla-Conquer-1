@@ -1989,3 +1989,112 @@ void TeamTypeClass::Build_INI_Entry(char* buf)
         buf += strlen(buf);
     }
 }
+
+bool TeamTypeClass::Save(Pipe &file) const
+{
+    if (!AbstractTypeClass::Save(file)) {
+        return false;
+    }
+    bool tmp;
+    int8_t tmpi8;
+
+    tmp = IsActive;
+    file.Put(tmp);
+    tmp = IsRoundAbout;
+    file.Put(tmp);
+    tmp = IsSuicide;
+    file.Put(tmp);
+    tmp = IsAutocreate;
+    file.Put(tmp);
+    tmp = IsPrebuilt;
+    file.Put(tmp);
+    tmp = IsReinforcable;
+    file.Put(tmp);
+    tmp = IsTransient;
+    file.Put(tmp);
+
+    file.Put(RecruitPriority);
+    file.Put(InitNum);
+    file.Put(MaxAllowed);
+    file.Put(Fear);
+    
+    tmpi8 = House;
+    file.Put(tmpi8);
+    
+    Trigger.Save(file);
+
+    file.Put(Origin);
+    file.Put(Number);
+    file.Put(MissionCount);
+
+    for (int i = 0; i < MAX_TEAM_MISSIONS; ++i) {
+        tmpi8 = MissionList[i].Mission;
+        file.Put(tmpi8);
+        file.Put(MissionList[i].Data.Value);
+    }
+
+    file.Put(ClassCount);
+
+    for (int i = 0; i < MAX_TEAM_CLASSCOUNT; ++i) {
+        file.Put(Members[i].Quantity);
+        int32_t tmpi32 = static_cast<int32_t>(reinterpret_cast<intptr_t>(Members[i].Class));
+        file.Put(tmpi32);
+    }
+
+    return false;
+}
+
+bool TeamTypeClass::Load(Straw &file)
+{
+    if (!AbstractTypeClass::Load(file)) {
+        return false;
+    }
+    bool tmp;
+    int8_t tmpi8;
+
+    file.Get(tmp);
+    IsActive = tmp;
+    file.Get(tmp);
+    IsRoundAbout = tmp;
+    file.Get(tmp);
+    IsSuicide = tmp;
+    file.Get(tmp);
+    IsAutocreate = tmp;
+    file.Get(tmp);
+    IsPrebuilt = tmp;
+    file.Get(tmp);
+    IsReinforcable = tmp;
+    file.Get(tmp);
+    IsTransient = tmp;
+
+    file.Get(RecruitPriority);
+    file.Get(InitNum);
+    file.Get(MaxAllowed);
+    file.Get(Fear);
+
+    file.Get(tmpi8);
+    House = static_cast<HousesType>(tmpi8);
+
+    Trigger.Load(file);
+
+    file.Get(Origin);
+    file.Get(Number);
+    file.Get(MissionCount);
+
+    for (int i = 0; i < MAX_TEAM_MISSIONS; ++i) {
+        file.Get(tmpi8);
+        MissionList[i].Mission = static_cast<TeamMissionType>(tmpi8);
+        file.Get(MissionList[i].Data.Value);
+    }
+
+    file.Get(ClassCount);
+
+    for (int i = 0; i < MAX_TEAM_CLASSCOUNT; ++i) {
+        file.Get(Members[i].Quantity);
+        int32_t tmpi32;
+        file.Get(tmpi32);
+        Members[i].Class = reinterpret_cast<TechnoTypeClass *>(static_cast<intptr_t>(tmpi32));
+    }
+
+    return false;
+}

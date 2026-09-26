@@ -73,6 +73,9 @@ public:
         Counter = 0;
         HelpClass::Init_IO();
     };
+
+    virtual bool Save(Pipe &pipe) const;
+    virtual bool Load(Straw &straw);
 };
 
 #endif

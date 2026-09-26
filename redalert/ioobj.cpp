@@ -383,7 +383,7 @@ bool LayerClass::Load(Straw& file)
     **	Read # elements in the layer
     */
     int count;
-    if (file.Get(&count, sizeof(count)) != sizeof(count)) {
+    if (!file.Get(count)) {
         return (false);
     }
 
@@ -396,11 +396,11 @@ bool LayerClass::Load(Straw& file)
     **	Read in all array elements
     */
     for (int index = 0; index < count; index++) {
-        ObjectClass* ptr;
-        if (file.Get(&ptr, sizeof(ObjectClass*)) != sizeof(ObjectClass*)) {
+        TARGET ptr;
+        if (!file.Get(ptr)) {
             return (false);
         }
-        Add(ptr);
+        Add(reinterpret_cast<ObjectClass *>(static_cast<intptr_t>(ptr)));
     }
 
     return (true);
@@ -424,14 +424,14 @@ bool LayerClass::Save(Pipe& file) const
     **	Save # array elements
     */
     int count = Count();
-    file.Put(&count, sizeof(count));
+    file.Put(count);
 
     /*
     **	Save all elements
     */
     for (int index = 0; index < count; index++) {
-        ObjectClass* ptr = (*this)[index];
-        file.Put(&ptr, sizeof(ObjectClass*));
+        int32_t ptr = static_cast<int32_t>(reinterpret_cast<intptr_t>((*this)[index]));
+        file.Put(ptr);
     }
 
     return (true);
@@ -584,6 +584,42 @@ void ScoreClass::Code_Pointers(void)
 void ScoreClass::Decode_Pointers(void)
 {
     RealTime.Start();
+}
+
+bool ScoreClass::Load(Straw& file)
+{
+    file.Get(Score);
+    file.Get(NKilled);
+    file.Get(GKilled);
+    file.Get(CKilled);
+    file.Get(NBKilled);
+    file.Get(GBKilled);
+    file.Get(CBKilled);
+    file.Get(NHarvested);
+    file.Get(GHarvested);
+    file.Get(CHarvested);
+    file.Get(ElapsedTime);
+    RealTime.Load(file);
+
+    return true;
+}
+
+bool ScoreClass::Save(Pipe& file) const
+{
+    file.Put(Score);
+    file.Put(NKilled);
+    file.Put(GKilled);
+    file.Put(CKilled);
+    file.Put(NBKilled);
+    file.Put(GBKilled);
+    file.Put(CBKilled);
+    file.Put(NHarvested);
+    file.Put(GHarvested);
+    file.Put(CHarvested);
+    file.Put(ElapsedTime);
+    RealTime.Save(file);
+
+    return true;
 }
 
 /***********************************************************************************************

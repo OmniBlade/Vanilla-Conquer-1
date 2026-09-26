@@ -131,7 +131,7 @@ public:
     **	File I/O.
     */
     bool Load(Straw& file);
-    bool Save(FileClass& file);
+    bool Save(Pipe& file);
 
     /*
     **	If this animation is attached to an object, then this points to that object. An

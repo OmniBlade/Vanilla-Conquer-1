@@ -56,6 +56,8 @@
 #define FTIMER_H
 
 #include "timer.h"
+#include "pipe.h"
+#include "straw.h"
 
 /*
 **	The "bool" integral type was defined by the C++ committee in
@@ -102,6 +104,21 @@ public:
 
     // Function operator to allow timer object definition to be cascaded.
     unsigned int operator()(void) const;
+
+    void Save(Pipe& pipe) const
+    {
+        pipe.Put(Started);
+    }
+
+    void Load(Straw& straw, bool old = false)
+    {
+        // Format originally saves unused bytes for the timer instance, old Watcom class was packed so its just a byte.
+        if (old) {
+            uint8_t tmp = 0;
+            straw.Get(tmp);
+        }
+        straw.Get(Started);
+    }
 
 protected:
     T Timer;              // Timer regulator (ticks at constant rate).
@@ -216,7 +233,7 @@ public:
     TTimerClass(unsigned int set = 0);
     TTimerClass(NoInitClass const& x);
 
-    ~TTimerClass(void){};
+    ~TTimerClass(void) {};
 
     // Fetches current value of timer.
     unsigned int Value(void) const;
@@ -235,6 +252,18 @@ public:
 
     // Queries whether the timer is currently active.
     bool Is_Active(void) const;
+
+    void Save(Pipe& pipe) const
+    {
+        BasicTimerClass<T>::Save(pipe);
+        pipe.Put(Accumulated);
+    }
+
+    void Load(Straw& straw)
+    {
+        BasicTimerClass<T>::Load(straw);
+        straw.Get(Accumulated);
+    }
 
 private:
     unsigned int Accumulated; //	Total accumulated ticks.
@@ -451,6 +480,20 @@ public:
     bool Was_Started(void) const
     {
         return WasStarted;
+    }
+
+    void Save(Pipe& pipe) const
+    {
+        BasicTimerClass<T>::Save(pipe);
+        pipe.Put(DelayTime);
+        pipe.Put(WasStarted);
+    }
+
+    void Load(Straw& straw)
+    {
+        BasicTimerClass<T>::Load(straw);
+        straw.Get(DelayTime);
+        straw.Get(WasStarted);
     }
 
 private:
@@ -681,7 +724,7 @@ public:
         Set(set);
     };
 
-    TCountDownTimerClass(NoInitClass const&){};
+    TCountDownTimerClass(NoInitClass const&) {};
 
     // No destructor.
     ~TCountDownTimerClass(void)

@@ -35,6 +35,8 @@
 #ifndef CREDITS_H
 #define CREDITS_H
 
+class Pipe;
+class Straw;
 class HouseClass;
 extern HouseClass* PlayerPtr;
 
@@ -62,6 +64,9 @@ public:
     void AI(bool forced = false,
             HouseClass* player_ptr = PlayerPtr,
             bool logic_only = false); // Added house and logic_only parameters. ST - 10/16/2019 2:26PM
+
+    void Save(Pipe& pipe) const;
+    void Load(Straw& straw, bool old = false);
 
     int Current; // Credit value currently displayed.
 

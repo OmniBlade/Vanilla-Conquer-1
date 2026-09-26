@@ -2354,3 +2354,71 @@ TriggerTypeClass* TriggerTypeClass::From_Name(char const* name)
     }
     return (NULL);
 }
+
+bool TriggerTypeClass::Save(Pipe &file) const
+{
+    if (!AbstractTypeClass::Save(file)) {
+        return false;
+    }
+    bool tmp;
+    uint8_t tmpu8;
+    int8_t tmpi8;
+
+    tmp = IsActive;
+    file.Put(tmp);
+
+    tmpu8 = IsPersistant;
+    file.Put(tmpu8);
+    
+    tmpi8 = House;
+    file.Put(tmpi8);
+
+    tmpu8 = Event1.Event;
+    file.Put(tmpu8);
+    Event1.Team.Save(file);
+    file.Put(Event1.Data.Value);
+
+    tmpu8 = Event2.Event;
+    file.Put(tmpu8);
+    Event2.Team.Save(file);
+    file.Put(Event2.Data.Value);
+
+    tmpu8 = ActionControl;
+    file.Put(tmpu8);
+
+    return true;
+}
+
+bool TriggerTypeClass::Load(Straw &file)
+{
+    if (!AbstractTypeClass::Load(file)) {
+        return false;
+    }
+    bool tmp;
+    uint8_t tmpu8;
+    int8_t tmpi8;
+
+    file.Get(tmp);
+    IsActive = tmp;
+
+    file.Get(tmpu8);
+    IsPersistant = static_cast<PersistantType>(tmpu8);
+
+    file.Get(tmpi8);
+    House = static_cast<HousesType>(tmpi8);
+
+    file.Get(tmpu8);
+    Event1.Event = static_cast<TEventType>(tmpu8);
+    Event1.Team.Load(file);
+    file.Get(Event1.Data.Value);
+
+    file.Get(tmpu8);
+    Event2.Event = static_cast<TEventType>(tmpu8);
+    Event2.Team.Load(file);
+    file.Get(Event2.Data.Value);
+
+    file.Get(tmpu8);
+    ActionControl = static_cast<MultiStyleType>(tmpu8);
+
+    return true;
+}

@@ -106,6 +106,9 @@ public:
     virtual void Code_Pointers(void);
     virtual void Decode_Pointers(void);
 
+    virtual bool Save(Pipe &pipe) const;
+    virtual bool Load(Straw &straw);
+
     /*
     ** Debug routine
     */

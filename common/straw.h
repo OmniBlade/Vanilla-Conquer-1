@@ -64,6 +64,14 @@ public:
     }
     virtual int Get(void* buffer, int slen);
 
+    bool Get(bool& val)
+    {
+        bool data;
+        bool success = Get(&data, sizeof(data)) == sizeof(data);
+        val = data;
+        return success;
+    }
+
     bool Get(int8_t& val)
     {
         uint8_t data;

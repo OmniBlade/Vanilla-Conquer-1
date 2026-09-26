@@ -38,6 +38,8 @@
 #include "ftimer.h"
 #include "jshell.h"
 #include "noinit.h"
+#include "common/pipe.h"
+#include "common/straw.h"
 
 class CrateClass
 {
@@ -64,6 +66,19 @@ public:
     bool Is_Valid(void) const
     {
         return (Cell != -1);
+    }
+
+    
+    void Save(Pipe &file) const
+    {
+        Timer.Save(file);
+        file.Put(Cell);
+    }
+
+    void Load(Straw &file)
+    {
+        Timer.Load(file);
+        file.Get(Cell);
     }
 
 private:

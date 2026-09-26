@@ -59,6 +59,9 @@ public:
     virtual void Refresh_Cells(CELL cell, short const* list);
     void Flash_Power(void);
 
+    virtual bool Save(Pipe &pipe) const;
+    virtual bool Load(Straw &straw);
+
     unsigned IsToRedraw : 1;
 
 protected:

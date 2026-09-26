@@ -277,3 +277,44 @@ void CreditClass::Init_Clear()
 {
     Current = 0;
 }
+
+void CreditClass::Save(Pipe& pipe) const
+{
+    bool tmp;
+    pipe.Put(Credits);
+    pipe.Put(Current);
+
+    tmp = IsToRedraw;
+    pipe.Put(tmp);
+    tmp = IsUp;
+    pipe.Put(tmp);
+    tmp = IsAudible;
+    pipe.Put(tmp);
+
+    pipe.Put(Countdown);
+}
+
+void CreditClass::Load(Straw& straw, bool old)
+{
+    straw.Get(Credits);
+    straw.Get(Current);
+
+    // Old format binary dumped class as is in memory.
+    if (old) {
+        uint32_t tmp;
+        straw.Get(tmp);
+        IsToRedraw = (tmp & 1) != 0;
+        IsUp = (tmp & 2) != 0;
+        IsAudible = (tmp & 4) != 0;
+    } else {
+        bool tmp;
+        straw.Get(tmp);
+        IsToRedraw = tmp;
+        straw.Get(tmp);
+        IsUp = tmp;
+        straw.Get(tmp);
+        IsAudible = tmp;
+    }
+    
+    straw.Get(Countdown);
+}

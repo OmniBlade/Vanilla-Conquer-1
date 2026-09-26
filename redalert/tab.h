@@ -66,6 +66,9 @@ public:
         Flag_To_Redraw(false);
     };
 
+    virtual bool Save(Pipe &pipe) const;
+    virtual bool Load(Straw &straw);
+
     CreditClass Credits;
 
     CDTimerClass<FrameTimerClass> FlasherTimer;

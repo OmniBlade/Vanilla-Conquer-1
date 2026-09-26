@@ -223,6 +223,9 @@ public:
     virtual void Code_Pointers(void);
     virtual void Decode_Pointers(void);
 
+    virtual bool Save(Pipe &file) const;
+    virtual bool Load(Straw &file);
+
 protected:
     virtual void Mouse_Right_Press(void);
     virtual void Mouse_Left_Press(int x, int y);

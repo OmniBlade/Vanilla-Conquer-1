@@ -2008,6 +2008,259 @@ void ScenarioClass::Set_Scenario_Name(char const* name)
     }
 }
 
+void ScenarioClass::Save(Pipe &pipe)
+{
+    pipe.Put(RandomNumber.Seed);
+
+    static_assert(sizeof(DiffType) == sizeof(int8_t), "DiffType is not 1 byte.");
+    pipe.Put(static_cast<int8_t>(Difficulty));
+    pipe.Put(static_cast<int8_t>(CDifficulty));
+
+    Timer.Save(pipe);
+
+    for (int i = 0; i < WAYPT_COUNT; ++i) {
+        pipe.Put(Waypoint[i]);
+    }
+
+    MissionTimer.Save(pipe);
+    ShroudTimer.Save(pipe);
+    pipe.Put(Scenario);
+
+    static_assert(sizeof(Theater) == sizeof(int8_t), "TheaterType is not 1 byte.");
+    pipe.Put(static_cast<int8_t>(Theater));
+
+    pipe.Put(ScenarioName, sizeof(ScenarioName));
+    pipe.Put(Description, sizeof(Description));
+
+    static_assert(sizeof(IntroMovie) == sizeof(int32_t), "VQAType is not 4 bytes.");
+    pipe.Put(static_cast<int32_t>(IntroMovie));
+    pipe.Put(static_cast<int32_t>(BriefMovie));
+    pipe.Put(static_cast<int32_t>(WinMovie));
+    pipe.Put(static_cast<int32_t>(WinMovie2));
+    pipe.Put(static_cast<int32_t>(WinMovie3));
+    pipe.Put(static_cast<int32_t>(WinMovie4));
+    pipe.Put(static_cast<int32_t>(LoseMovie));
+    pipe.Put(static_cast<int32_t>(ActionMovie));
+    pipe.Put(BriefingText, sizeof(BriefingText));
+    
+    static_assert(sizeof(TransitTheme) == sizeof(int8_t), "ThemeType is not 1 byte.");
+    pipe.Put(static_cast<int8_t>(TransitTheme));
+    
+    static_assert(sizeof(PlayerHouse) == sizeof(int8_t), "HouseType is not 1 byte.");
+    pipe.Put(static_cast<int8_t>(PlayerHouse));
+
+    pipe.Put(CarryOverPercent);
+    pipe.Put(CarryOverMoney);
+    pipe.Put(CarryOverCap);
+    pipe.Put(Percent);
+
+    for (int i = 0; i < ARRAY_SIZE(GlobalFlags); ++i) {
+        pipe.Put(GlobalFlags[i]);
+    }
+
+    for (int i = 0; i < ARRAY_SIZE(Views); ++i) {
+        pipe.Put(Views[i]);
+    }
+    
+    pipe.Put(BridgeCount);
+    pipe.Put(CarryOverTimer);
+
+    // Save the bitfield bools as boolean values in the save file.
+    bool tmp;
+
+    tmp = IsBridgeChanged;
+    pipe.Put(tmp);
+
+    tmp = IsGlobalChanged;
+    pipe.Put(tmp);
+
+    tmp = IsToCarryOver;
+    pipe.Put(tmp);
+
+    tmp = IsToInherit;
+    pipe.Put(tmp);
+
+    tmp = IsTanyaEvac;
+    pipe.Put(tmp);
+
+    tmp = IsFadingBW;
+    pipe.Put(tmp);
+
+    tmp = IsFadingColor;
+    pipe.Put(tmp);
+
+    tmp = IsEndOfGame;
+    pipe.Put(tmp);
+
+    tmp = IsInheritTimer;
+    pipe.Put(tmp);
+
+    tmp = IsNoSpyPlane;
+    pipe.Put(tmp);
+
+    tmp = IsSkipScore;
+    pipe.Put(tmp);
+
+    tmp = IsOneTimeOnly;
+    pipe.Put(tmp);
+
+    tmp = IsNoMapSel;
+    pipe.Put(tmp);
+
+    tmp = IsTruckCrate;
+    pipe.Put(tmp);
+
+    tmp = IsMoneyTiberium;
+    pipe.Put(tmp);
+
+    tmp = EnableEvac;
+    pipe.Put(tmp);
+
+    FadeTimer.Save(pipe);
+
+#ifdef FIXIT_VERSION_3
+    AutoSonarTimer.Save(pipe);
+
+    // Do we need to save these values to a save game?
+    //pipe.Put(bLocalProposesDraw);   
+    //pipe.Put(bOtherProposesDraw);
+#endif
+}
+
+
+void ScenarioClass::Load(Straw &straw)
+{
+    int8_t tmp8;
+    int32_t tmp32;
+    straw.Get(RandomNumber.Seed);
+
+    straw.Get(tmp8);
+    Difficulty = DiffType(tmp8);
+    straw.Get(tmp8);
+    CDifficulty = DiffType(tmp8);
+
+    Timer.Load(straw);
+
+    for (int i = 0; i < WAYPT_COUNT; ++i) {
+        straw.Get(Waypoint[i]);
+    }
+
+    MissionTimer.Load(straw);
+    ShroudTimer.Load(straw);
+    straw.Get(Scenario);
+
+    straw.Get(tmp8);
+    Theater = TheaterType(tmp8);
+
+    straw.Get(ScenarioName, sizeof(ScenarioName));
+    straw.Get(Description, sizeof(Description));
+
+    straw.Get(tmp32);
+    IntroMovie = VQType(tmp32);
+    straw.Get(tmp32);
+    BriefMovie = VQType(tmp32);
+    straw.Get(tmp32);
+    WinMovie = VQType(tmp32);
+    straw.Get(tmp32);
+    WinMovie2 = VQType(tmp32);
+    straw.Get(tmp32);
+    WinMovie3 = VQType(tmp32);
+    straw.Get(tmp32);
+    WinMovie4 = VQType(tmp32);
+    straw.Get(tmp32);
+    LoseMovie = VQType(tmp32);
+    straw.Get(tmp32);
+    ActionMovie = VQType(tmp32);
+    straw.Get(BriefingText, sizeof(BriefingText));
+    
+    straw.Get(tmp8);
+    TransitTheme = ThemeType(tmp8);
+    
+    straw.Get(tmp8);
+    PlayerHouse = HousesType(tmp8);
+
+    straw.Get(CarryOverPercent);
+    straw.Get(CarryOverMoney);
+    straw.Get(CarryOverCap);
+    straw.Get(Percent);
+
+    for (int i = 0; i < ARRAY_SIZE(GlobalFlags); ++i) {
+        straw.Get(GlobalFlags[i]);
+    }
+
+    for (int i = 0; i < ARRAY_SIZE(Views); ++i) {
+        straw.Get(Views[i]);
+    }
+    
+    straw.Get(BridgeCount);
+    straw.Get(CarryOverTimer);
+
+    // Save the bitfield bools as boolean values in the save file.
+    bool tmp;
+
+    straw.Get(tmp);
+    IsBridgeChanged = tmp;
+
+    straw.Get(tmp);
+    IsGlobalChanged = tmp;
+
+    straw.Get(tmp);
+    IsToCarryOver = tmp;
+
+    straw.Get(tmp);
+    IsToInherit = tmp;
+
+    straw.Get(tmp);
+    IsTanyaEvac = tmp;
+
+    straw.Get(tmp);
+    IsFadingBW = tmp;
+
+    straw.Get(tmp);
+    IsFadingColor = tmp;
+
+    straw.Get(tmp);
+    IsEndOfGame = tmp;
+
+    straw.Get(tmp);
+    IsInheritTimer = tmp;
+
+    straw.Get(tmp);
+    IsNoSpyPlane = tmp;
+
+    straw.Get(tmp);
+    IsSkipScore = tmp;
+
+    straw.Get(tmp);
+    IsOneTimeOnly = tmp;
+
+    straw.Get(tmp);
+    IsNoMapSel = tmp;
+
+    straw.Get(tmp);
+    IsTruckCrate = tmp;
+
+    straw.Get(tmp);
+    IsMoneyTiberium = tmp;
+
+    straw.Get(tmp);
+    EnableEvac = tmp;
+
+    FadeTimer.Load(straw);
+
+#ifdef FIXIT_VERSION_3
+    AutoSonarTimer.Load(straw);
+
+    // Reset draw proposals on game load?
+    bLocalProposesDraw = false;
+    bOtherProposesDraw = false;
+
+    // Do we need to save these values to a save game?
+    //straw.Get(bLocalProposesDraw);   
+    //straw.Get(bOtherProposesDraw);
+#endif
+}
+
 /***********************************************************************************************
  * Read_Scenario_INI -- Read specified scenario INI file.                                      *
  *                                                                                             *

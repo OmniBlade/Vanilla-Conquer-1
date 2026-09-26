@@ -35,6 +35,9 @@
 #ifndef CCPTR_H
 #define CCPTR_H
 
+#include <common/pipe.h>
+#include <common/straw.h>
+
 /*
 **	The CCPtr class is designed for a specific purpose. It functions like a pointer except that
 **	it requires no fixups for saving and loading. If pointer fixups are not an issue, than using
@@ -107,6 +110,25 @@ public:
     static void Set_Heap(FixedIHeapClass* heap)
     {
         Heap = heap;
+    }
+
+    
+    /*
+    **	IO.
+    */
+    bool Save(Pipe &file) const
+    {
+        file.Put(ID);
+        return true;
+    }
+
+    bool Load(Straw &file)
+    {
+        if(!file.Get(ID)){
+            return false;
+        }
+
+        return true;
     }
 
 private:

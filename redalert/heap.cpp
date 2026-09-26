@@ -506,7 +506,7 @@ template <class T> int TFixedIHeapClass<T>::Save(Pipe& file) const
     /*
     ** Save the number of instances of this class
     */
-    file.Put(&ActiveCount, sizeof(ActiveCount));
+    file.Put(ActiveCount);
 
     /*
     ** Save each instance of this class
@@ -517,13 +517,14 @@ template <class T> int TFixedIHeapClass<T>::Save(Pipe& file) const
         ** Save the array index of the object, so it can be loaded back into the
         ** same array location (so TARGET translations will work)
         */
-        int idx = ID(Ptr(i));
-        file.Put(&idx, sizeof(idx));
+        T* ptr = Ptr(i);
+        int idx = ID(ptr);
+        file.Put(idx);
 
         /*
         ** Save the object itself
         */
-        file.Put(Ptr(i), sizeof(T));
+        ptr->Save(file);
     }
 
     return (true);
@@ -551,7 +552,7 @@ template <class T> int TFixedIHeapClass<T>::Load(Straw& file)
     /*
     ** Read the number of instances of this class
     */
-    if (file.Get(&a_count, sizeof(a_count)) != sizeof(a_count)) {
+    if (!file.Get(a_count)) {
         return (false);
     }
 
@@ -569,7 +570,7 @@ template <class T> int TFixedIHeapClass<T>::Load(Straw& file)
         /*
         ** Read the object's array index
         */
-        if (file.Get(&idx, sizeof(idx)) != sizeof(idx)) {
+        if (!file.Get(idx)) {
             return (false);
         }
 
@@ -584,11 +585,10 @@ template <class T> int TFixedIHeapClass<T>::Load(Straw& file)
         /*
         ** Load the object
         */
-        file.Get(ptr, sizeof(T));
+        if (!ptr->Load(file)) {
+        	return(false);
+        }
         new (ptr) T(NoInitClass());
-        //		if (!ptr->Load(file)) {
-        //			return(false);
-        //		}
     }
 
     return (true);

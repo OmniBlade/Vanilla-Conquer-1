@@ -83,7 +83,91 @@ bool CellClass::Should_Save(void) const
  *=============================================================================================*/
 bool CellClass::Load(Straw& file)
 {
-    file.Get(this, sizeof(*this));
+    bool tmp;
+    int32_t tmpi32;
+    int8_t tmpi8;
+    uint16_t tmpu16;
+
+    file.Get(ID);
+    
+    file.Get(tmp);
+    IsPlot = tmp;
+    file.Get(tmp);
+    IsCursorHere = tmp;
+    file.Get(tmp);
+    IsMapped = tmp;
+    file.Get(tmp);
+    IsVisible = tmp;
+    file.Get(tmp);
+    IsWaypoint = tmp;
+    file.Get(tmp);
+    IsRadarCursor = tmp;
+    file.Get(tmp);
+    IsFlagged = tmp;
+    file.Get(tmp);
+    IsToShroud = tmp;
+
+    for (int i = 0; i < MZONE_COUNT; ++i) {
+        file.Get(Zones[i]);
+    }
+
+    file.Get(Jammed);
+    
+    file.Get(tmpi32);
+    Trigger.Set_Raw(tmpi32);
+
+    file.Get(tmpu16);
+    TType = static_cast<TemplateType>(tmpu16);
+    file.Get(TIcon);
+
+    file.Get(tmpi8);
+    Overlay = static_cast<OverlayType>(tmpi8);
+    file.Get(OverlayData);
+
+    file.Get(tmpi8);
+    Smudge = static_cast<SmudgeType>(tmpi8);
+    file.Get(SmudgeData);
+
+    file.Get(tmpi8);
+    Owner = static_cast<HousesType>(tmpi8);
+
+    file.Get(tmpi8);
+    InfType = static_cast<HousesType>(tmpi8);
+
+    file.Get(tmpi32);
+    OccupierPtr = reinterpret_cast<ObjectClass*>(static_cast<intptr_t>(tmpi32));
+
+    static_assert(ARRAY_SIZE(Overlapper) == 6, "Overlapper array is not expected size for save format.");
+    for (int i = 0; i < ARRAY_SIZE(Overlapper); ++i) {
+        file.Get(tmpi32);
+        Overlapper[i] = reinterpret_cast<ObjectClass*>(static_cast<intptr_t>(tmpi32));
+    }
+
+    file.Get(IsMappedByPlayerMask);
+    file.Get(IsVisibleByPlayerMask);
+
+    file.Get(tmp);
+    Flag.Occupy.Center = tmp;
+    file.Get(tmp);
+    Flag.Occupy.NW = tmp;
+    file.Get(tmp);
+    Flag.Occupy.NE = tmp;
+    file.Get(tmp);
+    Flag.Occupy.SW = tmp;
+    file.Get(tmp);
+    Flag.Occupy.SE = tmp;
+    file.Get(tmp);
+    Flag.Occupy.Vehicle = tmp;
+    file.Get(tmp);
+    Flag.Occupy.Monolith = tmp;
+    file.Get(tmp);
+    Flag.Occupy.Building = tmp;
+
+    file.Get(tmpi8);
+    Land = static_cast<LandType>(tmpi8);
+    file.Get(tmpi8);
+    OverrideLand = static_cast<LandType>(tmpi8);
+
     return (true);
 }
 
@@ -101,7 +185,93 @@ bool CellClass::Load(Straw& file)
  *=============================================================================================*/
 bool CellClass::Save(Pipe& file) const
 {
-    file.Put(this, sizeof(*this));
+    bool tmp;
+    int32_t tmpi32;
+    int8_t tmpi8;
+    uint16_t tmpu16;
+
+    file.Put(ID);
+
+    tmp = IsPlot;
+    file.Put(tmp);
+    tmp = IsCursorHere;
+    file.Put(tmp);
+    tmp = IsMapped;
+    file.Put(tmp);
+    tmp = IsVisible;
+    file.Put(tmp);
+    tmp = IsWaypoint;
+    file.Put(tmp);
+    tmp = IsRadarCursor;
+    file.Put(tmp);
+    tmp = IsFlagged;
+    file.Put(tmp);
+    tmp = IsToShroud;
+    file.Put(tmp);
+
+    for (int i = 0; i < MZONE_COUNT; ++i) {
+        file.Put(Zones[i]);
+    }
+
+    file.Put(Jammed);
+
+    tmpi32 = Trigger.Raw();
+    file.Put(tmpi32);
+
+    tmpu16 = TType;
+    file.Put(tmpu16);
+    file.Put(TIcon);
+
+    tmpi8 = Overlay;
+    file.Put(tmpi8);
+    file.Put(OverlayData);
+
+    tmpi8 = Smudge;
+    file.Put(tmpi8);
+    file.Put(SmudgeData);
+
+    tmpi8 = Owner;
+    file.Put(tmpi8);
+
+    tmpi8 = InfType;
+    file.Put(tmpi8);
+
+    tmpi32 = static_cast<int32_t>(reinterpret_cast<intptr_t>(OccupierPtr));
+    file.Put(tmpi32);
+
+    for (int i = 0; i < ARRAY_SIZE(Overlapper); ++i) {
+        tmpi32 = static_cast<int32_t>(reinterpret_cast<intptr_t>(Overlapper[i]));
+        file.Put(tmpi32);
+    }
+
+    file.Put(IsMappedByPlayerMask);
+    file.Put(IsVisibleByPlayerMask);
+
+    tmp = Flag.Occupy.Center;
+    file.Put(tmp);
+    tmp = Flag.Occupy.NW;
+    file.Put(tmp);
+    tmp = Flag.Occupy.NE;
+    file.Put(tmp);
+    tmp = Flag.Occupy.SW;
+    file.Put(tmp);
+    tmp = Flag.Occupy.SE;
+    file.Put(tmp);
+    tmp = Flag.Occupy.Vehicle;
+    file.Put(tmp);
+    tmp = Flag.Occupy.Monolith;
+    file.Put(tmp);
+    tmp = Flag.Occupy.Building;
+    file.Put(tmp);
+
+    tmpi8 = Land;
+    file.Put(tmpi8);
+
+    tmpi8 = OverrideLand;
+    file.Put(tmpi8);
+
+    // value of CTFFlag is wiped out in Code/Decode pointers function.
+
     return (true);
 }
 
@@ -178,6 +348,636 @@ void CellClass::Decode_Pointers(void)
     CTFFlag = NULL;
 }
 
+// Each layer now saves and loads itself.
+bool GScreenClass::Load(Straw &file)
+{
+    bool tmp;
+
+    file.Get(tmp);
+    IsToRedraw = tmp;
+    file.Get(tmp);
+    IsToUpdate = tmp;
+
+    return true;
+}
+
+bool GScreenClass::Save(Pipe &file) const
+{
+    bool tmp;
+
+    tmp = IsToRedraw;
+    file.Put(tmp);
+    tmp = IsToUpdate;
+    file.Put(tmp);
+
+    return true;
+}
+
+bool MapClass::Load(Straw &file)
+{
+    GScreenClass::Load(file);
+    
+    file.Get(MapCellX);
+    file.Get(MapCellY);
+    file.Get(MapCellWidth);
+    file.Get(MapCellHeight);
+    file.Get(TotalValue);
+
+    // Don't worry about the map array, its saved/loaded at top level after rest of class.
+
+    file.Get(XSize);
+    file.Get(YSize);
+    file.Get(Size);
+
+    for (int crate = 0; crate > ARRAY_SIZE(Crates); ++crate)
+    {
+        Crates[crate].Load(file);
+    }
+    return true;
+}
+
+bool MapClass::Save(Pipe &file) const
+{
+    GScreenClass::Save(file);
+    file.Put(MapCellX);
+    file.Put(MapCellY);
+    file.Put(MapCellWidth);
+    file.Put(MapCellHeight);
+    file.Put(TotalValue);
+
+    // Don't worry about the map array, its saved/loaded at top level after rest of class.
+
+    file.Put(XSize);
+    file.Put(YSize);
+    file.Put(Size);
+
+    for (int crate = 0; crate > ARRAY_SIZE(Crates); ++crate)
+    {
+        Crates[crate].Save(file);
+    }
+    return true;
+}
+
+// Each layer now saves and loads itself.
+bool DisplayClass::Load(Straw &file)
+{
+    uint32_t tmp32;
+    uint8_t tmp8;
+    bool tmp;
+
+    MapClass::Load(file);
+
+    file.Get(TacticalCoord);
+    file.Get(TacLeptonWidth);
+    file.Get(TacLeptonHeight);
+    file.Get(ZoneCell);
+    file.Get(ZoneOffset);
+
+    // Don't save or load CursorSize, it gets set to point at CursorShapeSave array on decode pointers call after loading.
+
+    for (unsigned i = 0; i < ARRAY_SIZE(CursorShapeSave); ++i) {
+        file.Get(CursorShapeSave[i]);
+    }
+
+    file.Get(ProximityCheck);
+
+    // Load coded PendingObjectPtr, it will be decoded as part of the post load fixups.
+    file.Get(tmp32);
+    PendingObjectPtr = reinterpret_cast<ObjectClass *>(static_cast<uintptr_t>(tmp32));
+
+    // Don't save or load PendingObject, its restored as part of post load fixup.
+
+    file.Get(tmp8);
+    PendingHouse = static_cast<HousesType>(tmp8);
+
+    file.Get(TacPixelX);
+    file.Get(TacPixelY);
+    file.Get(DesiredTacticalCoord);
+
+    file.Get(tmp);
+    IsToRedraw = tmp;
+    file.Get(tmp);
+    IsRepairMode = tmp;
+    file.Get(tmp);
+    IsSellMode = tmp;
+
+    file.Get(tmp8);
+    IsTargettingMode = static_cast<SpecialWeaponType>(tmp8);
+
+    file.Get(tmp);
+    IsRubberBand = tmp;
+    file.Get(tmp);
+    IsTentative = tmp;
+    file.Get(tmp);
+    IsShadowPresent = tmp;
+
+    file.Get(BandX);
+    file.Get(BandY);
+    file.Get(NewX);
+    file.Get(NewY);
+
+    return true;
+}
+
+bool DisplayClass::Save(Pipe &file) const
+{
+    uint32_t tmp32;
+    uint8_t tmp8;
+    bool tmp;
+
+    MapClass::Save(file);
+    
+    file.Put(TacticalCoord);
+    file.Put(TacLeptonWidth);
+    file.Put(TacLeptonHeight);
+    file.Put(ZoneCell);
+    file.Put(ZoneOffset);
+
+    // Don't save or load CursorSize, it gets set to point at CursorShapeSave array on decode pointers call after loading.
+
+    for (unsigned i = 0; i < ARRAY_SIZE(CursorShapeSave); ++i) {
+        file.Put(CursorShapeSave[i]);
+    }
+
+    file.Put(ProximityCheck);
+
+    // Save coded PendingObjectPtr, it will be coded as part of the pre save fixups.
+    tmp32 = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(PendingObjectPtr));
+    file.Put(tmp32);
+
+    // Don't save or load PendingObject, its restored as part of post load fixup.
+
+    tmp8 = static_cast<uint8_t>(PendingHouse);
+    file.Put(tmp8);
+
+    file.Put(TacPixelX);
+    file.Put(TacPixelY);
+    file.Put(DesiredTacticalCoord);
+
+    tmp = IsToRedraw;
+    file.Put(tmp);
+    tmp = IsRepairMode;
+    file.Put(tmp);
+    tmp = IsSellMode;
+    file.Put(tmp);
+
+    tmp8 = static_cast<uint8_t>(IsTargettingMode);
+    file.Put(tmp8);
+
+    tmp = IsRubberBand;
+    file.Put(tmp);
+    tmp = IsTentative;
+    file.Put(tmp);
+    tmp = IsShadowPresent;
+    file.Put(tmp);
+
+    file.Put(BandX);
+    file.Put(BandY);
+    file.Put(NewX);
+    file.Put(NewY);
+
+    return true;
+}
+
+bool RadarClass::Load(Straw &file)
+{
+    uint8_t tmp8;
+    bool tmp;
+
+    DisplayClass::Load(file);
+    
+    file.Get(RadX);
+    file.Get(RadOffX);
+    file.Get(RadY);
+    file.Get(RadOffY);
+    file.Get(RadWidth);
+    file.Get(RadHeight);
+    file.Get(RadIWidth);
+    file.Get(RadIHeight);
+    file.Get(RadPWidth);
+    file.Get(RadPHeight);
+
+    file.Get(tmp);
+    IsToRedraw = tmp;
+    file.Get(tmp);
+    RadarCursorRedraw = tmp;
+    file.Get(tmp);
+    DoesRadarExist = tmp;
+    file.Get(tmp);
+    IsRadarActive = tmp;
+    file.Get(tmp);
+    IsRadarActivating = tmp;
+    file.Get(tmp);
+    IsRadarDeactivating = tmp;
+
+    file.Get(IsRadarJammedByPlayerMask);
+
+    file.Get(tmp);
+    IsPulseActive = tmp;
+    
+    file.Get(RadarPulseFrame);
+    file.Get(SpecialRadarFrame);
+    file.Get(RadarAnimFrame);
+    
+    file.Get(RadarX);
+    file.Get(RadarY);
+    file.Get(RadarCellWidth);
+    file.Get(RadarCellHeight);
+    file.Get(RadarCell);
+    file.Get(BaseX);
+    file.Get(BaseY);
+    file.Get(RadarWidth);
+    file.Get(RadarHeight);
+
+    file.Get(tmp);
+    IsZoomed = tmp;
+    file.Get(tmp);
+    IsPlayerNames = tmp;
+    file.Get(tmp);
+    IsHouseSpy = tmp;
+
+    file.Get(ZoomFactor);
+
+    file.Get(tmp8);
+    SpyingOn = static_cast<HousesType>(tmp8);
+
+    file.Get(PixelPtr);
+
+    for (int i = 0; i < PIXELSTACK; ++i) {
+        file.Get(PixelStack[i]);
+    }
+
+    return true;
+}
+
+bool RadarClass::Save(Pipe &file) const
+{
+    uint8_t tmp8;
+    bool tmp;
+
+    DisplayClass::Save(file);
+    
+    file.Put(RadX);
+    file.Put(RadOffX);
+    file.Put(RadY);
+    file.Put(RadOffY);
+    file.Put(RadWidth);
+    file.Put(RadHeight);
+    file.Put(RadIWidth);
+    file.Put(RadIHeight);
+    file.Put(RadPWidth);
+    file.Put(RadPHeight);
+
+    tmp = IsToRedraw;
+    file.Put(tmp);
+    tmp = RadarCursorRedraw;
+    file.Put(tmp);
+    tmp = DoesRadarExist;
+    file.Put(tmp);
+    tmp = IsRadarActive;
+    file.Put(tmp);
+    tmp = IsRadarActivating;
+    file.Put(tmp);
+    tmp = IsRadarDeactivating;
+    file.Put(tmp);
+
+    file.Put(IsRadarJammedByPlayerMask);
+
+    tmp = IsPulseActive;
+    file.Put(tmp);
+    
+    file.Put(RadarPulseFrame);
+    file.Put(SpecialRadarFrame);
+    file.Put(RadarAnimFrame);
+    
+    file.Put(RadarX);
+    file.Put(RadarY);
+    file.Put(RadarCellWidth);
+    file.Put(RadarCellHeight);
+    file.Put(RadarCell);
+    file.Put(BaseX);
+    file.Put(BaseY);
+    file.Put(RadarWidth);
+    file.Put(RadarHeight);
+
+    tmp = IsZoomed;
+    file.Put(tmp);
+    tmp = IsPlayerNames;
+    file.Put(tmp);
+    tmp = IsHouseSpy;
+    file.Put(tmp);
+
+    file.Put(ZoomFactor);
+
+    tmp8 = static_cast<uint8_t>(SpyingOn);
+    file.Put(tmp8);
+
+    file.Put(PixelPtr);
+
+    for (int i = 0; i < PIXELSTACK; ++i) {
+        file.Put(PixelStack[i]);
+    }
+
+    return true;
+}
+
+// Each layer now saves and loads itself.
+bool PowerClass::Load(Straw &file)
+{
+    bool tmp;
+
+    RadarClass::Load(file);
+
+    file.Get(tmp);
+    IsToRedraw = tmp;
+    file.Get(tmp);
+    IsActive = tmp;
+
+    FlashTimer.Load(file);
+
+    file.Get(RecordedDrain);
+    file.Get(RecordedPower);
+    file.Get(DesiredDrainHeight);
+    file.Get(DesiredPowerHeight);
+    file.Get(DrainHeight);
+    file.Get(PowerHeight);
+    file.Get(DrainBounce);
+    file.Get(PowerBounce);
+    file.Get(PowerDir);
+    file.Get(DrainDir);
+
+    return true;
+}
+
+bool PowerClass::Save(Pipe &file) const
+{
+    bool tmp;
+
+    RadarClass::Save(file);
+
+    tmp = IsToRedraw;
+    file.Put(tmp);
+    tmp = IsActive;
+    file.Put(tmp);
+
+    FlashTimer.Save(file);
+
+    file.Put(RecordedDrain);
+    file.Put(RecordedPower);
+    file.Put(DesiredDrainHeight);
+    file.Put(DesiredPowerHeight);
+    file.Put(DrainHeight);
+    file.Put(PowerHeight);
+    file.Put(DrainBounce);
+    file.Put(PowerBounce);
+    file.Put(PowerDir);
+    file.Put(DrainDir);
+
+    return true;
+}
+
+bool SidebarClass::StripClass::Save(Pipe &file) const
+{
+    bool tmp;
+
+    file.Put(X);
+    file.Put(Y);
+    file.Put(ID);
+
+    tmp = IsToRedraw;
+    file.Put(tmp);
+    tmp = IsBuilding;
+    file.Put(tmp);
+    tmp = IsScrollingDown;
+    file.Put(tmp);
+    tmp = IsScrolling;
+    file.Put(tmp);
+
+    file.Put(Flasher);
+    file.Put(TopIndex);
+    file.Put(Scroller);
+    file.Put(Slid);
+    file.Put(LastSlid);
+    file.Put(BuildableCount);
+
+    for (int i = 0; i < MAX_BUILDABLES; ++i) {
+        file.Put(Buildables[i].BuildableID);
+        static_assert(sizeof(Buildables[i].BuildableType) == sizeof(uint8_t), "BuildableType size not as expected.");
+        uint8_t tmp = Buildables[i].BuildableType;
+        file.Put(tmp);
+        file.Put(Buildables[i].Factory);
+        file.Put(Buildables[i].BuildableViaCapture);
+    }
+
+    return true;
+}
+
+bool SidebarClass::StripClass::Load(Straw &file)
+{
+    bool tmp;
+
+    file.Get(X);
+    file.Get(Y);
+    file.Get(ID);
+
+    file.Get(tmp);
+    IsToRedraw = tmp;
+    file.Get(tmp);
+    IsBuilding = tmp;
+    file.Get(tmp);
+    IsScrollingDown = tmp;
+    file.Get(tmp);
+    IsScrolling = tmp;
+    
+    file.Get(Flasher);
+    file.Get(TopIndex);
+    file.Get(Scroller);
+    file.Get(Slid);
+    file.Get(LastSlid);
+    file.Get(BuildableCount);
+
+    for (int i = 0; i < MAX_BUILDABLES; ++i) {
+        file.Get(Buildables[i].BuildableID);
+        uint8_t tmp;
+        file.Get(tmp);
+        Buildables[i].BuildableType = static_cast<RTTIType>(tmp);
+        file.Get(Buildables[i].Factory);
+        file.Get(Buildables[i].BuildableViaCapture);
+    }
+
+    return true;
+}
+
+bool SidebarClass::Load(Straw &file)
+{
+    bool tmp;
+    
+    PowerClass::Load(file);
+
+    for (int i = 0; i < COLUMNS; ++i) {
+        Column[i].Load(file);
+    }
+
+    file.Get(tmp);
+    IsSidebarActive = tmp;
+    file.Get(tmp);
+    IsToRedraw = tmp;
+
+    file.Get(tmp);
+    IsRepairActive = tmp;
+    file.Get(tmp);
+    IsUpgradeActive = tmp;
+    file.Get(tmp);
+    IsDemolishActive = tmp;
+
+    return true;
+}
+
+bool SidebarClass::Save(Pipe &file) const
+{
+    bool tmp;
+
+    PowerClass::Save(file);
+
+    for (int i = 0; i < COLUMNS; ++i) {
+        Column[i].Save(file);
+    }
+
+    tmp = IsSidebarActive;
+    file.Put(tmp);
+    tmp = IsToRedraw;
+    file.Put(tmp);
+
+    tmp = IsRepairActive;
+    file.Put(tmp);
+    tmp = IsUpgradeActive;
+    file.Put(tmp);
+    tmp = IsDemolishActive;
+    file.Put(tmp);
+
+    return true;
+}
+
+bool TabClass::Load(Straw &file)
+{
+    bool tmp;
+    
+    SidebarClass::Load(file);
+
+    Credits.Load(file);
+    FlasherTimer.Load(file);
+
+    file.Get(tmp);
+    IsToRedraw = tmp;
+
+    MoneyFlashTimer.Load(file);
+
+    return true;
+}
+
+bool TabClass::Save(Pipe &file) const
+{
+    bool tmp;
+
+    SidebarClass::Save(file);
+
+    Credits.Save(file);
+    FlasherTimer.Save(file);
+
+    tmp = IsToRedraw;
+    file.Put(tmp);
+
+    MoneyFlashTimer.Save(file);
+
+    return true;
+}
+
+bool HelpClass::Load(Straw &file)
+{
+    bool tmp;
+    
+    TabClass::Load(file);
+
+    file.Get(HelpX);
+    file.Get(HelpY);
+    file.Get(HelpWidth);
+
+    file.Get(tmp);
+    IsRight = tmp;
+
+    file.Get(Cost);
+    file.Get(X);
+    file.Get(Y);
+    file.Get(DrawX);
+    file.Get(DrawY);
+    file.Get(Width);
+    file.Get(Text);
+    file.Get(Color);
+
+    CountDownTimer.Load(file);
+
+    return true;
+}
+
+bool HelpClass::Save(Pipe &file) const
+{
+    bool tmp;
+
+    TabClass::Save(file);
+
+    file.Put(HelpX);
+    file.Put(HelpY);
+    file.Put(HelpWidth);
+
+    tmp = IsRight;
+    file.Put(tmp);
+
+    file.Put(Cost);
+    file.Put(X);
+    file.Put(Y);
+    file.Put(DrawX);
+    file.Put(DrawY);
+    file.Put(Width);
+    file.Put(Text);
+    file.Put(Color);
+    
+    CountDownTimer.Save(file);
+
+    return true;
+}
+
+bool ScrollClass::Load(Straw &file)
+{
+    bool tmp;
+    
+    HelpClass::Load(file);
+
+    file.Get(tmp);
+    IsAutoScroll = tmp;
+
+    Counter.Load(file);
+
+    file.Get(Inertia);
+
+    return true;
+}
+
+bool ScrollClass::Save(Pipe &file) const
+{
+    bool tmp;
+
+    HelpClass::Save(file);
+
+    tmp = IsAutoScroll;
+    file.Put(tmp);
+
+    Counter.Save(file);
+
+    file.Put(Inertia);
+
+    return true;
+}
+
 /***********************************************************************************************
  * MouseClass::Load -- Loads from a save game file.                                            *
  *                                                                                             *
@@ -212,8 +1012,8 @@ bool MouseClass::Load(Straw& file)
     **	disk will be over-written when initialization occurs.  This code must
     **	go in the most-derived Map class.
     */
-    TheaterType theater;
-    if (file.Get(&theater, sizeof(theater)) != sizeof(theater)) {
+    int8_t theater;
+    if (!file.Get(theater)) {
         return (false);
     }
 
@@ -229,7 +1029,7 @@ bool MouseClass::Load(Straw& file)
     /*
     **	Init display mixfiles
     */
-    Init_Theater(theater);
+    Init_Theater(static_cast<TheaterType>(theater));
     TerrainTypeClass::Init(Scen.Theater);
     TemplateTypeClass::Init(Scen.Theater);
     OverlayTypeClass::Init(Scen.Theater);
@@ -253,7 +1053,21 @@ bool MouseClass::Load(Straw& file)
     ** Read the entire map object in.  Only read in sizeof(MouseClass), so if we're
     ** in editor mode, none of the map editor object is read in.
     */
-    file.Get(this, sizeof(*this));
+    ScrollClass::Load(file);
+
+    bool tmp;
+    file.Get(tmp);
+    IsSmall = tmp;
+
+    static_assert(sizeof(MouseType) == sizeof(uint8_t), "Size of MouseType does not match size of uint8_t.");
+    uint8_t tmp8;
+    file.Get(tmp8);
+    CurrentMouseShape = static_cast<MouseType>(tmp8);
+    file.Get(tmp8);
+    NormalMouseShape = static_cast<MouseType>(tmp8);
+
+    file.Get(Frame);
+
 #ifdef SCENARIO_EDITOR
     new (this) MapEditClass(NoInitClass());
 #else
@@ -274,7 +1088,7 @@ bool MouseClass::Load(Straw& file)
     **	Read # cells saved
     */
     int count;
-    if (file.Get(&count, sizeof(count)) != sizeof(count)) {
+    if (!file.Get(count)) {
         return (false);
     }
 
@@ -283,7 +1097,7 @@ bool MouseClass::Load(Straw& file)
     */
     for (int index = 0; index < count; index++) {
         CELL cell = 0;
-        if (file.Get(&cell, sizeof(cell)) != sizeof(cell)) {
+        if (!file.Get(cell)) {
             return (false);
         }
 
@@ -314,10 +1128,20 @@ bool MouseClass::Save(Pipe& file) const
     /*
     **	Save Theater >first<
     */
-    TheaterType theater = Scen.Theater;
-    file.Put(&theater, sizeof(theater));
+    int8_t theater = Scen.Theater;
+    file.Put(theater);
 
-    file.Put(this, sizeof(*this));
+    ScrollClass::Save(file);
+
+    bool tmp = IsSmall;
+    file.Put(tmp);
+
+    uint8_t tmp8 = CurrentMouseShape;
+    file.Put(tmp8);
+    tmp8 = NormalMouseShape;
+    file.Put(tmp8);
+
+    file.Put(Frame);
 
     /*
     **	Count how many cells will be saved.
@@ -334,7 +1158,7 @@ bool MouseClass::Save(Pipe& file) const
     /*
     **	write out count of the cells.
     */
-    file.Put(&count, sizeof(count));
+    file.Put(count);
 
     /*
     **	Save cells that need it

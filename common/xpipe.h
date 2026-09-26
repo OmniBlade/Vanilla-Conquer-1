@@ -82,6 +82,8 @@ private:
 class FilePipe : public Pipe
 {
 public:
+    using Pipe::Put;
+    
     FilePipe(FileClass* file)
         : File(file)
         , HasOpened(false)

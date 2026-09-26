@@ -292,13 +292,54 @@ void ChronalVortexClass::Stop(void)
 void ChronalVortexClass::Load(Straw& file)
 {
     /*
-    ** Delete the render buffer as we are going to lose the pointer anyway.
+    ** Delete the render buffer.
     ** It will be re-allocated when needed.
     */
     if (RenderBuffer)
         delete RenderBuffer;
 
-    file.Get(this, sizeof(ChronalVortexClass));
+    bool tmp;
+    uint8_t tmp8;
+    
+    file.Get(Position);
+    file.Get(AnimateDir);
+    file.Get(AnimateFrame);
+    file.Get(Animate);
+    file.Get(tmp8);
+    State = static_cast<AnimStateType>(tmp8);
+    file.Get(VortexRemapTables, sizeof(VortexRemapTables));
+    file.Get(LightningRemap, sizeof(LightningRemap));
+
+    file.Get(tmp);
+    Active = tmp;
+    file.Get(tmp);
+    StartShutdown = tmp;
+    file.Get(tmp);
+    StartHiding = tmp;
+    file.Get(tmp);
+    Hidden = tmp;
+
+    file.Get(tmp8);
+    Theater = static_cast<TheaterType>(tmp8);
+
+    file.Get(LastAttackFrame);
+    file.Get(ZapFrame);
+    file.Get(TargetObject);
+    file.Get(TargetDistance);
+    file.Get(HiddenFrame);
+    file.Get(XDir);
+    file.Get(YDir);
+    file.Get(DesiredXDir);
+    file.Get(DesiredYDir);
+    file.Get(Range);
+    file.Get(Speed);
+    file.Get(Damage);
+
+    if (GameVersion == RA303_SAVE_VERSION) {
+        // Original build saved the RenderBuffer pointer which we don't need to save or load in new format.
+        uint32_t unused;
+        file.Get(unused);
+    }
 }
 
 /***********************************************************************************************
@@ -317,24 +358,42 @@ void ChronalVortexClass::Load(Straw& file)
  *=============================================================================================*/
 void ChronalVortexClass::Save(Pipe& file)
 {
-    GraphicBufferClass* save_ptr = NULL;
+    bool tmp;
+    uint8_t tmp8;
 
-    if (RenderBuffer) {
-        /*
-        ** Save the ptr to the render buffer so we can null it for the save
-        */
-        save_ptr = RenderBuffer;
-        RenderBuffer = NULL;
-    }
+    file.Put(Position);
+    file.Put(AnimateDir);
+    file.Put(AnimateFrame);
+    file.Put(Animate);
+    tmp8 = State;
+    file.Put(tmp8);
+    file.Put(VortexRemapTables, sizeof(VortexRemapTables));
+    file.Put(LightningRemap, sizeof(LightningRemap));
 
-    file.Put(this, sizeof(ChronalVortexClass));
+    tmp = Active;
+    file.Put(tmp);
+    tmp = StartShutdown;
+    file.Put(tmp);
+    tmp = StartHiding;
+    file.Put(tmp);
+    tmp = Hidden;
+    file.Put(tmp);
 
-    /*
-    ** Restore the render buffer ptr
-    */
-    if (save_ptr) {
-        RenderBuffer = save_ptr;
-    }
+    tmp8 = Theater;
+    file.Put(tmp8);
+
+    file.Put(LastAttackFrame);
+    file.Put(ZapFrame);
+    file.Put(TargetObject);
+    file.Put(TargetDistance);
+    file.Put(HiddenFrame);
+    file.Put(XDir);
+    file.Put(YDir);
+    file.Put(DesiredXDir);
+    file.Put(DesiredYDir);
+    file.Put(Range);
+    file.Put(Speed);
+    file.Put(Damage);
 }
 
 /***********************************************************************************************

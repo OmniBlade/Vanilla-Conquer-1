@@ -38,6 +38,8 @@
 #include "mission.h"
 #include "target.h"
 
+#include <assert.h>
+
 class MapEditClass;
 class HouseClass;
 class WeaponTypeClass;
@@ -106,6 +108,12 @@ public:
     void Decode_Pointers(void)
     {
     }
+    
+    /*
+    **	IO.
+    */
+    virtual bool Save(Pipe &file) const;
+    virtual bool Load(Straw &file);
 };
 
 /**********************************************************************
@@ -191,6 +199,22 @@ public:
     static void Init_Heap(void);
 
     virtual bool Read_INI(CCINIClass& ini);
+    
+    /*
+    **	IO.
+    */
+    virtual bool Save(Pipe &file) const
+    {
+        // HouseTypeClass shouldn't need to be stored in the save file.
+        assert(false);
+        return false;
+    }
+
+    virtual bool Load(Straw &file)
+    {
+        assert(false);
+        return false;
+    }
 };
 
 /***************************************************************************
@@ -615,6 +639,22 @@ public:
     virtual int Time_To_Build(HousesType house) const;
     virtual int Get_Ownable(void) const;
     virtual bool Read_INI(CCINIClass& ini);
+    
+    /*
+    **	IO.
+    */
+    virtual bool Save(Pipe &file) const
+    {
+        // TechnoTypeClass derivatives shouldn't need to be stored in the save file.
+        assert(false);
+        return false;
+    }
+
+    virtual bool Load(Straw &file)
+    {
+        assert(false);
+        return false;
+    }
 
     /*
     **	This is a pointer to the wake shape (as needed by the gunboat).

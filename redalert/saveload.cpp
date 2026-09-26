@@ -105,8 +105,9 @@ static void Put_All(Pipe& pipe, int save_net)
     /*
     **	Save the scenario global information.
     */
-    pipe.Put(&Scen, sizeof(Scen));
-
+    //pipe.Put(&Scen, sizeof(Scen));
+    Scen.Save(pipe);
+    
     /*
     **	Save the map.  The map must be saved first, since it saves the Theater.
     */
@@ -182,28 +183,28 @@ static void Put_All(Pipe& pipe, int save_net)
     Logic.Save(pipe);
 
     int count = MapTriggers.Count();
-    pipe.Put(&count, sizeof(count));
+    pipe.Put(count);
     int index;
     for (int index = 0; index < MapTriggers.Count(); index++) {
         TARGET target = MapTriggers[index]->As_Target();
-        pipe.Put(&target, sizeof(target));
+        pipe.Put(target);
     }
     if (!save_net)
         Call_Back();
     count = LogicTriggers.Count();
-    pipe.Put(&count, sizeof(count));
+    pipe.Put(count);
     for (index = 0; index < LogicTriggers.Count(); index++) {
         TARGET target = LogicTriggers[index]->As_Target();
-        pipe.Put(&target, sizeof(target));
+        pipe.Put(target);
     }
     if (!save_net)
         Call_Back();
     for (HousesType h = HOUSE_FIRST; h < HOUSE_COUNT; h++) {
         count = HouseTriggers[h].Count();
-        pipe.Put(&count, sizeof(count));
+        pipe.Put(count);
         for (index = 0; index < HouseTriggers[h].Count(); index++) {
             TARGET target = HouseTriggers[h][index]->As_Target();
-            pipe.Put(&target, sizeof(target));
+            pipe.Put(target);
         }
     }
     if (!save_net)
@@ -219,7 +220,7 @@ static void Put_All(Pipe& pipe, int save_net)
     /*
     **	Save the Score
     */
-    pipe.Put(&Score, sizeof(Score));
+    Score.Save(pipe);
     if (!save_net)
         Call_Back();
 
@@ -247,7 +248,7 @@ static void Put_All(Pipe& pipe, int save_net)
     /*
     **	Save out the number of objects in the list.
     */
-    pipe.Put(&carry_count, sizeof(carry_count));
+    pipe.Put(carry_count);
     if (!save_net)
         Call_Back();
 
@@ -256,7 +257,7 @@ static void Put_All(Pipe& pipe, int save_net)
     */
     CarryoverClass const* object_to_write = Carryover;
     while (object_to_write != NULL) {
-        pipe.Put(object_to_write, sizeof(*object_to_write));
+        object_to_write->Save(pipe);
         object_to_write = (CarryoverClass const*)object_to_write->Get_Next();
     }
     if (!save_net)
@@ -273,7 +274,7 @@ static void Put_All(Pipe& pipe, int save_net)
     /*
     **	Save multiplayer values
     */
-    pipe.Put(&save_net, sizeof(save_net)); // Write out whether we saved the net values so we know if we have to load
+    pipe.Put(save_net); // Write out whether we saved the net values so we know if we have to load
                                            // them again. ST - 10/22/2019 2:10PM
     if (save_net) {
         Save_MPlayer_Values(pipe);
@@ -393,18 +394,15 @@ bool Save_Game(const char* file_name, const char* descr)
     // descr_buf[strlen(descr_buf) + 1] = 26;		// put CTRL-Z after NULL
     fpipe.Put(descr_buf, DESCRIP_MAX);
 
-    fpipe.Put(&scenario, sizeof(scenario));
+    fpipe.Put(scenario);
 
-    fpipe.Put(&house, sizeof(house));
+    fpipe.Put(uint8_t(house));
 
     /*
     **	Save the save-game version, for loading verification
     */
-    unsigned int version = SAVEGAME_VERSION;
-#ifdef FIXIT_CSII //	checked - ajw 9/28/98
-    version++;
-#endif
-    fpipe.Put(&version, sizeof(version));
+    unsigned int version = CURRENT_SAVE_VERSION;
+    fpipe.Put(version);
 
     int pos = file.Seek(0, SEEK_CUR);
 
@@ -421,12 +419,13 @@ bool Save_Game(const char* file_name, const char* descr)
     */
     SHAPipe sha;
     BlowPipe bpipe(BlowPipe::ENCRYPT);
-    LCWPipe pipe(LCWPipe::COMPRESS, SAVE_BLOCK_SIZE);
+    LCWPipe cpipe(LCWPipe::COMPRESS, SAVE_BLOCK_SIZE);
     bpipe.Key(&FastKey, BlowfishEngine::MAX_KEY_LENGTH);
 
     sha.Put_To(fpipe);
     bpipe.Put_To(sha);
-    pipe.Put_To(bpipe);
+    cpipe.Put_To(bpipe);
+    Pipe& pipe = cpipe;
     Put_All(pipe, save_net);
 
     /*
@@ -511,7 +510,7 @@ bool Load_Game(const char* file_name)
 {
     int i;
     unsigned scenario;
-    HousesType house;
+    int8_t house;
     char descr_buf[DESCRIP_MAX];
     int load_net = 0; // 1 = save network/modem game
 
@@ -541,11 +540,11 @@ bool Load_Game(const char* file_name)
         return (false);
     }
 
-    if (fstraw.Get(&scenario, sizeof(scenario)) != sizeof(scenario)) {
+    if (!fstraw.Get(scenario)) {
         return (false);
     }
 
-    if (fstraw.Get(&house, sizeof(house)) != sizeof(house)) {
+    if (!fstraw.Get(house)) {
         return (false);
     }
 
@@ -553,19 +552,13 @@ bool Load_Game(const char* file_name)
     **	Read in & verify the save-game ID code
     */
     unsigned int version;
-    if (fstraw.Get(&version, sizeof(version)) != sizeof(version)) {
+    if (!fstraw.Get(version)) {
         return (false);
     }
     GameVersion = version;
-#ifdef FIXIT_CSII //	checked - ajw 9/28/98
-    if (version != SAVEGAME_VERSION && ((version - 1) != SAVEGAME_VERSION)) {
+    if (version > CURRENT_SAVE_VERSION && version != RA303_SAVE_VERSION) {
         return (false);
     }
-#else
-    if (version != SAVEGAME_VERSION /*&& version != 0x0100616D*/) {
-        return (false);
-    }
-#endif
     /*
     **	Get the message digest that is embedded in the file.
     */
@@ -607,11 +600,14 @@ bool Load_Game(const char* file_name)
     */
     file.Seek(pos, SEEK_SET);
     BlowStraw bstraw(BlowStraw::DECRYPT);
-    LCWStraw straw(LCWStraw::DECOMPRESS, SAVE_BLOCK_SIZE);
+    LCWStraw cstraw(LCWStraw::DECOMPRESS, SAVE_BLOCK_SIZE);
+
 
     bstraw.Key(&FastKey, BlowfishEngine::MAX_KEY_LENGTH);
     bstraw.Get_From(fstraw);
-    straw.Get_From(bstraw);
+    cstraw.Get_From(bstraw);
+
+    Straw &straw = cstraw;
 
     /*
     **	Clear the scenario so we start fresh; this calls the Init_Clear() routine
@@ -629,7 +625,7 @@ bool Load_Game(const char* file_name)
     /*
     **	Load the scenario global information.
     */
-    straw.Get(&Scen, sizeof(Scen));
+    Scen.Load(straw);
 
     /*
     **	Fixup the Sessionclass scenario info so we can work out which
@@ -716,29 +712,29 @@ bool Load_Game(const char* file_name)
     Logic.Load(straw);
 
     int count;
-    straw.Get(&count, sizeof(count));
+    straw.Get(count);
     MapTriggers.Clear();
     int index;
     for (index = 0; index < count; index++) {
         TARGET target;
-        straw.Get(&target, sizeof(target));
+        straw.Get(target);
         MapTriggers.Add(As_Trigger(target));
     }
 
-    straw.Get(&count, sizeof(count));
+    straw.Get(count);
     LogicTriggers.Clear();
     for (index = 0; index < count; index++) {
         TARGET target;
-        straw.Get(&target, sizeof(target));
+        straw.Get(target);
         LogicTriggers.Add(As_Trigger(target));
     }
 
     for (HousesType h = HOUSE_FIRST; h < HOUSE_COUNT; h++) {
-        straw.Get(&count, sizeof(count));
+        straw.Get(count);
         HouseTriggers[h].Clear();
         for (index = 0; index < count; index++) {
             TARGET target;
-            straw.Get(&target, sizeof(target));
+            straw.Get(target);
             HouseTriggers[h].Add(As_Trigger(target));
         }
     }
@@ -752,7 +748,7 @@ bool Load_Game(const char* file_name)
     /*
     **	Load the Score
     */
-    straw.Get(&Score, sizeof(Score));
+    Score.Load(straw);
     new (&Score) ScoreClass(NoInitClass());
 
     /*
@@ -774,12 +770,12 @@ bool Load_Game(const char* file_name)
     **	Load any carryover pseudo-saved game list.
     */
     int carry_count = 0;
-    straw.Get(&carry_count, sizeof(carry_count));
+    straw.Get(carry_count);
     while (carry_count) {
         CarryoverClass* cptr = new CarryoverClass;
         assert(cptr != NULL);
 
-        straw.Get(cptr, sizeof(CarryoverClass));
+        cptr->Load(straw);
         new (cptr) CarryoverClass(NoInitClass());
         cptr->Zap();
 
@@ -801,7 +797,7 @@ bool Load_Game(const char* file_name)
     /*
     **	Load multiplayer values
     */
-    straw.Get(&load_net, sizeof(load_net));
+    straw.Get(load_net);
     if (load_net) {
         Load_MPlayer_Values(straw);
     }
@@ -1045,18 +1041,18 @@ bool Save_Misc_Values(Pipe& file)
 {
     int i, j;
     int count;        // # ptrs in 'CurrentObject'
-    ObjectClass* ptr; // for saving 'CurrentObject' ptrs
+    int32_t ptr; // for saving 'CurrentObject' ptrs
 
     /*
     **	Player's House.
     */
     int x = PlayerPtr->Class->House;
-    file.Put(&x, sizeof(x));
+    file.Put(x);
 
     /*
     **	Save frame #.
     */
-    file.Put(&Frame, sizeof(Frame));
+    file.Put(Frame);
 
     /*
     **	Save currently-selected objects list.
@@ -1065,14 +1061,14 @@ bool Save_Misc_Values(Pipe& file)
     for (i = 0; i < SelectedObjectsType::COUNT; i++) {
         DynamicVectorClass<ObjectClass*>& selection = CurrentObject.Raw(i);
         count = selection.Count();
-        file.Put(&count, sizeof(count));
+        file.Put(count);
 
         /*
         **	Save the pointers.
         */
         for (j = 0; j < count; j++) {
-            ptr = selection[j];
-            file.Put(&ptr, sizeof(ptr));
+            ptr = static_cast<int32_t>(reinterpret_cast<intptr_t>(selection[j]));
+            file.Put(ptr);
         }
     }
 
@@ -1084,8 +1080,8 @@ bool Save_Misc_Values(Pipe& file)
     /*
     **	Save Tanya flags.
     */
-    file.Put(&IsTanyaDead, sizeof(IsTanyaDead));
-    file.Put(&SaveTanya, sizeof(SaveTanya));
+    file.Put(IsTanyaDead);
+    file.Put(SaveTanya);
 
     return (true);
 }
@@ -1105,20 +1101,20 @@ bool Save_Misc_Values(Pipe& file)
  *=============================================================================================*/
 bool Load_Misc_Values(Straw& file)
 {
-    ObjectClass* ptr; // for loading 'CurrentObject' ptrs
+    int32_t ptr; // for loading 'CurrentObject' ptrs
 
     /*
     **	Player's House.
     */
     int x;
-    file.Get(&x, sizeof(x));
+    file.Get(x);
     //	file.Get(&PlayerPtr, sizeof(PlayerPtr));
     PlayerPtr = HouseClass::As_Pointer((HousesType)x);
 
     /*
     **	Load frame #.
     */
-    file.Get(&Frame, sizeof(Frame));
+    file.Get(Frame);
 
     for (int i = 0; i < SelectedObjectsType::COUNT; i++) {
         /*
@@ -1127,14 +1123,15 @@ bool Load_Misc_Values(Straw& file)
         */
         DynamicVectorClass<ObjectClass*>& selection = CurrentObject.Raw(i);
         int count; // # ptrs in 'CurrentObject'
-        file.Get(&count, sizeof(count));
+        file.Get(count);
 
         /*
         **	Load the pointers.
         */
         for (int j = 0; j < count; j++) {
-            file.Get(&ptr, sizeof(ptr));
-            selection.Add(ptr); // add to the list
+            file.Get(ptr);
+            ObjectClass *obj = reinterpret_cast<ObjectClass *>(static_cast<intptr_t>(ptr));
+            selection.Add(obj); // add to the list
         }
     }
 
@@ -1146,8 +1143,8 @@ bool Load_Misc_Values(Straw& file)
     /*
     **	Save Tanya flags.
     */
-    file.Get(&IsTanyaDead, sizeof(IsTanyaDead));
-    file.Get(&SaveTanya, sizeof(SaveTanya));
+    file.Get(IsTanyaDead);
+    file.Get(SaveTanya);
 
     return (true);
 }
@@ -1178,9 +1175,9 @@ bool Load_Misc_Values(Straw& file)
 bool Save_MPlayer_Values(Pipe& file)
 {
     Session.Save(file);
-    file.Put(&BuildLevel, sizeof(BuildLevel));
-    file.Put(&Debug_Unshroud, sizeof(Debug_Unshroud));
-    file.Put(&Seed, sizeof(Seed));
+    file.Put(BuildLevel);
+    file.Put(Debug_Unshroud);
+    file.Put(Seed);
     file.Put(&Whom, sizeof(Whom));
     file.Put(&Special, sizeof(SpecialClass));
     file.Put(&Options, sizeof(GameOptionsClass));
@@ -1206,9 +1203,9 @@ bool Save_MPlayer_Values(Pipe& file)
 bool Load_MPlayer_Values(Straw& file)
 {
     Session.Load(file);
-    file.Get(&BuildLevel, sizeof(BuildLevel));
-    file.Get(&Debug_Unshroud, sizeof(Debug_Unshroud));
-    file.Get(&Seed, sizeof(Seed));
+    file.Get(BuildLevel);
+    file.Get(Debug_Unshroud);
+    file.Get(Seed);
     file.Get(&Whom, sizeof(Whom));
     file.Get(&Special, sizeof(SpecialClass));
     file.Get(&Options, sizeof(GameOptionsClass));
@@ -1452,25 +1449,26 @@ bool Get_Savefile_Info(int id, char* buf, unsigned* scenp, HousesType* housep)
     descr_buf[strlen(descr_buf) - 2] = '\0'; // trim off CR/LF
     strcpy(buf, descr_buf);
 
-    if (straw.Get(scenp, sizeof(unsigned)) != sizeof(unsigned)) {
+    if (!straw.Get(*scenp)) {
         return (false);
     }
 
-    if (straw.Get(housep, sizeof(HousesType)) != sizeof(HousesType)) {
+    int8_t house;
+    if (!straw.Get(house)) {
+        *housep = HOUSE_NONE;
         return (false);
     }
+
+    *housep = static_cast<HousesType>(house);
 
     /*
     **	Read & verify the save-game version #
     */
-    if (straw.Get(&version, sizeof(version)) != sizeof(version)) {
+    if (!straw.Get(version)) {
         return (false);
     }
-#ifdef FIXIT_CSII //	checked - ajw 9/28/98
-    if (version != SAVEGAME_VERSION && ((version - 1 != SAVEGAME_VERSION))) {
-#else
-    if (version != SAVEGAME_VERSION) {
-#endif
+    
+    if (version > CURRENT_SAVE_VERSION && version != RA303_SAVE_VERSION) {
         return (false);
     }
     return (true);

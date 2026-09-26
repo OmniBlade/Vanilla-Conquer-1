@@ -35,6 +35,9 @@
 #ifndef SCENARIO_H
 #define SCENARIO_H
 
+class Pipe;
+class Straw;
+
 /*
 **	This class holds the information about the current game being played. This information is
 **	global to the scenario and is generally of a similar nature to the information that was held
@@ -55,6 +58,9 @@ public:
     bool Set_Global_To(int global, bool value);
     void Do_BW_Fade(void);
     void Do_Fade_AI(void);
+
+    void Save(Pipe &pipe);
+    void Load(Straw &straw);
 
     /*
     **	This is the source of the random numbers used in the game. This controls
